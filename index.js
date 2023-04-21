@@ -53,7 +53,7 @@ bot.onText(/.*/, async (msg) => {
 
       bot.sendMessage(chatId, `Краткая выжимка:\n\n${summary}`);
     } catch (error) {
-      console.error(error);
+      console.log(error);
       bot.sendMessage(
         chatId,
         'Произошла ошибка при обработке запроса. Пожалуйста, попробуйте еще раз.'
