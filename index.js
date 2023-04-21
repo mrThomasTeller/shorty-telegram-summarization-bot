@@ -67,14 +67,17 @@ bot.onText(/.*/, async (msg) => {
 console.log('Summarize telegram bot started');
 
 async function getSummary(text) {
-  const maxLength = 4000;
+  const maxLength = 3500;
   const textParts = splitText(text, maxLength);
   const summaries = [];
 
   for (const part of textParts) {
-    const response = await api.sendMessage(`Сделай краткую выжимку из этих сообщений:\n${part}`, {
-      completionParams: { max_tokens: 2048 },
-    });
+    const response = await api.sendMessage(
+      `Сделай краткую выжимку на русском из этих сообщений в виде 5 пунктов:\n${part}`,
+      {
+        completionParams: { max_tokens: 2048 },
+      }
+    );
 
     summaries.push(response.text.trim());
   }
