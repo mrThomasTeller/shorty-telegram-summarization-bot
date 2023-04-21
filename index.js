@@ -18,6 +18,23 @@ function getChatMessages(chatId, fromDate) {
   return messages;
 }
 
+function getAuthorName(msg) {
+  const author = msg.from;
+  if (!author) return undefined;
+
+  if (author.first_name) {
+    return [author.first_name, author.last_name].filter((x) => !!x).join(' ');
+  }
+
+  return author.username;
+}
+
+function getFormattedMessage(msg) {
+  const authorName = getAuthorName(msg);
+  if (authorName) return `${authorName}: ${msg.text}`;
+  return msg.text;
+}
+
 bot.onText(/.*/, async (msg) => {
   const { text } = msg;
   if (!text) return;
@@ -31,7 +48,7 @@ bot.onText(/.*/, async (msg) => {
     bot.sendMessage(chatId, 'Собираю сообщения за последний день...');
 
     try {
-      const text = messages.map((msg) => msg.text).join('\n');
+      const text = messages.map(getFormattedMessage).join('\n');
       const summary = await getSummary(text);
 
       bot.sendMessage(chatId, `Краткая выжимка:\n\n${summary}`);
