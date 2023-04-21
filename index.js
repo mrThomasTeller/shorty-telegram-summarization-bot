@@ -23,7 +23,7 @@ bot.onText(/.*/, async (msg) => {
   if (!text) return;
 
   const fromDate = Math.floor((Date.now() - 86400000) / 1000); // 24 hours ago
-  const chat = getChatMessages(msg.chat.id, fromDate);
+  const messages = getChatMessages(msg.chat.id, fromDate);
 
   if (text.includes('/summarize')) {
     const chatId = msg.chat.id;
@@ -31,7 +31,6 @@ bot.onText(/.*/, async (msg) => {
     bot.sendMessage(chatId, 'Собираю сообщения за последний день...');
 
     try {
-      const messages = await fetchMessages(chatId, fromDate);
       const text = messages.map((msg) => msg.text).join('\n');
       const summary = await getSummary(text);
 
@@ -44,7 +43,7 @@ bot.onText(/.*/, async (msg) => {
       );
     }
   } else {
-    chat.push(msg);
+    messages.push(msg);
   }
 });
 
@@ -64,11 +63,6 @@ async function getSummary(text) {
   }
 
   return summaries.join('\n\n');
-}
-
-async function fetchMessages(chatId, fromDate) {
-  const chat = getChatMessages(chatId);
-  return chat.filter((message) => message.date >= fromDate);
 }
 
 function splitText(text, maxLength) {
