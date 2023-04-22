@@ -25,8 +25,12 @@ async function main() {
   await loadChats();
 
   bot.onText(/.*/, async (msg) => {
-    const { text } = msg;
-    if (!text) return;
+    if (!msg.text) return;
+
+    // if (msg.text.includes('/error')) {
+    //   wait(100).then(() => process.exit(1));
+    //   return;
+    // }
 
     const fromDate = Math.floor((Date.now() - 86400000) / 1000); // 24 hours ago
     const chatId = msg.chat.id;
@@ -35,7 +39,7 @@ async function main() {
     // сообщение уже обработано
     if (messages.some((m) => m.message_id === msg.message_id)) return;
 
-    if (text.includes('/summarize')) {
+    if (msg.text.includes('/summarize')) {
       bot.sendMessage(chatId, 'Собираю сообщения за последний день...');
 
       try {
@@ -56,6 +60,8 @@ async function main() {
   });
 
   console.log('Summarize telegram bot started');
+
+  wait(5000).then(() => process.exit(1));
 }
 
 async function loadChats() {
@@ -162,4 +168,10 @@ function splitText(text, maxLength) {
   }
 
   return parts;
+}
+
+function wait(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
