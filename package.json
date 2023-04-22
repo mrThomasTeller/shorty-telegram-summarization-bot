@@ -9,7 +9,8 @@
     "start": "NODE_NO_WARNINGS=1 forever start index.js",
     "stop": "NODE_NO_WARNINGS=1 forever stop index.js",
     "restart": "NODE_NO_WARNINGS=1 forever restart index.js",
-    "status": "NODE_NO_WARNINGS=1 forever list"
+    "status": "NODE_NO_WARNINGS=1 forever list",
+    "logs": "NODE_NO_WARNINGS=1 forever logs"
   },
   "keywords": [],
   "author": "",
