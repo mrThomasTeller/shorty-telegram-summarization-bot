@@ -60,8 +60,6 @@ async function main() {
   });
 
   console.log('Summarize telegram bot started');
-
-  wait(5000).then(() => process.exit(1));
 }
 
 async function loadChats() {
