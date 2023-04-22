@@ -36,17 +36,12 @@ async function main() {
     const chatId = msg.chat.id;
     const messages = getChatMessages(chatId, fromDate);
 
-    // сообщение уже обработано
-    if (messages.some((m) => m.message_id === msg.message_id)) return;
-
     if (msg.text.includes('/summarize')) {
       bot.sendMessage(chatId, 'Собираю сообщения за последний день...');
 
       try {
         const text = messages.map(getFormattedMessage).join('\n');
-        const summary = await getSummary(text);
-
-        bot.sendMessage(chatId, `Краткая выжимка:\n\n${summary}`);
+        await printSummary(bot, chatId, text);
       } catch (error) {
         console.log(error);
         bot.sendMessage(
@@ -54,7 +49,8 @@ async function main() {
           'Произошла ошибка при обработке запроса. Пожалуйста, попробуйте еще раз.'
         );
       }
-    } else {
+      // сообщение не обработано
+    } else if (!messages.some((m) => m.message_id === msg.message_id)) {
       addMessage(chatId, msg);
     }
   });
@@ -127,11 +123,11 @@ function getFormattedMessage(msg) {
   return msg.text;
 }
 
-async function getSummary(text) {
+async function printSummary(bot, chatId, text) {
   const maxLength = 3500;
   const textParts = splitText(text, maxLength);
-  const summaries = [];
 
+  let count = 0;
   for (const part of textParts) {
     const response = await api.sendMessage(
       `Сделай краткую выжимку на русском из этих сообщений в виде 5 пунктов идущих в хронологическом порядке:\n${part}`,
@@ -140,10 +136,8 @@ async function getSummary(text) {
       }
     );
 
-    summaries.push(response.text.trim());
+    bot.sendMessage(chatId, `Краткая выжимка ${(count += 1)}:\n\n${response.text.trim()}`);
   }
-
-  return summaries.join('\n\n');
 }
 
 function splitText(text, maxLength) {
