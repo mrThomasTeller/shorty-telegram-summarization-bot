@@ -1,21 +1,22 @@
 import TelegramBot from 'node-telegram-bot-api';
+// eslint-disable-next-line import/no-unresolved
 import { ChatGPTAPI } from 'chatgpt';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { EOL } from 'os';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const chatsDir = path.join(__dirname, 'chats');
 if (!fs.existsSync(chatsDir)) fs.mkdirSync(chatsDir);
 
-const token = '6269585495:AAGkoNZE62dPhYjnGSLcd13Zb5MYgUjleuY';
-const chatGPTAPIKey = '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';
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 
-const bot = new TelegramBot(token, { polling: true });
-
-const api = new ChatGPTAPI({ apiKey: chatGPTAPIKey });
+const api = new ChatGPTAPI({ apiKey: process.env.GPT_API_KEY });
 
 const chats = new Map();
 
@@ -37,7 +38,7 @@ async function main() {
     const messages = getChatMessages(chatId, fromDate);
 
     if (msg.text.includes('/summarize')) {
-      bot.sendMessage(chatId, 'Собираю сообщения за последний день...');
+      console.log(`Запрос на создание выжимки из чата ${chatId}`);
 
       try {
         const text = messages.map(getFormattedMessage).join('\n');
@@ -124,20 +125,33 @@ function getFormattedMessage(msg) {
 }
 
 async function printSummary(bot, chatId, text) {
-  const maxLength = 3500;
+  bot.sendMessage(chatId, '⚙️ Собираю сообщения за последний день...');
+
+  const maxLength = 3400;
   const textParts = splitText(text, maxLength);
+  const pointsCount =
+    textParts.length === 1 ? 5 : textParts.length === 2 ? 4 : textParts.length === 3 ? 3 : 2;
 
   let count = 0;
   for (const part of textParts) {
-    const response = await api.sendMessage(
-      `Сделай краткую выжимку на русском из этих сообщений в виде 5 пунктов идущих в хронологическом порядке:\n${part}`,
-      {
-        completionParams: { max_tokens: 2048 },
+    const response = await sendMessageToGpt(
+      `Сделай краткую выжимку этих сообщений в виде ${pointsCount} пунктов идущих в хронологическом порядке. Каждый пункт - одно предложение на русском языке::\n${part}`,
+      () => {
+        bot.sendMessage(chatId, '😮‍💨 Бот усердно трудится, нужно немножко подождать');
       }
     );
 
-    bot.sendMessage(chatId, `Краткая выжимка ${(count += 1)}:\n\n${response.text.trim()}`);
+    count += 1;
+    const text = reEnumerateText(response.text.trim(), (count - 1) * pointsCount + 1);
+    if (count === 1) {
+      bot.sendMessage(chatId, `🔡 Краткая выжимка:`);
+      await wait(100);
+    }
+    bot.sendMessage(chatId, text);
   }
+
+  await wait(100);
+  bot.sendMessage(chatId, `😌 Это всё`);
 }
 
 function splitText(text, maxLength) {
@@ -166,4 +180,43 @@ function wait(ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
+}
+
+// replaces 1., 2., 3. in text with {fromNumber}., {fromNumber + 1}., {fromNumber + 2}.
+function reEnumerateText(text, fromNumber) {
+  // Split the text into lines
+  const lines = text.split('\n');
+
+  // Loop through each line and replace the numbers
+  const updatedLines = lines.map((line) => {
+    // Check if the line starts with a number followed by a period
+    const match = line.match(/^(\d+)\./);
+    if (match) {
+      // Calculate the new number for this line
+      const newNumber = parseInt(match[1], 10) - 1 + fromNumber;
+      // Replace the original number with the new number
+      return line.replace(match[0], `${newNumber}.`);
+    }
+    // If the line doesn't start with a number and a period, return it unchanged
+    return line;
+  });
+
+  // Join the updated lines back together
+  return updatedLines.join('\n');
+}
+
+async function sendMessageToGpt(text, onTooManyRequests) {
+  try {
+    return await api.sendMessage(text, {
+      completionParams: { max_tokens: 2048 },
+    });
+  } catch (error) {
+    // Too Many Requests - ждём 25 секунд
+    if (error.statusCode === 429) {
+      if (onTooManyRequests) onTooManyRequests();
+      await wait(25_000);
+      return sendMessageToGpt(text, onTooManyRequests);
+    }
+    throw error;
+  }
 }

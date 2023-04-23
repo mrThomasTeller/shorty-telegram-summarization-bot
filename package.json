@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon app.js --ext js,json,jsx",
     "start": "NODE_NO_WARNINGS=1 forever start index.js",
     "stop": "NODE_NO_WARNINGS=1 forever stop index.js",
     "restart": "NODE_NO_WARNINGS=1 forever restart index.js",
@@ -17,11 +18,15 @@
   "license": "ISC",
   "dependencies": {
     "chatgpt": "^5.2.2",
+    "dotenv": "^16.0.3",
+    "forever": "^4.0.3",
+    "node-telegram-bot-api": "^0.61.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22",
     "eslint": "^8.36.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^8.8.0",
-    "eslint-plugin-import": "^2.27.5",
-    "forever": "^4.0.3",
-    "node-telegram-bot-api": "^0.61.0"
+    "eslint-plugin-import": "^2.27.5"
   }
 }
