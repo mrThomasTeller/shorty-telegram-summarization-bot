@@ -1,11 +1,12 @@
 import TelegramBot from 'node-telegram-bot-api';
-// eslint-disable-next-line import/no-unresolved
-import { ChatGPTAPI } from 'chatgpt';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { EOL } from 'os';
 import dotenv from 'dotenv';
+
+import { wait } from './lib/async.js';
+import { sendMessageToGpt } from './lib/gpt.js';
 
 dotenv.config();
 
@@ -15,8 +16,6 @@ const chatsDir = path.join(__dirname, 'chats');
 if (!fs.existsSync(chatsDir)) fs.mkdirSync(chatsDir);
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
-
-const api = new ChatGPTAPI({ apiKey: process.env.GPT_API_KEY });
 
 const chats = new Map();
 
@@ -135,14 +134,14 @@ async function printSummary(bot, chatId, text) {
   let count = 0;
   for (const part of textParts) {
     const response = await sendMessageToGpt(
-      `Сделай краткую выжимку этих сообщений в виде ${pointsCount} пунктов идущих в хронологическом порядке. Каждый пункт - одно предложение на русском языке::\n${part}`,
+      `Сделай краткую выжимку этих сообщений в виде ${pointsCount} пунктов идущих в хронологическом порядке. Каждый пункт - одно предложение на русском языке, в конце которого соответствующие смыслу emoji:\n${part}`,
       () => {
         bot.sendMessage(chatId, '😮‍💨 Бот усердно трудится, нужно немножко подождать');
       }
     );
 
     count += 1;
-    const text = reEnumerateText(response.text.trim(), (count - 1) * pointsCount + 1);
+    const text = reEnumerateText(response.trim(), (count - 1) * pointsCount + 1);
     if (count === 1) {
       bot.sendMessage(chatId, `🔡 Краткая выжимка:`);
       await wait(100);
@@ -150,7 +149,7 @@ async function printSummary(bot, chatId, text) {
     bot.sendMessage(chatId, text);
   }
 
-  await wait(100);
+  await wait(300);
   bot.sendMessage(chatId, `😌 Это всё`);
 }
 
@@ -176,12 +175,6 @@ function splitText(text, maxLength) {
   return parts;
 }
 
-function wait(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
-
 // replaces 1., 2., 3. in text with {fromNumber}., {fromNumber + 1}., {fromNumber + 2}.
 function reEnumerateText(text, fromNumber) {
   // Split the text into lines
@@ -203,20 +196,4 @@ function reEnumerateText(text, fromNumber) {
 
   // Join the updated lines back together
   return updatedLines.join('\n');
-}
-
-async function sendMessageToGpt(text, onTooManyRequests) {
-  try {
-    return await api.sendMessage(text, {
-      completionParams: { max_tokens: 2048 },
-    });
-  } catch (error) {
-    // Too Many Requests - ждём 25 секунд
-    if (error.statusCode === 429) {
-      if (onTooManyRequests) onTooManyRequests();
-      await wait(25_000);
-      return sendMessageToGpt(text, onTooManyRequests);
-    }
-    throw error;
-  }
 }
