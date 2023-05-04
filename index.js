@@ -10,7 +10,6 @@ main();
 
 async function main() {
   const tg = new TelegramConnection();
-  await tg.loadChats();
 
   tg.bot.onText(/.*/, async (msg) => {
     if (!msg.text) return;
@@ -22,7 +21,7 @@ async function main() {
 
     const fromDate = Math.floor((Date.now() - 86400000) / 1000); // 24 hours ago
     const chatId = msg.chat.id;
-    const messages = tg.getChatMessages(chatId, fromDate);
+    const messages = await tg.getChatMessages(chatId, fromDate);
 
     if (msg.text.includes('/summarize')) {
       console.log(`Запрос на создание выжимки из чата ${chatId}`);
@@ -39,7 +38,7 @@ async function main() {
       }
       // сообщение не обработано
     } else if (!messages.some((m) => m.message_id === msg.message_id)) {
-      tg.addMessage(chatId, msg);
+      await tg.addMessage(chatId, msg);
     }
   });
 
