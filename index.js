@@ -31,7 +31,7 @@ async function main() {
         await printSummary(tg.bot, chatId, text);
       } catch (error) {
         console.log(error);
-        tg.bot.sendMessage(
+        await tg.bot.sendMessage(
           chatId,
           'Произошла ошибка при обработке запроса. Пожалуйста, попробуйте еще раз.'
         );
@@ -46,7 +46,7 @@ async function main() {
 }
 
 async function printSummary(bot, chatId, text) {
-  bot.sendMessage(chatId, '⚙️ Собираю сообщения за последний день...');
+  await bot.sendMessage(chatId, '⚙️ Собираю сообщения за последний день...');
 
   const maxLength = 3400;
   const textParts = splitText(text, maxLength);
@@ -55,22 +55,26 @@ async function printSummary(bot, chatId, text) {
 
   let count = 0;
   for (const part of textParts) {
-    const response = await sendMessageToGpt(
-      `Сделай краткую выжимку этих сообщений в виде ${pointsCount} пунктов идущих в хронологическом порядке. Каждый пункт - одно предложение на русском языке:\n${part}`,
-      () => {
-        bot.sendMessage(chatId, '😮‍💨 Бот усердно трудится, нужно немножко подождать');
-      }
-    );
+    const response = await sendMessageToGpt({
+      text: `Сделай краткую выжимку этих сообщений в виде ${pointsCount} пунктов идущих в хронологическом порядке. Каждый пункт - одно предложение на русском языке:\n${part}`,
+      onBusy: async () => {
+        await bot.sendMessage(chatId, '😮‍💨 Бот усердно трудится, нужно немножко подождать');
+      },
+      onBroken: async () => {
+        await bot.sendMessage(
+          chatId,
+          '💔 С ботом что-то случилось... Попробуйте позже. Мы починим его и сообщим вам как можно скорее.'
+        );
+      },
+    });
 
     count += 1;
     const text = reEnumerateText(response.trim(), (count - 1) * pointsCount + 1);
     if (count === 1) {
-      bot.sendMessage(chatId, `🔡 Краткая выжимка:`);
-      await wait(300);
+      await bot.sendMessage(chatId, `🔡 Краткая выжимка:`);
     }
-    bot.sendMessage(chatId, text);
+    await bot.sendMessage(chatId, text);
   }
 
-  await wait(300);
-  bot.sendMessage(chatId, `😌 Это всё`);
+  await bot.sendMessage(chatId, `😌 Это всё`);
 }
