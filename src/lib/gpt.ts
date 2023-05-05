@@ -1,20 +1,22 @@
 import { ChatGPTAPI, ChatGPTError } from 'chatgpt';
 import { wait } from './async.ts';
 import assert from 'assert';
+import { required } from './utils.ts';
 
 assert(process.env.GPT_API_KEY);
-const api = new ChatGPTAPI({ apiKey: process.env.GPT_API_KEY });
 
 export async function sendMessageToGpt({
   text,
   maxTries = 5,
   onBusy,
   onBroken,
+  api = new ChatGPTAPI({ apiKey: required(process.env.GPT_API_KEY) }),
 }: {
   text: string;
   maxTries?: number;
   onBusy?: () => void | Promise<void>;
   onBroken?: () => void | Promise<void>;
+  api?: ChatGPTAPI;
 }): Promise<string> {
   try {
     const result = await api.sendMessage(text, {

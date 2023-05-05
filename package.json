@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "dev": "nodemon -x ts-node-esm src/index.ts --ext ts,js,json,jsx",
     "app": "ts-node-esm src/index.ts",
     "start": "NODE_NO_WARNINGS=1 forever start -c ts-node-esm src/index.ts",
@@ -18,18 +18,21 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/jest": "^29.5.1",
+    "@types/lodash": "^4.14.194",
+    "@types/node": "^18.16.3",
+    "@types/node-telegram-bot-api": "^0.61.6",
     "chatgpt": "^5.2.2",
     "dotenv": "^16.0.3",
     "execa": "^7.1.1",
     "forever": "^4.0.3",
+    "jest": "^29.5.0",
     "lodash": "^4.17.21",
     "node-telegram-bot-api": "^0.61.0",
-    "ts-node": "^10.9.1"
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.194",
-    "@types/node": "^18.16.3",
-    "@types/node-telegram-bot-api": "^0.61.6",
     "@typescript-eslint/eslint-plugin": "^5.59.2",
     "eslint": "^8.39.0",
     "eslint-config-airbnb-base": "^15.0.0",
@@ -39,6 +42,6 @@
     "eslint-plugin-n": "^15.7.0",
     "eslint-plugin-promise": "^6.1.1",
     "nodemon": "^2.0.22",
-    "typescript": "^5.0.4"
+    "ts-jest": "^29.1.0"
   }
 }

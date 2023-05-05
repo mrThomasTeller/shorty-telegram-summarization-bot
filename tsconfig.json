@@ -17,5 +17,5 @@
     "jsx": "react-jsx",
     "allowImportingTsExtensions": true
   },
-  "include": ["src"]
+  "include": ["jest.config.ts", "src"]
 }
