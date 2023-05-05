@@ -5,9 +5,11 @@
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
-    "test": "jest",
-    "dev": "nodemon -x ts-node-esm src/index.ts --ext ts,js,json,jsx",
     "ts": "ts-node-esm",
+    "test": "jest",
+    "lint": "eslint src",
+    "ts-check": "tsc",
+    "dev": "nodemon -x ts-node-esm src/index.ts --ext ts,js,json,jsx",
     "app": "ts-node-esm src/index.ts",
     "start": "NODE_NO_WARNINGS=1 forever start -c ts-node-esm src/index.ts",
     "stop": "NODE_NO_WARNINGS=1 forever stop -c ts-node-esm src/index.ts",
@@ -44,6 +46,7 @@
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^15.7.0",
     "eslint-plugin-promise": "^6.1.1",
+    "husky": "^8.0.3",
     "nodemon": "^2.0.22",
     "ts-jest": "^29.1.0"
   }

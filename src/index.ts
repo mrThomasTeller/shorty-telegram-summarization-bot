@@ -5,18 +5,20 @@ import TelegramConnection from './lib/TelegramConnection.ts';
 import { getFormattedMessage } from './lib/summarizeUtils.ts';
 import type TelegramBot from 'node-telegram-bot-api';
 import { catchError } from './lib/async.ts';
+import Store from './lib/Store.ts';
 
 catchError(main());
 
 async function main(): Promise<void> {
   const tg = new TelegramConnection();
+  const store = new Store();
 
   tg.bot.onText(/.*/, async (msg) => {
     if (msg.text == null) return;
 
     const fromDate = Math.floor((Date.now() - 86400000) / 1000); // 24 hours ago
     const chatId = msg.chat.id;
-    const messages = await tg.getChatMessages(chatId, fromDate);
+    const messages = await store.getChatMessages(chatId, fromDate);
 
     if (msg.text.includes('/summarize')) {
       console.log(`Запрос на создание выжимки из чата ${chatId}`);
@@ -32,7 +34,7 @@ async function main(): Promise<void> {
         );
       }
     } else if (!messages.some((m) => m.id === msg.message_id)) {
-      await tg.addMessage(chatId, msg);
+      await store.addMessage(chatId, msg);
     }
   });
 

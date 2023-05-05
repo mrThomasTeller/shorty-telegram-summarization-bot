@@ -4,13 +4,13 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { EOL } from 'os';
 import { PrismaClient } from '@prisma/client';
-import TelegramConnection from '../lib/TelegramConnection.ts';
+import Store from '../lib/Store.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const chatsDir = path.join(__dirname, '../../chats');
 
 const prisma = new PrismaClient();
-const telegramConnection = new TelegramConnection();
+const store = new Store();
 
 async function migrateFilesToDatabase(): Promise<void> {
   const chatsFiles = await fs.promises.readdir(chatsDir);
@@ -24,7 +24,7 @@ async function migrateFilesToDatabase(): Promise<void> {
       .map((row) => JSON.parse(row));
 
     for (const message of chatMessages) {
-      await telegramConnection.addMessage(chatId, message);
+      await store.addMessage(chatId, message);
     }
 
     console.log(`Миграция сообщений чата ${chatId} завершена.`);
