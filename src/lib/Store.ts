@@ -26,8 +26,10 @@ class Store {
       create: { id: Number(chatId) },
     });
 
-    await prisma.message.create({
-      data: {
+    await prisma.message.upsert({
+      where: { id: message.message_id },
+      update: {},
+      create: {
         id: message.message_id,
         text: message.text,
         date: message.date,
