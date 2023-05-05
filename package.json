@@ -2,14 +2,15 @@
   "name": "gpt-telegram-summarize-bot",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.ts",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon app.js --ext js,json,jsx",
-    "start": "NODE_NO_WARNINGS=1 forever start index.js",
-    "stop": "NODE_NO_WARNINGS=1 forever stop index.js",
-    "restart": "NODE_NO_WARNINGS=1 forever restart index.js",
+    "dev": "nodemon -x ts-node-esm src/index.ts --ext ts,js,json,jsx",
+    "app": "ts-node-esm src/index.ts",
+    "start": "NODE_NO_WARNINGS=1 forever start -c ts-node-esm src/index.ts",
+    "stop": "NODE_NO_WARNINGS=1 forever stop -c ts-node-esm src/index.ts",
+    "restart": "NODE_NO_WARNINGS=1 forever restart -c ts-node-esm src/index.ts",
     "status": "NODE_NO_WARNINGS=1 forever list",
     "logs": "NODE_NO_WARNINGS=1 forever logs"
   },
@@ -21,13 +22,23 @@
     "dotenv": "^16.0.3",
     "execa": "^7.1.1",
     "forever": "^4.0.3",
-    "node-telegram-bot-api": "^0.61.0"
+    "lodash": "^4.17.21",
+    "node-telegram-bot-api": "^0.61.0",
+    "ts-node": "^10.9.1"
   },
   "devDependencies": {
-    "eslint": "^8.36.0",
+    "@types/lodash": "^4.14.194",
+    "@types/node": "^18.16.3",
+    "@types/node-telegram-bot-api": "^0.61.6",
+    "@typescript-eslint/eslint-plugin": "^5.59.2",
+    "eslint": "^8.39.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^8.8.0",
+    "eslint-config-standard-with-typescript": "^34.0.1",
     "eslint-plugin-import": "^2.27.5",
-    "nodemon": "^2.0.22"
+    "eslint-plugin-n": "^15.7.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "nodemon": "^2.0.22",
+    "typescript": "^5.0.4"
   }
 }

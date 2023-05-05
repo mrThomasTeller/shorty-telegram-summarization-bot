@@ -1,31 +1,32 @@
-import 'dotenv/config.js';
+import 'dotenv/config';
 import TelegramBot from 'node-telegram-bot-api';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { EOL } from 'os';
+import assert from 'assert';
+import type ChatMessage from './types/ChatMessage.ts';
+import _ from 'lodash';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 class TelegramConnection {
-  #bot;
+  readonly bot: TelegramBot;
 
-  /** @type {Map<number, TelegramBot.Message[]>} */
-  #chats;
+  private chats?: Map<TelegramBot.ChatId, ChatMessage[]>;
+
+  private readonly chatsDir: string;
 
   constructor() {
     this.chatsDir = path.join(__dirname, '../chats');
     if (!fs.existsSync(this.chatsDir)) fs.mkdirSync(this.chatsDir);
 
-    this.#bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
+    assert(process.env.TELEGRAM_BOT_TOKEN);
+    this.bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
   }
 
-  get bot() {
-    return this.#bot;
-  }
-
-  async addMessage(chatId, messageRaw) {
-    const message = {
+  async addMessage(chatId: TelegramBot.ChatId, messageRaw: TelegramBot.Message): Promise<void> {
+    const message: ChatMessage = {
       message_id: messageRaw.message_id,
       text: messageRaw.text,
       from: messageRaw.from,
@@ -39,39 +40,40 @@ class TelegramConnection {
     );
   }
 
-  /** @returns {Promise<TelegramBot.Message[]>} */
-  async getChatMessages(chatId, fromDate) {
-    await this.#loadChats();
+  async getChatMessages(chatId: TelegramBot.ChatId, fromDate?: number): Promise<ChatMessage[]> {
+    const chats = await this.loadChats();
 
-    let messages = this.#chats.get(chatId) ?? [];
-    if (fromDate) {
+    let messages = chats.get(chatId) ?? [];
+    if (fromDate != null) {
       messages = messages.filter((message) => message.date >= fromDate);
     }
-    this.#chats.set(chatId, messages);
+    chats.set(chatId, messages);
     return messages;
   }
 
-  async sendToAllChats(text) {
-    await this.#loadChats();
+  async sendToAllChats(text: string): Promise<number> {
+    const chats = await this.loadChats();
 
     let count = 0;
-    for (const chatId of this.#chats.keys()) {
+    for (const chatId of chats.keys()) {
       try {
-        await this.#bot.sendMessage(chatId, text);
+        await this.bot.sendMessage(chatId, text);
         count += 1;
         // eslint-disable-next-line no-empty
       } catch (error) {
-        console.error(`Не могу отправить сообщение: ${error.message}`);
+        if (_.isObject(error) && error instanceof Error) {
+          console.error(`Не могу отправить сообщение: ${error.message}`);
+        }
       }
     }
 
     return count;
   }
 
-  async #loadChats() {
-    if (this.#chats) return;
+  private async loadChats(): Promise<NonNullable<TelegramConnection['chats']>> {
+    if (this.chats !== undefined) return this.chats;
 
-    this.#chats = new Map();
+    this.chats = new Map();
 
     const chatsFiles = await fs.promises.readdir(this.chatsDir);
     const promises = chatsFiles.map(async (chatIdStr) => {
@@ -81,13 +83,16 @@ class TelegramConnection {
       );
       const chatMessages = chatMessagesText
         .split(EOL)
-        .filter((row) => !!row)
+        .filter((row) => row !== '')
         .map((row) => JSON.parse(row));
 
-      this.#chats.set(Number(chatIdStr), chatMessages);
+      assert(this.chats);
+      this.chats.set(Number(chatIdStr), chatMessages);
     });
 
     await Promise.all(promises);
+
+    return this.chats;
   }
 }
 

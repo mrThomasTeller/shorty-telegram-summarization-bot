@@ -1,6 +1,7 @@
-import TelegramConnection from './lib/TelegramConnection.js';
+import TelegramConnection from './lib/TelegramConnection.ts';
+import { catchError } from './lib/async.ts';
 
-async function main() {
+async function main(): Promise<void> {
   const tg = new TelegramConnection();
 
   const sent = await tg.sendToAllChats(
@@ -12,4 +13,4 @@ async function main() {
   process.exit();
 }
 
-main();
+catchError(main());

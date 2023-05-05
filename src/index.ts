@@ -1,23 +1,18 @@
-import 'dotenv/config.js';
+import 'dotenv/config';
+import { sendMessageToGpt } from './lib/gpt.ts';
+import { reEnumerateText, splitText } from './lib/text.ts';
+import TelegramConnection from './lib/TelegramConnection.ts';
+import { getFormattedMessage } from './lib/summarizeUtils.ts';
+import type TelegramBot from 'node-telegram-bot-api';
+import { catchError } from './lib/async.ts';
 
-import { wait } from './lib/async.js';
-import { sendMessageToGpt } from './lib/gpt.js';
-import { reEnumerateText, splitText } from './lib/text.js';
-import TelegramConnection from './lib/TelegramConnection.js';
-import { getFormattedMessage } from './lib/summarizeUtils.js';
+catchError(main());
 
-main();
-
-async function main() {
+async function main(): Promise<void> {
   const tg = new TelegramConnection();
 
   tg.bot.onText(/.*/, async (msg) => {
-    if (!msg.text) return;
-
-    // if (msg.text.includes('/error')) {
-    //   wait(100).then(() => process.exit(1));
-    //   return;
-    // }
+    if (msg.text == null) return;
 
     const fromDate = Math.floor((Date.now() - 86400000) / 1000); // 24 hours ago
     const chatId = msg.chat.id;
@@ -36,7 +31,6 @@ async function main() {
           'Произошла ошибка при обработке запроса. Пожалуйста, попробуйте еще раз.'
         );
       }
-      // сообщение не обработано
     } else if (!messages.some((m) => m.message_id === msg.message_id)) {
       await tg.addMessage(chatId, msg);
     }
@@ -45,7 +39,7 @@ async function main() {
   console.log('Summarize telegram bot started');
 }
 
-async function printSummary(bot, chatId, text) {
+async function printSummary(bot: TelegramBot, chatId: number, text: string): Promise<void> {
   await bot.sendMessage(chatId, '⚙️ Собираю сообщения за последний день...');
 
   const maxLength = 3400;

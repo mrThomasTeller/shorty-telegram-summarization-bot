@@ -1,10 +1,21 @@
-// eslint-disable-next-line import/no-unresolved
-import { ChatGPTAPI } from 'chatgpt';
-import { wait } from './async.js';
+import { ChatGPTAPI, ChatGPTError } from 'chatgpt';
+import { wait } from './async.ts';
+import assert from 'assert';
 
+assert(process.env.GPT_API_KEY);
 const api = new ChatGPTAPI({ apiKey: process.env.GPT_API_KEY });
 
-export async function sendMessageToGpt({ text, maxTries = 5, onBusy, onBroken }) {
+export async function sendMessageToGpt({
+  text,
+  maxTries = 5,
+  onBusy,
+  onBroken,
+}: {
+  text: string;
+  maxTries?: number;
+  onBusy?: () => void | Promise<void>;
+  onBroken?: () => void | Promise<void>;
+}): Promise<string> {
   try {
     const result = await api.sendMessage(text, {
       completionParams: { max_tokens: 2048 },
@@ -12,15 +23,15 @@ export async function sendMessageToGpt({ text, maxTries = 5, onBusy, onBroken })
     return result.text;
   } catch (error) {
     // Too Many Requests - ждём 25 секунд
-    if (error.statusCode === 429) {
+    if (error instanceof ChatGPTError && error.statusCode === 429) {
       if (maxTries === 1) {
-        if (onBroken) await onBroken();
+        if (onBroken !== undefined) await onBroken();
         throw new Error('Максимальное количество попыток отправить сообщение GPT достигнуто');
       }
 
-      if (onBusy) await onBusy();
+      if (onBusy !== undefined) await onBusy();
       await wait(25_000);
-      return sendMessageToGpt({ text, onBusy, onBroken, maxTries: maxTries - 1 });
+      return await sendMessageToGpt({ text, onBusy, onBroken, maxTries: maxTries - 1 });
     }
     throw error;
   }
