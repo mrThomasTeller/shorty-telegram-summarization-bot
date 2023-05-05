@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import type ChatMessage from './types/ChatMessage.ts';
+import type ChatMessage from './types/ChatMessage';
 
 export function getAuthorName(msg: ChatMessage): string | undefined {
   const author = msg.from;

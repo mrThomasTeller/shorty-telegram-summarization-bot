@@ -1,5 +1,5 @@
-import TelegramConnection from './lib/TelegramConnection.ts';
-import { catchError } from './lib/async.ts';
+import TelegramConnection from './lib/TelegramConnection.js';
+import { catchError } from './lib/async.js';
 
 async function main(): Promise<void> {
   const tg = new TelegramConnection();

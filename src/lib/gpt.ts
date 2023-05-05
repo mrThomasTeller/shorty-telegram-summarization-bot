@@ -1,7 +1,7 @@
 import { ChatGPTAPI, ChatGPTError } from 'chatgpt';
-import { wait } from './async.ts';
+import { wait } from './async.js';
 import assert from 'assert';
-import { required } from './utils.ts';
+import { required } from './utils.js';
 
 assert(process.env.GPT_API_KEY);
 

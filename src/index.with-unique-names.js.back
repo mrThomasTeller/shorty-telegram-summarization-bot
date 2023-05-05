@@ -5,8 +5,8 @@ import { fileURLToPath } from 'url';
 import { EOL } from 'os';
 import dotenv from 'dotenv';
 
-import { wait } from './lib/async.ts';
-import { sendMessageToGpt } from './lib/gpt.ts';
+import { wait } from './lib/async';
+import { sendMessageToGpt } from './lib/gpt';
 
 dotenv.config();
 

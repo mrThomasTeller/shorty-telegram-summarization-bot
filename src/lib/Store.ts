@@ -1,5 +1,5 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import type ChatMessage from './types/ChatMessage.ts';
+import type ChatMessage from './types/ChatMessage';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();

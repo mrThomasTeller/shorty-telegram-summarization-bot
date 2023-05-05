@@ -1,11 +1,11 @@
 import 'dotenv/config';
-import { sendMessageToGpt } from './lib/gpt.ts';
-import { reEnumerateText, splitText } from './lib/text.ts';
-import TelegramConnection from './lib/TelegramConnection.ts';
-import { getFormattedMessage } from './lib/summarizeUtils.ts';
+import { sendMessageToGpt } from './lib/gpt.js';
+import { reEnumerateText, splitText } from './lib/text.js';
+import TelegramConnection from './lib/TelegramConnection.js';
+import { getFormattedMessage } from './lib/summarizeUtils.js';
 import type TelegramBot from 'node-telegram-bot-api';
-import { catchError } from './lib/async.ts';
-import Store from './lib/Store.ts';
+import { catchError } from './lib/async.js';
+import Store from './lib/Store.js';
 
 catchError(main());
 

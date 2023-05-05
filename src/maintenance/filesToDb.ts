@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { EOL } from 'os';
 import { PrismaClient } from '@prisma/client';
-import Store from '../lib/Store.ts';
+import Store from '../lib/Store.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const chatsDir = path.join(__dirname, '../../chats');
