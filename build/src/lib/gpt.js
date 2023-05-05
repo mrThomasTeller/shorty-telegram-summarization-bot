@@ -3,7 +3,13 @@ import { wait } from './async.js';
 import assert from 'assert';
 import { required } from './utils.js';
 assert(process.env.GPT_API_KEY);
-export async function sendMessageToGpt({ text, maxTries = 5, onBusy, onBroken, api = new ChatGPTAPI({ apiKey: required(process.env.GPT_API_KEY) }), }) {
+export async function sendMessageToGpt({ text, maxTries = 5, onBusy, onBroken, api = new ChatGPTAPI({
+    apiKey: required(process.env.GPT_API_KEY),
+    completionParams: {
+        max_tokens: 2048,
+        model: 'gpt-4',
+    },
+}), }) {
     try {
         const result = await api.sendMessage(text, {
             completionParams: { max_tokens: 2048 },

@@ -10,7 +10,13 @@ export async function sendMessageToGpt({
   maxTries = 5,
   onBusy,
   onBroken,
-  api = new ChatGPTAPI({ apiKey: required(process.env.GPT_API_KEY) }),
+  api = new ChatGPTAPI({
+    apiKey: required(process.env.GPT_API_KEY),
+    completionParams: {
+      max_tokens: 2048,
+      model: 'gpt-4',
+    },
+  }),
 }: {
   text: string;
   maxTries?: number;
