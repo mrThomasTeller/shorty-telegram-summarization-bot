@@ -1,5 +1,5 @@
-import { type Message } from 'node-telegram-bot-api';
+import { type Message, type User } from '@prisma/client';
 
-type ChatMessage = Pick<Message, 'message_id' | 'text' | 'from' | 'date'>;
+type ChatMessage = Message & { from: User | null };
 
 export default ChatMessage;

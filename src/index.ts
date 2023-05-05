@@ -31,7 +31,7 @@ async function main(): Promise<void> {
           'Произошла ошибка при обработке запроса. Пожалуйста, попробуйте еще раз.'
         );
       }
-    } else if (!messages.some((m) => m.message_id === msg.message_id)) {
+    } else if (!messages.some((m) => m.id === msg.message_id)) {
       await tg.addMessage(chatId, msg);
     }
   });

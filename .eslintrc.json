@@ -11,8 +11,7 @@
     "project": ["tsconfig.json"]
   },
   "rules": {
-    "@typescript-eslint/promise-function-async": 0,
-    "@typescript-eslint/naming-convention": 0,
+    "import/extensions": ["error", "ignorePackages"],
     "@typescript-eslint/explicit-function-return-type": [
       "error",
       {
@@ -27,6 +26,9 @@
       {
         "checksVoidReturn": false
       }
-    ]
+    ],
+    "@typescript-eslint/consistent-type-definitions": ["error", "type"],
+    "@typescript-eslint/promise-function-async": 0,
+    "@typescript-eslint/naming-convention": 0
   }
 }

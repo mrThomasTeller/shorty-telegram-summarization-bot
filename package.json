@@ -7,6 +7,7 @@
   "scripts": {
     "test": "jest",
     "dev": "nodemon -x ts-node-esm src/index.ts --ext ts,js,json,jsx",
+    "ts": "ts-node-esm",
     "app": "ts-node-esm src/index.ts",
     "start": "NODE_NO_WARNINGS=1 forever start -c ts-node-esm src/index.ts",
     "stop": "NODE_NO_WARNINGS=1 forever stop -c ts-node-esm src/index.ts",
@@ -18,6 +19,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@prisma/client": "^4.13.0",
     "@types/jest": "^29.5.1",
     "@types/lodash": "^4.14.194",
     "@types/node": "^18.16.3",
@@ -29,6 +31,7 @@
     "jest": "^29.5.0",
     "lodash": "^4.17.21",
     "node-telegram-bot-api": "^0.61.0",
+    "prisma": "^4.13.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
   },
