@@ -6,6 +6,7 @@ import { getFormattedMessage } from './lib/summarizeUtils.js';
 import type TelegramBot from 'node-telegram-bot-api';
 import { catchError } from './lib/async.js';
 import Store from './lib/Store.js';
+import { isMessageForBot } from './lib/tgUtils.js';
 
 catchError(main());
 
@@ -20,7 +21,7 @@ async function main(): Promise<void> {
     const chatId = msg.chat.id;
     const messages = await store.getChatMessages(chatId, fromDate);
 
-    if (msg.text.includes('/summarize')) {
+    if (msg.text.includes('/summarize') && (await isMessageForBot(tg.bot, msg))) {
       console.log(`Запрос на создание выжимки из чата ${chatId}`);
 
       try {

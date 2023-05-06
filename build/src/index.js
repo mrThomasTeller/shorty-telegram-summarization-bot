@@ -5,6 +5,7 @@ import TelegramConnection from './lib/TelegramConnection.js';
 import { getFormattedMessage } from './lib/summarizeUtils.js';
 import { catchError } from './lib/async.js';
 import Store from './lib/Store.js';
+import { isMessageForBot } from './lib/tgUtils.js';
 catchError(main());
 async function main() {
     const tg = new TelegramConnection();
@@ -15,7 +16,7 @@ async function main() {
         const fromDate = Math.floor((Date.now() - 86400000) / 1000); // 24 hours ago
         const chatId = msg.chat.id;
         const messages = await store.getChatMessages(chatId, fromDate);
-        if (msg.text.includes('/summarize')) {
+        if (msg.text.includes('/summarize') && (await isMessageForBot(tg.bot, msg))) {
             console.log(`Запрос на создание выжимки из чата ${chatId}`);
             try {
                 const text = messages.map(getFormattedMessage).join('\n');

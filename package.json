@@ -11,9 +11,9 @@
     "build": "tsc",
     "dev": "nodemon build/src/index.js --ext ts,js,json,jsx",
     "app": "npm run build && node build/src/index.js",
-    "start": "NODE_NO_WARNINGS=1 forever start build/src/index.js",
+    "start": "npm run build && NODE_NO_WARNINGS=1 forever start build/src/index.js",
     "stop": "NODE_NO_WARNINGS=1 forever stop build/src/index.js",
-    "restart": "NODE_NO_WARNINGS=1 forever restart build/src/index.js",
+    "restart": "npm run build && NODE_NO_WARNINGS=1 forever restart build/src/index.js",
     "status": "NODE_NO_WARNINGS=1 forever list",
     "logs": "NODE_NO_WARNINGS=1 forever logs"
   },

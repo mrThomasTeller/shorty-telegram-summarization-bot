@@ -11,6 +11,7 @@ export function getAuthorName(msg: ChatMessage): string | undefined {
 
   return author.username ?? undefined;
 }
+
 export function getFormattedMessage(msg: ChatMessage): string | undefined {
   const authorName = getAuthorName(msg);
   // const text = '(' + msg.date + ')';
