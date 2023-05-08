@@ -32,25 +32,3 @@ export async function sendMessageToGpt({ text, maxTries = 5, onBusy, onBroken, a
         throw error;
     }
 }
-// import { execa } from 'execa';
-// import path from 'path';
-// import { fileURLToPath } from 'url';
-// const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// export async function sendMessageToGpt(text, onBusy, tries = 0) {
-//   try {
-//     const result = await execa('python3', ['gpt4.py', text], {
-//       cwd: path.join(__dirname, '../gpt4free/'),
-//     });
-//     if (!result.stdout || !result.stdout.trim()) {
-//       throw new Error('Incorrect response');
-//     }
-//     return result.stdout;
-//   } catch (error) {
-//     console.log('try again');
-//     if (tries > 10) {
-//       return 'Error :(';
-//     }
-//     onBusy();
-//     return sendMessageToGpt(text, onBusy, tries + 1);
-//   }
-// }

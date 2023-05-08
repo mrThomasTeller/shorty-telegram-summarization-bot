@@ -13,7 +13,7 @@ class TelegramConnection {
         let count = 0;
         for (const chat of chats) {
             try {
-                await this.bot.sendMessage(chat.id, text);
+                await this.bot.sendMessage(Number(chat.id), text);
                 count += 1;
             }
             catch (error) {

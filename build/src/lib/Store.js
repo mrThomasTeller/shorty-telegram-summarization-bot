@@ -1,31 +1,31 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 class Store {
-    async addMessage(chatId, message) {
-        const user = message.from === undefined
+    async addMessage(msg) {
+        const user = msg.from === undefined
             ? undefined
             : await prisma.user.upsert({
-                where: { id: message.from.id },
+                where: { id: msg.from.id },
                 update: {},
                 create: {
-                    id: message.from.id,
-                    firstName: message.from.first_name,
-                    lastName: message.from.last_name,
-                    username: message.from.username,
+                    id: msg.from.id,
+                    firstName: msg.from.first_name,
+                    lastName: msg.from.last_name,
+                    username: msg.from.username,
                 },
             });
         const chat = await prisma.chat.upsert({
-            where: { id: Number(chatId) },
+            where: { id: Number(msg.chat.id) },
             update: {},
-            create: { id: Number(chatId) },
+            create: { id: Number(msg.chat.id) },
         });
         await prisma.message.upsert({
-            where: { id: message.message_id },
+            where: { id: msg.message_id },
             update: {},
             create: {
-                id: message.message_id,
-                text: message.text,
-                date: message.date,
+                id: msg.message_id,
+                text: msg.text,
+                date: new Date(msg.date * 1000),
                 userId: user?.id,
                 chatId: chat.id,
             },
@@ -39,6 +39,18 @@ class Store {
             },
             include: {
                 from: true,
+            },
+        });
+    }
+    async hasMessage(messageId) {
+        return ((await prisma.message.findUnique({
+            where: { id: messageId },
+        })) !== null);
+    }
+    async removeMessagesBeforeDate(date) {
+        await prisma.message.deleteMany({
+            where: {
+                date: { lt: date },
             },
         });
     }

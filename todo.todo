@@ -1,3 +1,6 @@
+Срочно:
+  - message_id is not unique
+
 Release 1.0:
   - DB @started(23-05-05 19:49)
   - шифрование сообщений
