@@ -8,7 +8,7 @@ generator client {
 }
 
 model User {
-  id        BigInt       @id
+  id        BigInt    @id
   firstName String?
   lastName  String?
   username  String?
@@ -16,16 +16,18 @@ model User {
 }
 
 model Chat {
-  id       BigInt       @id
+  id       BigInt    @id
   messages Message[]
 }
 
 model Message {
-  id        BigInt       @id
+  messageId BigInt
   text      String?
   date      DateTime
-  from      User?     @relation(fields: [userId], references: [id])
+  from      User?    @relation(fields: [userId], references: [id])
   userId    BigInt?
   chat      Chat     @relation(fields: [chatId], references: [id])
   chatId    BigInt
+
+  @@id([messageId, chatId])
 }

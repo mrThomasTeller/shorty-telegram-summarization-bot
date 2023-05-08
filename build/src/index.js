@@ -16,7 +16,7 @@ async function main() {
                 await summarize(tg, msg);
             }
         }
-        else if (!(await store.hasMessage(msg.message_id))) {
+        else if (!(await store.hasMessage(msg))) {
             await store.addMessage(msg);
         }
     });

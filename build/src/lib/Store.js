@@ -20,14 +20,19 @@ class Store {
             create: { id: Number(msg.chat.id) },
         });
         await prisma.message.upsert({
-            where: { id: msg.message_id },
+            where: {
+                messageId_chatId: {
+                    messageId: msg.message_id,
+                    chatId: Number(msg.chat.id),
+                },
+            },
             update: {},
             create: {
-                id: msg.message_id,
+                messageId: msg.message_id,
+                chatId: chat.id,
                 text: msg.text,
                 date: new Date(msg.date * 1000),
                 userId: user?.id,
-                chatId: chat.id,
             },
         });
     }
@@ -42,9 +47,14 @@ class Store {
             },
         });
     }
-    async hasMessage(messageId) {
+    async hasMessage(msg) {
         return ((await prisma.message.findUnique({
-            where: { id: messageId },
+            where: {
+                messageId_chatId: {
+                    messageId: msg.message_id,
+                    chatId: Number(msg.chat.id),
+                },
+            },
         })) !== null);
     }
     async removeMessagesBeforeDate(date) {
