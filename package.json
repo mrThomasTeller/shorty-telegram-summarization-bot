@@ -15,7 +15,7 @@
     "stop": "NODE_NO_WARNINGS=1 forever stop build/src/index.js",
     "restart": "NODE_NO_WARNINGS=1 forever restart build/src/index.js",
     "status": "NODE_NO_WARNINGS=1 forever list",
-    "logs": "NODE_NO_WARNINGS=1 forever logs",
+    "log": "NODE_NO_WARNINGS=1 forever logs build/src/index.js",
     "deploy": "git pull && npm i && npx prisma migrate deploy && npm run restart"
   },
   "keywords": [],
