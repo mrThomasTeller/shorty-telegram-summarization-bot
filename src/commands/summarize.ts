@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { sendMessageToGpt } from '../lib/gpt.js';
 import { reEnumerateText, splitText } from '../lib/text.js';
 import type TelegramConnection from '../lib/TelegramConnection.js';

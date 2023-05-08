@@ -4,6 +4,7 @@ import { catchError } from './lib/async.js';
 import Store from './lib/Store.js';
 import { isCommandForBot } from './lib/tgUtils.js';
 import summarize from './commands/summarize.js';
+import ping from './commands/ping.js';
 
 catchError(main());
 
@@ -15,10 +16,20 @@ async function main(): Promise<void> {
     if (msg.text == null) return;
 
     if (await isCommandForBot(tg.bot, msg)) {
-      if (msg.text.startsWith('/summarize')) {
-        await summarize(tg, msg);
+      const command = msg.text.split(' ')[0];
+
+      switch (command) {
+        case '/summarize':
+          await summarize(tg, msg);
+          return;
+
+        case '/ping':
+          await ping(tg, msg);
+          return;
       }
-    } else if (!(await store.hasMessage(msg))) {
+    }
+
+    if (!(await store.hasMessage(msg))) {
       await store.addMessage(msg);
     }
   });

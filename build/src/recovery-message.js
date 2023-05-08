@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import TelegramConnection from './lib/TelegramConnection.js';
 import { catchError } from './lib/async.js';
 async function main() {
