@@ -1,11 +1,15 @@
 Срочно:
-  - message_id is not unique
+  ✔ message_id is not unique @done(23-05-10 17:36)
 
 Release 1.0:
-  - DB @started(23-05-05 19:49)
+  ✔ DB @started(23-05-05 19:49) @done(23-05-10 17:35) @lasted(4d21h46m46s)
   - шифрование сообщений
-  - приветственное сообщение (encode, share)
+  - приветственное сообщение (encode, share, issues)
   - рассылка новостей
+  - приёмочные тесты (плюс мониторинг состояния)
+  - unit-тесты
+  - логи
+  - setMyCommands, setMyDefaultAdministratorRights
 
 Backlog:
   - упаковать в Docker-контейнер

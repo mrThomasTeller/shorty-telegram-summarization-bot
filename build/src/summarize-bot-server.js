@@ -13,7 +13,7 @@ async function main() {
         if (msg.text == null)
             return;
         if (await isCommandForBot(tg.bot, msg)) {
-            const command = msg.text.split(' ')[0];
+            const command = msg.text.split(/ |@/)[0];
             switch (command) {
                 case '/summarize':
                     await summarize(tg, msg);

@@ -16,7 +16,7 @@ async function main(): Promise<void> {
     if (msg.text == null) return;
 
     if (await isCommandForBot(tg.bot, msg)) {
-      const command = msg.text.split(' ')[0];
+      const command = msg.text.split(/ |@/)[0];
 
       switch (command) {
         case '/summarize':
