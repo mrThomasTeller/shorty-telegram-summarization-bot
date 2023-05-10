@@ -1,13 +1,11 @@
 import { ChatGPTAPI, ChatGPTError } from 'chatgpt';
 import { wait } from './async.js';
-import assert from 'assert';
 import { required } from './utils.js';
-
-assert(process.env.GPT_API_KEY);
 
 export async function sendMessageToGpt({
   text,
   maxTries = 5,
+  retryTime = 25_000,
   onBusy,
   onBroken,
   api = new ChatGPTAPI({
@@ -20,6 +18,7 @@ export async function sendMessageToGpt({
 }: {
   text: string;
   maxTries?: number;
+  retryTime?: number;
   onBusy?: () => void | Promise<void>;
   onBroken?: () => void | Promise<void>;
   api?: ChatGPTAPI;
@@ -38,8 +37,15 @@ export async function sendMessageToGpt({
       }
 
       if (onBusy !== undefined) await onBusy();
-      await wait(25_000);
-      return await sendMessageToGpt({ text, onBusy, onBroken, maxTries: maxTries - 1 });
+      await wait(retryTime);
+      return await sendMessageToGpt({
+        text,
+        onBusy,
+        onBroken,
+        maxTries: maxTries - 1,
+        api,
+        retryTime,
+      });
     }
     throw error;
   }

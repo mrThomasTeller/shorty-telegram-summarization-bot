@@ -1,12 +1,11 @@
 import TelegramBot from 'node-telegram-bot-api';
-import assert from 'assert';
 import { PrismaClient } from '@prisma/client';
+import { required } from './utils.js';
 const prisma = new PrismaClient();
 class TelegramConnection {
     bot;
-    constructor() {
-        assert(process.env.TELEGRAM_BOT_TOKEN);
-        this.bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
+    constructor(bot = new TelegramBot(required(process.env.TELEGRAM_BOT_TOKEN), { polling: true })) {
+        this.bot = bot;
     }
     async sendToAllChats(text) {
         const chats = await prisma.chat.findMany();

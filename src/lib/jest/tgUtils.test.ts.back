@@ -1,0 +1,53 @@
+import { isCommandForBot } from '../tgUtils.js'; // замените на путь к вашему модулю
+import TelegramBot from 'node-telegram-bot-api';
+
+jest.mock('node-telegram-bot-api');
+
+describe('isCommandForBot', () => {
+  let bot;
+  let message;
+
+  beforeEach(() => {
+    bot = new TelegramBot();
+    message = {
+      chat: {},
+      text: '',
+    };
+  });
+
+  it('should return true if the message is in private chat', async () => {
+    bot.getMe.mockResolvedValue({ username: 'TestBot' });
+    message.chat.type = 'private';
+    message.text = '/command';
+
+    const result = await isCommandForBot(bot, message);
+    expect(result).toBeTruthy();
+  });
+
+  it('should return true if the message is addressed to the bot in a group chat', async () => {
+    bot.getMe.mockResolvedValue({ username: 'TestBot' });
+    message.chat.type = 'group';
+    message.text = '/command@TestBot';
+
+    const result = await isCommandForBot(bot, message);
+    expect(result).toBeTruthy();
+  });
+
+  it('should return false if the message is not a command', async () => {
+    bot.getMe.mockResolvedValue({ username: 'TestBot' });
+    message.chat.type = 'private';
+    message.text = 'not a command';
+
+    const result = await isCommandForBot(bot, message);
+    expect(result).toBeFalsy();
+  });
+
+  it('should return false if the message is in group chat but not addressed to the bot', async () => {
+    bot.getMe.mockResolvedValue({ username: 'TestBot' });
+    message.chat.type = 'group';
+    message.text = '/command@AnotherBot';
+
+    const result = await isCommandForBot(bot, message);
+    expect(result).toBeFalsy();
+  });
+});
