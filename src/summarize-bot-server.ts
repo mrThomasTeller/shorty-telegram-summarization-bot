@@ -16,16 +16,23 @@ async function main(): Promise<void> {
     if (msg.text == null) return;
 
     if (await isCommandForBot(tg.bot, msg)) {
-      const command = msg.text.split(/ |@/)[0];
+      if (process.env.MODE === 'MAINTENANCE') {
+        await tg.bot.sendMessage(
+          msg.chat.id,
+          '😴 Бот временно отключен для технического обслуживания. Пожалуйста, попробуйте позже.'
+        );
+      } else {
+        const command = msg.text.split(/ |@/)[0];
 
-      switch (command) {
-        case '/summarize':
-          await summarize(tg, msg);
-          return;
+        switch (command) {
+          case '/summarize':
+            await summarize(tg, msg);
+            return;
 
-        case '/ping':
-          await ping(tg, msg);
-          return;
+          case '/ping':
+            await ping(tg, msg);
+            return;
+        }
       }
     }
 

@@ -9,6 +9,7 @@
     "deploy": "npm run prod:deploy",
     "dev": "NODE_NO_WARNINGS=1 npm run dev:watch",
     "start": "NODE_NO_WARNINGS=1 npm run dev:start",
+    "stop": "npm run dev:stop",
     "status": "npm run server:status",
     "test": "npm run check:test",
     "check:test": "npm run dev:build && jest build",
