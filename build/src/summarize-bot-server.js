@@ -6,14 +6,18 @@ import { isCommandForBot } from './lib/tgUtils.js';
 import summarize from './commands/summarize.js';
 import ping from './commands/ping.js';
 catchError(main());
+const whiteChatsList = (process.env.WHITE_CHATS_LIST ?? '')
+    .split(',')
+    .map((id) => parseInt(id, 10));
 async function main() {
     const tg = new TelegramConnection();
     const store = new Store();
     tg.bot.onText(/.*/, async (msg) => {
         if (msg.text == null)
             return;
+        const inWhiteList = whiteChatsList.includes(msg.chat.id);
         if (await isCommandForBot(tg.bot, msg)) {
-            if (process.env.MODE === 'MAINTENANCE') {
+            if (process.env.MODE === 'MAINTENANCE' || !inWhiteList) {
                 await tg.bot.sendMessage(msg.chat.id, '😴 Бот временно отключен для технического обслуживания. Пожалуйста, попробуйте позже.');
             }
             else {
@@ -28,7 +32,7 @@ async function main() {
                 }
             }
         }
-        if (!(await store.hasMessage(msg))) {
+        if (inWhiteList && !(await store.hasMessage(msg))) {
             await store.addMessage(msg);
         }
     });
