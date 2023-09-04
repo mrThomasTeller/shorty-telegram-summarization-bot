@@ -4,6 +4,7 @@ import type TelegramConnection from '../lib/TelegramConnection.js';
 import { getFormattedMessage } from '../lib/summarizeUtils.js';
 import type TelegramBot from 'node-telegram-bot-api';
 import Store from '../lib/Store.js';
+import type TelegramBotService from '../services/TelegramBotService.js';
 
 export default async function summarize(
   telegramConnection: TelegramConnection,
@@ -30,7 +31,7 @@ export default async function summarize(
   }
 }
 
-async function printSummary(bot: TelegramBot, chatId: number, text: string): Promise<void> {
+async function printSummary(bot: TelegramBotService, chatId: number, text: string): Promise<void> {
   await bot.sendMessage(chatId, '⚙️ Собираю сообщения за последний день...');
 
   const maxLength = 3400;

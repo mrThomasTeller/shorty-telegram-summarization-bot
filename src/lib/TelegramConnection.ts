@@ -1,13 +1,12 @@
-import TelegramBot from 'node-telegram-bot-api';
 import { PrismaClient } from '@prisma/client';
-import { required } from './utils.js';
+import type TelegramBotService from '../services/TelegramBotService.js';
 
 const prisma = new PrismaClient();
 
 class TelegramConnection {
-  readonly bot: TelegramBot;
+  readonly bot: TelegramBotService;
 
-  constructor(bot = new TelegramBot(required(process.env.TELEGRAM_BOT_TOKEN), { polling: true })) {
+  constructor(bot: TelegramBotService) {
     this.bot = bot;
   }
 

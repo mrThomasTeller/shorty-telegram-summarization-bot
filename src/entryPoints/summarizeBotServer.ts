@@ -1,22 +1,20 @@
 import 'dotenv/config';
-import TelegramConnection from './lib/TelegramConnection.js';
-import { catchError } from './lib/async.js';
-import Store from './lib/Store.js';
-import { isCommandForBot } from './lib/tgUtils.js';
-import summarize from './commands/summarize.js';
-import ping from './commands/ping.js';
-
-catchError(main());
+import TelegramConnection from '../lib/TelegramConnection.js';
+import Store from '../lib/Store.js';
+import { isCommandForBot } from '../lib/tgUtils.js';
+import summarize from '../commands/summarize.js';
+import ping from '../commands/ping.js';
+import { type EntryPointParams } from './EntryPoint.js';
 
 const whiteChatsList = (process.env.WHITE_CHATS_LIST ?? '')
   .split(',')
   .map((id) => parseInt(id, 10));
 
-async function main(): Promise<void> {
-  const tg = new TelegramConnection();
+export default async function summarizeBotServer(params: EntryPointParams): Promise<void> {
+  const tg = new TelegramConnection(params.telegramBotService);
   const store = new Store();
 
-  tg.bot.onText(/.*/, async (msg) => {
+  tg.bot.onAnyMessage(async (msg) => {
     if (msg.text == null) return;
 
     const inWhiteList = whiteChatsList.includes(msg.chat.id);
