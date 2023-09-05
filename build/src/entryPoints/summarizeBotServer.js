@@ -8,8 +8,8 @@ const whiteChatsList = (process.env.WHITE_CHATS_LIST ?? '')
     .split(',')
     .map((id) => parseInt(id, 10));
 export default async function summarizeBotServer(params) {
-    const tg = new TelegramConnection(params.telegramBotService);
-    const store = new Store();
+    const tg = new TelegramConnection(params.telegramBotService, params.dbService);
+    const store = new Store(params.dbService);
     tg.bot.onAnyMessage(async (msg) => {
         if (msg.text == null)
             return;
@@ -22,7 +22,7 @@ export default async function summarizeBotServer(params) {
                 const command = msg.text.split(/ |@/)[0];
                 switch (command) {
                     case '/summarize':
-                        await summarize(tg, msg);
+                        await summarize(tg, store, msg);
                         return;
                     case '/ping':
                         await ping(tg, msg);

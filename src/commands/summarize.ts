@@ -3,15 +3,14 @@ import { reEnumerateText, splitText } from '../lib/text.js';
 import type TelegramConnection from '../lib/TelegramConnection.js';
 import { getFormattedMessage } from '../lib/summarizeUtils.js';
 import type TelegramBot from 'node-telegram-bot-api';
-import Store from '../lib/Store.js';
+import type Store from '../lib/Store.js';
 import type TelegramBotService from '../services/TelegramBotService.js';
 
 export default async function summarize(
   telegramConnection: TelegramConnection,
+  store: Store,
   msg: TelegramBot.Message
 ): Promise<void> {
-  const store = new Store();
-
   const chatId = msg.chat.id;
   const messagesForLastDay = await store.getChatMessages(
     chatId,

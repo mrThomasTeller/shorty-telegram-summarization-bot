@@ -11,8 +11,8 @@ const whiteChatsList = (process.env.WHITE_CHATS_LIST ?? '')
   .map((id) => parseInt(id, 10));
 
 export default async function summarizeBotServer(params: EntryPointParams): Promise<void> {
-  const tg = new TelegramConnection(params.telegramBotService);
-  const store = new Store();
+  const tg = new TelegramConnection(params.telegramBotService, params.dbService);
+  const store = new Store(params.dbService);
 
   tg.bot.onAnyMessage(async (msg) => {
     if (msg.text == null) return;
@@ -30,7 +30,7 @@ export default async function summarizeBotServer(params: EntryPointParams): Prom
 
         switch (command) {
           case '/summarize':
-            await summarize(tg, msg);
+            await summarize(tg, store, msg);
             return;
 
           case '/ping':

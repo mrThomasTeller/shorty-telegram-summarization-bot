@@ -1,17 +1,11 @@
-import { PrismaClient } from '@prisma/client';
+import type DbService from '../services/DbService.js';
 import type TelegramBotService from '../services/TelegramBotService.js';
 
-const prisma = new PrismaClient();
-
 class TelegramConnection {
-  readonly bot: TelegramBotService;
-
-  constructor(bot: TelegramBotService) {
-    this.bot = bot;
-  }
+  constructor(readonly bot: TelegramBotService, private readonly dbService: DbService) {}
 
   async sendToAllChats(text: string): Promise<number> {
-    const chats = await prisma.chat.findMany();
+    const chats = await this.dbService.getAllChats();
 
     let count = 0;
     for (const chat of chats) {

@@ -2,7 +2,7 @@
     "name": "gpt-telegram-summarize-bot",
     "version": "1.0.0",
     "description": "",
-    "main": "build/src/summarize-bot-server.js",
+    "main": "build/src/start.js",
     "type": "module",
     "scripts": {
         "build": "npm run dev:build",
@@ -17,14 +17,14 @@
         "check:ts": "tsc --noEmit",
         "check:verify": "npm run check:test && npm run check:lint",
         "dev:build": "tsc",
-        "dev:watch": "tsc --watch & nodemon build/src/summarize-bot-server.js --ext ts,js,json,jsx",
-        "dev:start": "NODE_NO_WARNINGS=1 npm run dev:build && node build/src/summarize-bot-server.js",
+        "dev:watch": "tsc --watch & nodemon -x 'node build/src/start.js summarizeBotServer' --ext ts,js,json,jsx",
+        "dev:start": "NODE_NO_WARNINGS=1 npm run dev:build && node build/src/start.js summarizeBotServer",
         "db:gen-types": "npx prisma generate",
-        "server:start": "pm2 start build/src/summarize-bot-server.js",
-        "server:stop": "pm2 stop build/src/summarize-bot-server.js",
-        "server:restart": "pm2 restart build/src/summarize-bot-server.js",
+        "server:start": "pm2 start 'node build/src/start.js summarizeBotServer' --name summarizeBotServer",
+        "server:stop": "pm2 stop summarizeBotServer",
+        "server:restart": "pm2 restart summarizeBotServer",
         "server:status": "pm2 list",
-        "server:log": "pm2 log build/src/summarize-bot-server.js",
+        "server:log": "pm2 log summarizeBotServer",
         "prod:deploy": "git pull && npm i && npx prisma migrate deploy && npx prisma generate && npm run server:restart"
     },
     "keywords": [],
@@ -45,7 +45,8 @@
         "pm2": "^5.3.0",
         "prisma": "^4.13.0",
         "ts-node": "^10.9.1",
-        "typescript": "^5.0.4"
+        "typescript": "^5.0.4",
+        "utility-types": "^3.10.0"
     },
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^5.59.2",

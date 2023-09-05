@@ -1,9 +1,7 @@
 import { sendMessageToGpt } from '../lib/gpt.js';
 import { reEnumerateText, splitText } from '../lib/text.js';
 import { getFormattedMessage } from '../lib/summarizeUtils.js';
-import Store from '../lib/Store.js';
-export default async function summarize(telegramConnection, msg) {
-    const store = new Store();
+export default async function summarize(telegramConnection, store, msg) {
     const chatId = msg.chat.id;
     const messagesForLastDay = await store.getChatMessages(chatId, new Date(Date.now() - 24 * 60 * 60 * 1000));
     console.log(`Запрос на создание выжимки из чата ${chatId}`);
