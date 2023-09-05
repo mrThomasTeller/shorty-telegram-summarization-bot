@@ -20,9 +20,9 @@
     "dev:watch": "tsc --watch & nodemon -x 'node build/src/start.js summarizeBotServer' --ext ts,js,json,jsx",
     "dev:start": "NODE_NO_WARNINGS=1 npm run dev:build && node build/src/start.js summarizeBotServer",
     "db:gen-types": "npx prisma generate",
-    "server:start": "pm2 start 'node build/src/start.js summarizeBotServer' --name summarizeBotServer",
+    "server:start": "npm run build && pm2 start 'node build/src/start.js summarizeBotServer' --name summarizeBotServer",
     "server:stop": "pm2 stop summarizeBotServer",
-    "server:restart": "pm2 restart summarizeBotServer",
+    "server:restart": "npm run build && pm2 restart summarizeBotServer || npm run server:start",
     "server:status": "pm2 list",
     "server:log": "pm2 log summarizeBotServer",
     "prod:deploy": "git pull && npm i && npx prisma migrate deploy && npx prisma generate && npm run server:restart"
