@@ -1,6 +1,7 @@
 import { ChatGPTAPI, ChatGPTError } from 'chatgpt';
 import { wait } from './async.js';
 import { required } from './utils.js';
+import { getEnv } from '../config/env.js';
 
 export async function sendMessageToGpt({
   text,
@@ -9,7 +10,7 @@ export async function sendMessageToGpt({
   onBusy,
   onBroken,
   api = new ChatGPTAPI({
-    apiKey: required(process.env.GPT_API_KEY),
+    apiKey: required(getEnv().GPT_API_KEY),
     completionParams: {
       max_tokens: 2048,
       model: 'gpt-4',

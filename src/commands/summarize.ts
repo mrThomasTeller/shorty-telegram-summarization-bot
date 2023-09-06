@@ -5,6 +5,7 @@ import { getFormattedMessage } from '../lib/summarizeUtils.js';
 import type TelegramBot from 'node-telegram-bot-api';
 import type Store from '../lib/Store.js';
 import type TelegramBotService from '../services/TelegramBotService.js';
+import { yesterday } from '../lib/utils.js';
 
 export default async function summarize(
   telegramConnection: TelegramConnection,
@@ -12,10 +13,7 @@ export default async function summarize(
   msg: TelegramBot.Message
 ): Promise<void> {
   const chatId = msg.chat.id;
-  const messagesForLastDay = await store.getChatMessages(
-    chatId,
-    new Date(Date.now() - 24 * 60 * 60 * 1000)
-  );
+  const messagesForLastDay = await store.getChatMessages(chatId, yesterday());
   console.log(`Запрос на создание выжимки из чата ${chatId}`);
 
   try {

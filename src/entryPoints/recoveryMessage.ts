@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import TelegramConnection from '../lib/TelegramConnection.js';
 import { type EntryPointParams } from './EntryPoint.js';
 

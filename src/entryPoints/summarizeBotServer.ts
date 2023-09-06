@@ -1,16 +1,14 @@
-import 'dotenv/config';
 import TelegramConnection from '../lib/TelegramConnection.js';
 import Store from '../lib/Store.js';
 import { isCommandForBot } from '../lib/tgUtils.js';
 import summarize from '../commands/summarize.js';
 import ping from '../commands/ping.js';
 import { type EntryPointParams } from './EntryPoint.js';
-
-const whiteChatsList = (process.env.WHITE_CHATS_LIST ?? '')
-  .split(',')
-  .map((id) => parseInt(id, 10));
+import { getEnv, getWhiteChatsList } from '../config/env.js';
 
 export default async function summarizeBotServer(params: EntryPointParams): Promise<void> {
+  const whiteChatsList = getWhiteChatsList();
+
   const tg = new TelegramConnection(params.telegramBotService, params.dbService);
   const store = new Store(params.dbService);
 
@@ -20,14 +18,20 @@ export default async function summarizeBotServer(params: EntryPointParams): Prom
     const inWhiteList = whiteChatsList.includes(msg.chat.id);
 
     if (await isCommandForBot(tg.bot, msg)) {
-      if (process.env.MODE === 'MAINTENANCE' || !inWhiteList) {
-        await tg.bot.sendMessage(
-          msg.chat.id,
-          '😴 Бот временно отключен для технического обслуживания. Пожалуйста, попробуйте позже.'
-        );
-      } else {
-        const command = msg.text.split(/ |@/)[0];
+      const command = msg.text.split(/ |@/)[0];
 
+      if (command === '/log') {
+        console.log(
+          `Message from chat ${msg.chat.id}, user ${String(msg.from?.id)} (${String(
+            msg.from?.username
+          )})`
+        );
+        return;
+      }
+
+      if (getEnv().MODE === 'MAINTENANCE' || !inWhiteList) {
+        await tg.bot.sendMessage(msg.chat.id, getMaintenanceMessage());
+      } else {
         switch (command) {
           case '/summarize':
             await summarize(tg, store, msg);
@@ -47,3 +51,6 @@ export default async function summarizeBotServer(params: EntryPointParams): Prom
 
   console.log('Summarize telegram bot started');
 }
+
+export const getMaintenanceMessage = (): string =>
+  '😴 Бот временно отключен для технического обслуживания. Пожалуйста, попробуйте позже.';

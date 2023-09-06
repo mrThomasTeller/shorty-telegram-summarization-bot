@@ -1,8 +1,12 @@
+import getTgCommands from '../config/tgCommands.js';
 import type DbService from '../services/DbService.js';
 import type TelegramBotService from '../services/TelegramBotService.js';
+import { catchError } from './async.js';
 
 class TelegramConnection {
-  constructor(readonly bot: TelegramBotService, private readonly dbService: DbService) {}
+  constructor(readonly bot: TelegramBotService, private readonly dbService: DbService) {
+    catchError(this.bot.setMyCommands(getTgCommands()));
+  }
 
   async sendToAllChats(text: string): Promise<number> {
     const chats = await this.dbService.getAllChats();
