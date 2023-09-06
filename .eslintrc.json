@@ -35,6 +35,12 @@
         "location": "anywhere"
       }
     ],
+    "no-console": [
+      "error",
+      {
+        "allow": ["warn", "error", "info"]
+      }
+    ],
     "@typescript-eslint/promise-function-async": 0,
     "@typescript-eslint/naming-convention": 0,
     "n/no-callback-literal": 0
