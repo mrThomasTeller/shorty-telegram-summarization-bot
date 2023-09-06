@@ -21,7 +21,7 @@ export default async function summarizeBotServer(params: EntryPointParams): Prom
       const command = msg.text.split(/ |@/)[0];
 
       if (command === '/log') {
-        console.log(
+        console.info(
           `Message from chat ${msg.chat.id}, user ${String(msg.from?.id)} (${String(
             msg.from?.username
           )})`
@@ -49,7 +49,7 @@ export default async function summarizeBotServer(params: EntryPointParams): Prom
     }
   });
 
-  console.log('Summarize telegram bot started');
+  console.info('Summarize telegram bot started');
 }
 
 export const getMaintenanceMessage = (): string =>

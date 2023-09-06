@@ -14,13 +14,13 @@ export default async function summarize(
 ): Promise<void> {
   const chatId = msg.chat.id;
   const messagesForLastDay = await store.getChatMessages(chatId, yesterday());
-  console.log(`Запрос на создание выжимки из чата ${chatId}`);
+  console.info(`Запрос на создание выжимки из чата ${chatId}`);
 
   try {
     const text = messagesForLastDay.map(getFormattedMessage).join('\n');
     await printSummary(telegramConnection.bot, chatId, text);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     await telegramConnection.bot.sendMessage(
       chatId,
       'Произошла ошибка при обработке запроса. Пожалуйста, попробуйте еще раз.'

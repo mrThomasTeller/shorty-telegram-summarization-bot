@@ -30,7 +30,7 @@ describe('summarizeBotServer', () => {
     await simulateChatMessage(createMessageInGroup({ text: `/ping@${getEnv().BOT_NAME}` }));
 
     expect(telegramBotService.sendMessage).toHaveBeenCalledWith(
-      myTgUserId,
+      myTgGroupId,
       getPingResponseMessage()
     );
   });
@@ -46,7 +46,6 @@ describe('summarizeBotServer', () => {
     await simulateChatMessage(createMessageInGroup({ text: `three`, userId: myTgUserId }));
     await simulateChatMessage(createMessageInGroup({ text: `four`, userId: otherTgUserId }));
 
-    // fixme
     dbService.getChatMessages.mockResolvedValue([]);
 
     // send summarize command

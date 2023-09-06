@@ -7,8 +7,6 @@ export default async function ping(
   telegramConnection: TelegramConnection,
   msg: TelegramBot.Message
 ): Promise<void> {
-  console.log(msg);
-
   await telegramConnection.bot.sendMessage(msg.chat.id, getPingResponseMessage());
 }
 
