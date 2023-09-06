@@ -28,8 +28,12 @@ export default async function summarize(
   }
 }
 
+export const getStartSummarizeMessage = (): string => '⚙️ Собираю сообщения за последний день...';
+
+export const getEndSummarizeMessage = (): string => `😌 Это всё`;
+
 async function printSummary(bot: TelegramBotService, chatId: number, text: string): Promise<void> {
-  await bot.sendMessage(chatId, '⚙️ Собираю сообщения за последний день...');
+  await bot.sendMessage(chatId, getStartSummarizeMessage());
 
   const maxLength = 3400;
   const textParts = splitText(text, maxLength);
@@ -59,5 +63,5 @@ async function printSummary(bot: TelegramBotService, chatId: number, text: strin
     await bot.sendMessage(chatId, text);
   }
 
-  await bot.sendMessage(chatId, `😌 Это всё`);
+  await bot.sendMessage(chatId, getEndSummarizeMessage());
 }
