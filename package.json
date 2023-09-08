@@ -25,7 +25,10 @@
     "server:restart": "npm run build && pm2 restart summarizeBotServer || npm run server:start",
     "server:status": "pm2 list",
     "server:log": "pm2 log summarizeBotServer",
-    "prod:deploy": "git pull && npm i && npx prisma migrate deploy && npx prisma generate && npm run server:restart"
+    "prod:deploy": "git pull && npm i && npx prisma migrate deploy && npx prisma generate && npm run server:restart",
+    "git:commit": "git add -A && git commit && git push",
+    "git:fcommit": "git add -A && git commit --no-verify && git push",
+    "git:acommit": "git add -A && git commit --amend --no-edit && git push --force"
   },
   "keywords": [],
   "author": "",

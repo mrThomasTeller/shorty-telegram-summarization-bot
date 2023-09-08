@@ -1,3 +1,4 @@
 {
-  "path-autocomplete.extensionOnImport": true
+  "path-autocomplete.extensionOnImport": true,
+  "cSpell.words": ["acommit", "fcommit"]
 }
