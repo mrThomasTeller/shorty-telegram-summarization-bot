@@ -66,7 +66,7 @@ describe('summarizeBotServer', () => {
       // bot should retrieve messages from db
       expectBotHasRetrievedMessagesFromDb(dbService);
 
-      // bot should send query summary from gpt
+      // bot shouldn't query summary from gpt
       expect(gptService.sendMessage).not.toHaveBeenCalled();
 
       // bot should send summarization messages
@@ -80,6 +80,7 @@ describe('summarizeBotServer', () => {
       const { telegramBotService, dbService, gptService, simulateChatMessage } =
         await createContext();
 
+      // fixme extract it to separate function
       const tgMessages = [
         createTgMessageInGroup({
           text: `one`,
@@ -141,7 +142,8 @@ describe('summarizeBotServer', () => {
 
       expectBotHasRetrievedMessagesFromDb(dbService);
 
-      // bot should send query summary from gpt
+      // fixme use another fullname here
+      // bot should query summary from gpt
       expect(gptService.sendMessage).toHaveBeenCalledWith(
         getSummaryQueryMessage(
           5,
