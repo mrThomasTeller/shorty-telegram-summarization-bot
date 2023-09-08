@@ -1,10 +1,16 @@
 import type TelegramBot from 'node-telegram-bot-api';
 import type DbChatMessage from '../../lib/types/DbChatMessage';
+import { type ChatMessage } from 'chatgpt';
+import _ from 'lodash';
 
 export const myTgUserId = 111;
 export const myTgGroupId = 222;
 export const otherTgUserId = 333;
 export const otherTgGroupId = 444;
+export const myFirstName = 'Артём';
+export const myLastName = 'Бахарев';
+export const myFullName = `${myFirstName} ${myLastName}`;
+export const myUserName = 'mrThomasTeller';
 
 let messageId = 0;
 export function createTgMessageInGroup({
@@ -23,9 +29,9 @@ export function createTgMessageInGroup({
     from: {
       id: userId,
       is_bot: false,
-      first_name: 'Артём',
-      last_name: 'Бахарев',
-      username: 'mrThomasTeller',
+      first_name: myFirstName,
+      last_name: myLastName,
+      username: myUserName,
       language_code: 'en',
     },
     chat: {
@@ -59,9 +65,19 @@ export function createDbMessageInGroup({
     chatId: BigInt(chatId),
     from: {
       id: BigInt(userId),
-      firstName: 'Артём',
-      lastName: 'Бахарев',
-      username: 'mrThomasTeller',
+      firstName: myFirstName,
+      lastName: myLastName,
+      username: myUserName,
     },
+  };
+}
+
+export function createGptChatMessage(text: string): ChatMessage {
+  return {
+    role: 'assistant',
+    id: _.uniqueId('gpt-mock-'),
+    conversationId: undefined,
+    parentMessageId: _.uniqueId('gpt-mock-'),
+    text,
   };
 }

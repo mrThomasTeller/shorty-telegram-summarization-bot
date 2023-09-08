@@ -39,6 +39,11 @@ export const getStartSummarizeMessage = (): string => '⚙️ Собираю с�
 
 export const getEndSummarizeMessage = (): string => `😌 Это всё`;
 
+export const getSummaryHeader = (): string => `🔡 Краткая выжимка:`;
+
+export const getSummaryQueryMessage = (pointsCount: number, part: string): string =>
+  `Сделай краткую выжимку этих сообщений в виде ${pointsCount} пунктов идущих в хронологическом порядке. Каждый пункт - одно предложение на русском языке с подходящим по смыслу emoji в конце без точки:\n${part}`;
+
 async function printSummary({
   bot,
   gptService,
@@ -61,7 +66,7 @@ async function printSummary({
   for (const part of textParts) {
     const response = await sendMessageToGpt({
       gptService,
-      text: `Сделай краткую выжимку этих сообщений в виде ${pointsCount} пунктов идущих в хронологическом порядке. Каждый пункт - одно предложение на русском языке с подходящим по смыслу emoji в конце без точки:\n${part}`,
+      text: getSummaryQueryMessage(pointsCount, part),
       onBusy: async () => {
         await bot.sendMessage(chatId, '😮‍💨 Бот усердно трудится, нужно немножко подождать');
       },
@@ -76,7 +81,7 @@ async function printSummary({
     count += 1;
     const text = reEnumerateText(response.trim(), (count - 1) * pointsCount + 1);
     if (count === 1) {
-      await bot.sendMessage(chatId, `🔡 Краткая выжимка:`);
+      await bot.sendMessage(chatId, getSummaryHeader());
     }
     await bot.sendMessage(chatId, text);
   }

@@ -7,6 +7,8 @@ import { getEnv } from '../../config/env.js';
 import type DbService from '../../services/DbService.js';
 import type GptService from '../../services/GptService.js';
 
+export type TestContext = Awaited<ReturnType<typeof createContext>>;
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async function createContext() {
   const { telegramBotService, simulateChatMessage } = createTelegramBotServiceMock();
@@ -23,6 +25,7 @@ export default async function createContext() {
   return {
     telegramBotService,
     dbService,
+    gptService,
     simulateChatMessage,
   };
 }
