@@ -41,6 +41,11 @@
         "allow": ["warn", "error", "info"]
       }
     ],
+    "no-restricted-syntax": [
+      "error",
+      { "selector": "Identifier[name='logValue']", "message": "log functions are not allowed" },
+      { "selector": "Identifier[name='logResult']", "message": "log functions are not allowed" }
+    ],
     "@typescript-eslint/promise-function-async": 0,
     "@typescript-eslint/naming-convention": 0,
     "n/no-callback-literal": 0

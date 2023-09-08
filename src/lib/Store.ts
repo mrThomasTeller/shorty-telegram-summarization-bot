@@ -1,5 +1,5 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import type ChatMessage from './types/ChatMessage';
+import type DbChatMessage from './types/DbChatMessage';
 import type DbService from '../services/DbService';
 
 class Store {
@@ -27,7 +27,7 @@ class Store {
     });
   }
 
-  getChatMessages(chatId: TelegramBot.ChatId, fromDate?: Date): Promise<ChatMessage[]> {
+  getChatMessages(chatId: TelegramBot.ChatId, fromDate?: Date): Promise<DbChatMessage[]> {
     return this.dbService.getChatMessages(Number(chatId), fromDate);
   }
 

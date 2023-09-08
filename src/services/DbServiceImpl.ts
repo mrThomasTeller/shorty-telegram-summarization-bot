@@ -1,4 +1,4 @@
-import type ChatMessage from '../lib/types/ChatMessage';
+import type DbChatMessage from '../lib/types/DbChatMessage';
 import type DbService from './DbService';
 import { type Chat, PrismaClient, type User } from '@prisma/client';
 import { type MessageCreateInput, type UserCreateInput } from './DbService.js';
@@ -27,7 +27,7 @@ export default class DbServiceImpl implements DbService {
     return this.prisma.chat.findMany();
   }
 
-  getChatMessages(chatId: number, fromDate?: Date | undefined): Promise<ChatMessage[]> {
+  getChatMessages(chatId: number, fromDate?: Date | undefined): Promise<DbChatMessage[]> {
     return this.prisma.message.findMany({
       where: {
         chatId,

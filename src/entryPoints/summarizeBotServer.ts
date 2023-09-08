@@ -34,7 +34,7 @@ export default async function summarizeBotServer(params: EntryPointParams): Prom
       } else {
         switch (command) {
           case '/summarize':
-            await summarize(tg, store, msg);
+            await summarize({ telegramConnection: tg, gptService: params.gptService, store, msg });
             return;
 
           case '/ping':

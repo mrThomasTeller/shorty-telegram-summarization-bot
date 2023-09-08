@@ -1,9 +1,15 @@
 import { getPingResponseMessage } from '../commands/ping.js';
-import { createMessageInGroup, myTgGroupId, myTgUserId, otherTgUserId } from './lib/utils.js';
+import {
+  createDbMessageInGroup,
+  createTgMessageInGroup,
+  myTgGroupId,
+  myTgUserId,
+  otherTgUserId,
+} from './lib/utils.js';
 import { getMaintenanceMessage } from '../entryPoints/summarizeBotServer.js';
 import { getEnv, setWhiteChatsList } from '../config/env.js';
 import createContext from './lib/createContext.js';
-import { yesterday, yesterdayBeforeYesterday } from '../lib/utils.js';
+import { yesterday, yesterdayBeforeYesterday, required } from '../lib/utils.js';
 import { getEndSummarizeMessage, getStartSummarizeMessage } from '../commands/summarize.js';
 
 describe('summarizeBotServer', () => {
@@ -15,7 +21,7 @@ describe('summarizeBotServer', () => {
     const { telegramBotService, simulateChatMessage } = await createContext();
 
     await simulateChatMessage(
-      createMessageInGroup({ text: `/ping@${getEnv().BOT_NAME}`, chatId: otherTgUserId })
+      createTgMessageInGroup({ text: `/ping@${getEnv().BOT_NAME}`, chatId: otherTgUserId })
     );
 
     expect(telegramBotService.sendMessage).toHaveBeenCalledWith(
@@ -27,7 +33,7 @@ describe('summarizeBotServer', () => {
   it('/ping command is correct', async () => {
     const { telegramBotService, simulateChatMessage } = await createContext();
 
-    await simulateChatMessage(createMessageInGroup({ text: `/ping@${getEnv().BOT_NAME}` }));
+    await simulateChatMessage(createTgMessageInGroup({ text: `/ping@${getEnv().BOT_NAME}` }));
 
     expect(telegramBotService.sendMessage).toHaveBeenCalledWith(
       myTgGroupId,
@@ -38,19 +44,32 @@ describe('summarizeBotServer', () => {
   it('/summarize command is correct', async () => {
     const { telegramBotService, dbService, simulateChatMessage } = await createContext();
 
-    // send four messages
-    await simulateChatMessage(
-      createMessageInGroup({ text: `one`, userId: myTgUserId, date: yesterdayBeforeYesterday() })
-    );
-    await simulateChatMessage(createMessageInGroup({ text: `two`, userId: otherTgUserId }));
-    await simulateChatMessage(createMessageInGroup({ text: `three`, userId: myTgUserId }));
-    await simulateChatMessage(createMessageInGroup({ text: `four`, userId: otherTgUserId }));
+    const tgMessages = [
+      createTgMessageInGroup({ text: `one`, userId: myTgUserId, date: yesterdayBeforeYesterday() }),
+      createTgMessageInGroup({ text: `two`, userId: otherTgUserId }),
+      createTgMessageInGroup({ text: `three`, userId: myTgUserId }),
+      createTgMessageInGroup({ text: `four`, userId: otherTgUserId }),
+    ];
 
-    dbService.getChatMessages.mockResolvedValue([]);
+    // send four messages
+    for (const tgMessage of tgMessages) {
+      await simulateChatMessage(tgMessage);
+    }
+
+    const dbMessages = tgMessages.slice(1).map((tgMessage) =>
+      createDbMessageInGroup({
+        text: tgMessage.text ?? '',
+        messageId: tgMessage.message_id,
+        date: new Date(tgMessage.date * 1000),
+        userId: tgMessage.from?.id,
+      })
+    );
+
+    dbService.getChatMessages.mockResolvedValue(dbMessages);
 
     // send summarize command
     await simulateChatMessage(
-      createMessageInGroup({ text: `/summarize@${getEnv().BOT_NAME}`, userId: myTgUserId })
+      createTgMessageInGroup({ text: `/summarize@${getEnv().BOT_NAME}`, userId: myTgUserId })
     );
 
     // bot should create two users
@@ -69,36 +88,20 @@ describe('summarizeBotServer', () => {
     expect(dbService.getOrCreateChat).toHaveBeenCalledWith(myTgGroupId);
 
     // bot should create four messages
-    expect(dbService.createChatMessageIfNotExists).toHaveBeenCalledWith(
-      expect.objectContaining({
-        text: 'one',
-        userId: BigInt(myTgUserId),
-      })
-    );
-    expect(dbService.createChatMessageIfNotExists).toHaveBeenCalledWith(
-      expect.objectContaining({
-        text: 'two',
-        userId: BigInt(otherTgUserId),
-      })
-    );
-    expect(dbService.createChatMessageIfNotExists).toHaveBeenCalledWith(
-      expect.objectContaining({
-        text: 'three',
-        userId: BigInt(myTgUserId),
-      })
-    );
-    expect(dbService.createChatMessageIfNotExists).toHaveBeenCalledWith(
-      expect.objectContaining({
-        text: 'four',
-        userId: BigInt(otherTgUserId),
-      })
-    );
+    for (const tgMessage of tgMessages) {
+      expect(dbService.createChatMessageIfNotExists).toHaveBeenCalledWith(
+        expect.objectContaining({
+          text: tgMessage.text,
+          userId: BigInt(required(tgMessage.from?.id)),
+        })
+      );
+    }
 
     // bot should retrieve messages from db
     const [getChatMessagesChatId, getChatMessagesFromDate] =
       dbService.getChatMessages.mock.calls[0];
     expect(getChatMessagesChatId).toBe(myTgGroupId);
-    expect(getChatMessagesFromDate?.getTime()).toBeCloseTo(yesterday().getTime(), -4);
+    expect(getChatMessagesFromDate?.getTime()).toBeCloseTo(yesterday().getTime() / 1000, -1);
 
     // bot should send summarization messages
     expect(telegramBotService.sendMessage).toHaveBeenNthCalledWith(

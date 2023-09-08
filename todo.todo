@@ -7,6 +7,7 @@ Steps:
   - приветственное сообщение: encode, share, issues+предложения (https://fider.io/, discord, google form, tg)
 
 Срочно:
+  - strict eslint rules (any, cognitive complexity, etc)
   ✔ message_id is not unique @done(23-05-10 17:36)
 
 Release 1.0:
@@ -21,10 +22,10 @@ Release 1.0:
   - очистка базы данных
 
 Backlog:
+  - разобраться с ts-node
   - упаковать в Docker-контейнер
   - поддержка id чатов строк
 
 Study:
-  - semantic commits
   - Читать книгу "Совершенный код"
   - Изучить API Telegram

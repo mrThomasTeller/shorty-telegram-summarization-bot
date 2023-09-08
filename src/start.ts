@@ -3,6 +3,7 @@ import recoveryMessage from './entryPoints/recoveryMessage.js';
 import summarizeBotServer from './entryPoints/summarizeBotServer.js';
 import { catchError } from './lib/async.js';
 import DbServiceImpl from './services/DbServiceImpl.js';
+import GptServiceImpl from './services/GptServiceImpl.js';
 import TelegramBotServiceImpl from './services/TelegramBotServiceImpl.js';
 
 async function main(): Promise<void> {
@@ -11,6 +12,7 @@ async function main(): Promise<void> {
   const params: EntryPointParams = {
     dbService: new DbServiceImpl(),
     telegramBotService: new TelegramBotServiceImpl(),
+    gptService: new GptServiceImpl(),
   };
 
   switch (entryPointName) {

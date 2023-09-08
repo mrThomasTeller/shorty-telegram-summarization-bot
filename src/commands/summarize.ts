@@ -6,19 +6,26 @@ import type TelegramBot from 'node-telegram-bot-api';
 import type Store from '../lib/Store.js';
 import type TelegramBotService from '../services/TelegramBotService.js';
 import { yesterday } from '../lib/utils.js';
+import type GptService from '../services/GptService';
 
-export default async function summarize(
-  telegramConnection: TelegramConnection,
-  store: Store,
-  msg: TelegramBot.Message
-): Promise<void> {
+export default async function summarize({
+  telegramConnection,
+  gptService,
+  store,
+  msg,
+}: {
+  telegramConnection: TelegramConnection;
+  gptService: GptService;
+  store: Store;
+  msg: TelegramBot.Message;
+}): Promise<void> {
   const chatId = msg.chat.id;
   const messagesForLastDay = await store.getChatMessages(chatId, yesterday());
   console.info(`Запрос на создание выжимки из чата ${chatId}`);
 
   try {
     const text = messagesForLastDay.map(getFormattedMessage).join('\n');
-    await printSummary(telegramConnection.bot, chatId, text);
+    await printSummary({ bot: telegramConnection.bot, gptService, chatId, text });
   } catch (error) {
     console.error(error);
     await telegramConnection.bot.sendMessage(
@@ -32,7 +39,17 @@ export const getStartSummarizeMessage = (): string => '⚙️ Собираю с�
 
 export const getEndSummarizeMessage = (): string => `😌 Это всё`;
 
-async function printSummary(bot: TelegramBotService, chatId: number, text: string): Promise<void> {
+async function printSummary({
+  bot,
+  gptService,
+  chatId,
+  text,
+}: {
+  bot: TelegramBotService;
+  gptService: GptService;
+  chatId: number;
+  text: string;
+}): Promise<void> {
   await bot.sendMessage(chatId, getStartSummarizeMessage());
 
   const maxLength = 3400;
@@ -43,6 +60,7 @@ async function printSummary(bot: TelegramBotService, chatId: number, text: strin
   let count = 0;
   for (const part of textParts) {
     const response = await sendMessageToGpt({
+      gptService,
       text: `Сделай краткую выжимку этих сообщений в виде ${pointsCount} пунктов идущих в хронологическом порядке. Каждый пункт - одно предложение на русском языке с подходящим по смыслу emoji в конце без точки:\n${part}`,
       onBusy: async () => {
         await bot.sendMessage(chatId, '😮‍💨 Бот усердно трудится, нужно немножко подождать');

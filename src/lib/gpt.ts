@@ -1,7 +1,6 @@
-import { ChatGPTAPI, ChatGPTError } from 'chatgpt';
+import { ChatGPTError } from 'chatgpt';
 import { wait } from './async.js';
-import { required } from './utils.js';
-import { getEnv } from '../config/env.js';
+import type GptService from '../services/GptService';
 
 export async function sendMessageToGpt({
   text,
@@ -9,23 +8,17 @@ export async function sendMessageToGpt({
   retryTime = 25_000,
   onBusy,
   onBroken,
-  api = new ChatGPTAPI({
-    apiKey: required(getEnv().GPT_API_KEY),
-    completionParams: {
-      max_tokens: 2048,
-      model: 'gpt-4',
-    },
-  }),
+  gptService,
 }: {
   text: string;
   maxTries?: number;
   retryTime?: number;
   onBusy?: () => void | Promise<void>;
   onBroken?: () => void | Promise<void>;
-  api?: ChatGPTAPI;
+  gptService: GptService;
 }): Promise<string> {
   try {
-    const result = await api.sendMessage(text, {
+    const result = await gptService.sendMessage(text, {
       completionParams: { max_tokens: 2048 },
     });
     return result.text;
@@ -44,7 +37,7 @@ export async function sendMessageToGpt({
         onBusy,
         onBroken,
         maxTries: maxTries - 1,
-        api,
+        gptService,
         retryTime,
       });
     }

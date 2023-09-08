@@ -1,10 +1,10 @@
 import { getAuthorName, getFormattedMessage } from '../summarizeUtils.js';
-import type ChatMessage from '../types/ChatMessage.js';
+import type DbChatMessage from '../types/DbChatMessage.js';
 
 describe('getAuthorName', () => {
   it('should return undefined if author is null', () => {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const msg = { from: null } as ChatMessage;
+    const msg = { from: null } as DbChatMessage;
 
     expect(getAuthorName(msg)).toBeUndefined();
   });
@@ -16,7 +16,7 @@ describe('getAuthorName', () => {
         firstName: 'John',
         lastName: 'Doe',
       },
-    } as ChatMessage;
+    } as DbChatMessage;
 
     expect(getAuthorName(msg)).toBe('John Doe');
   });
@@ -27,7 +27,7 @@ describe('getAuthorName', () => {
       from: {
         username: 'johndoe',
       },
-    } as ChatMessage;
+    } as DbChatMessage;
 
     expect(getAuthorName(msg)).toBe('johndoe');
   });
@@ -38,7 +38,7 @@ describe('getAuthorName', () => {
       from: {
         username: null,
       },
-    } as ChatMessage;
+    } as DbChatMessage;
 
     expect(getAuthorName(msg)).toBeUndefined();
   });
@@ -50,7 +50,7 @@ describe('getFormattedMessage', () => {
     const msg = {
       from: null,
       text: null,
-    } as ChatMessage;
+    } as DbChatMessage;
 
     expect(getFormattedMessage(msg)).toBeUndefined();
   });
@@ -63,7 +63,7 @@ describe('getFormattedMessage', () => {
         lastName: 'Doe',
       },
       text: 'Hello',
-    } as ChatMessage;
+    } as DbChatMessage;
 
     expect(getFormattedMessage(msg)).toBe('John Doe: Hello');
   });
@@ -76,7 +76,7 @@ describe('getFormattedMessage', () => {
         lastName: 'Doe',
       },
       text: null,
-    } as ChatMessage;
+    } as DbChatMessage;
 
     expect(getFormattedMessage(msg)).toBe('John Doe: ');
   });
@@ -86,7 +86,7 @@ describe('getFormattedMessage', () => {
     const msg = {
       from: null,
       text: 'Hello',
-    } as ChatMessage;
+    } as DbChatMessage;
 
     expect(getFormattedMessage(msg)).toBe('Hello');
   });
