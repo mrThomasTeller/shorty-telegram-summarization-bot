@@ -5,6 +5,7 @@ import summarize from '../commands/summarize.js';
 import ping from '../commands/ping.js';
 import { type EntryPointParams } from './EntryPoint.js';
 import { getEnv, getWhiteChatsList } from '../config/env.js';
+import type TelegramBot from 'node-telegram-bot-api';
 
 export default async function summarizeBotServer(params: EntryPointParams): Promise<void> {
   const whiteChatsList = getWhiteChatsList();
@@ -21,11 +22,7 @@ export default async function summarizeBotServer(params: EntryPointParams): Prom
       const command = msg.text.split(/ |@/)[0];
 
       if (command === '/log') {
-        console.info(
-          `Message from chat ${msg.chat.id}, user ${String(msg.from?.id)} (${String(
-            msg.from?.username
-          )})`
-        );
+        console.info(getLogMessage(msg));
         return;
       }
 
@@ -51,6 +48,9 @@ export default async function summarizeBotServer(params: EntryPointParams): Prom
 
   console.info('Summarize telegram bot started');
 }
+
+export const getLogMessage = (msg: TelegramBot.Message): string =>
+  `Message from chat ${msg.chat.id}, user ${String(msg.from?.id)} (${String(msg.from?.username)})`;
 
 export const getMaintenanceMessage = (): string =>
   '😴 Бот временно отключен для технического обслуживания. Пожалуйста, попробуйте позже.';

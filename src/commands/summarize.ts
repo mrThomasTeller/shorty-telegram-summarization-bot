@@ -28,12 +28,12 @@ export default async function summarize({
     await printSummary({ bot: telegramConnection.bot, gptService, chatId, text });
   } catch (error) {
     console.error(error);
-    await telegramConnection.bot.sendMessage(
-      chatId,
-      'Произошла ошибка при обработке запроса. Пожалуйста, попробуйте еще раз.'
-    );
+    await telegramConnection.bot.sendMessage(chatId, getQueryProcessErrorMessage());
   }
 }
+
+export const getQueryProcessErrorMessage = (): string =>
+  'Произошла ошибка при обработке запроса. Пожалуйста, попробуйте еще раз.';
 
 export const getStartSummarizeMessage = (): string => '⚙️ Собираю сообщения за последний день...';
 
@@ -43,6 +43,12 @@ export const getSummaryHeader = (): string => `🔡 Краткая выжимк�
 
 export const getSummaryQueryMessage = (pointsCount: number, part: string): string =>
   `Сделай краткую выжимку этих сообщений в виде ${pointsCount} пунктов идущих в хронологическом порядке. Каждый пункт - одно предложение на русском языке с подходящим по смыслу emoji в конце без точки:\n${part}`;
+
+export const getTooManyRequestsToGptErrorMessage = (): string =>
+  '😮‍💨 Бот усердно трудится, нужно немножко подождать';
+
+export const getMaxQueriesToGptExceeded = (): string =>
+  '💔 С ботом что-то случилось... Попробуйте позже. Мы починим его и сообщим вам как можно скорее.';
 
 async function printSummary({
   bot,
@@ -68,13 +74,10 @@ async function printSummary({
       gptService,
       text: getSummaryQueryMessage(pointsCount, part),
       onBusy: async () => {
-        await bot.sendMessage(chatId, '😮‍💨 Бот усердно трудится, нужно немножко подождать');
+        await bot.sendMessage(chatId, getTooManyRequestsToGptErrorMessage());
       },
       onBroken: async () => {
-        await bot.sendMessage(
-          chatId,
-          '💔 С ботом что-то случилось... Попробуйте позже. Мы починим его и сообщим вам как можно скорее.'
-        );
+        await bot.sendMessage(chatId, getMaxQueriesToGptExceeded());
       },
     });
 

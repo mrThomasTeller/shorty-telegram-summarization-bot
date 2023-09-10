@@ -14,7 +14,10 @@ export default class GptServiceImpl implements GptService {
     })
   ) {}
 
-  sendMessage(message: string, options?: SendMessageOptions): Promise<ChatMessage> {
+  sendMessage(
+    message: string,
+    options?: Pick<SendMessageOptions, 'completionParams'>
+  ): Promise<ChatMessage> {
     return this.api.sendMessage(message, options);
   }
 }

@@ -1,11 +1,12 @@
 import { ChatGPTError } from 'chatgpt';
 import { wait } from './async.js';
 import type GptService from '../services/GptService';
+import { getEnv } from '../config/env.js';
 
 export async function sendMessageToGpt({
   text,
   maxTries = 5,
-  retryTime = 25_000,
+  retryTime = getEnv().RETRY_GPT_QUERY_TIME,
   onBusy,
   onBroken,
   gptService,

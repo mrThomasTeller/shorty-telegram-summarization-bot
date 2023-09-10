@@ -9,6 +9,7 @@ type Env = {
   MODE: string;
   WHITE_CHATS_LIST: string;
   BOT_NAME: string;
+  RETRY_GPT_QUERY_TIME: number;
 };
 
 export function getEnv(): Env {
@@ -20,6 +21,7 @@ export function getEnv(): Env {
     TELEGRAM_BOT_TOKEN: required(process.env.TELEGRAM_BOT_TOKEN),
     WHITE_CHATS_LIST: required(process.env.WHITE_CHATS_LIST),
     BOT_NAME: required(process.env.BOT_NAME),
+    RETRY_GPT_QUERY_TIME: Number(required(process.env.RETRY_GPT_QUERY_TIME)),
   };
 }
 

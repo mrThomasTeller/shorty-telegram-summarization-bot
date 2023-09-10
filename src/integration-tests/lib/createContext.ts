@@ -54,16 +54,18 @@ function createDbServiceMock() {
 function createTelegramBotServiceMock() {
   const service = mock<TelegramBotService>();
 
-  let simulateChatMessage: (msg: TelegramBot.Message) => Promise<void> = () => Promise.resolve();
+  let simulateChatMessage = (msg: TelegramBot.Message): Promise<TelegramBot.Message> =>
+    Promise.resolve(msg);
 
   service.getUsername.mockResolvedValue(getEnv().BOT_NAME);
 
   service.onAnyMessage.mockImplementation(async (callback) => {
-    simulateChatMessage = callback;
+    simulateChatMessage = (msg) => callback(msg).then(() => msg);
   });
 
   return {
     telegramBotService: service,
-    simulateChatMessage: (msg: TelegramBot.Message): Promise<void> => simulateChatMessage(msg),
+    simulateChatMessage: (msg: TelegramBot.Message): Promise<TelegramBot.Message> =>
+      simulateChatMessage(msg),
   };
 }
