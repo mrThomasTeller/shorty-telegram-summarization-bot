@@ -1,6 +1,6 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import { required, yesterday, yesterdayBeforeYesterday } from '../../../lib/utils.js';
-import { getEnv } from '../../../config/env.js';
+import { required, yesterday, yesterdayBeforeYesterday } from '../../../lib/utils';
+import { getEnv } from '../../../config/env';
 import _ from 'lodash';
 
 export const myTgUser: TelegramBot.User = {

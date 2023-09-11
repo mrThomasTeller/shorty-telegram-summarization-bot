@@ -1,7 +1,6 @@
-import { ChatGPTError } from 'chatgpt';
-import { wait } from './async.js';
+import { wait } from './async';
 import type GptService from '../services/GptService';
-import { getEnv } from '../config/env.js';
+import { getEnv } from '../config/env';
 
 export async function sendMessageToGpt({
   text,
@@ -18,6 +17,7 @@ export async function sendMessageToGpt({
   onBroken?: () => void | Promise<void>;
   gptService: GptService;
 }): Promise<string> {
+  const { ChatGPTError } = await import('chatgpt');
   try {
     const result = await gptService.sendMessage(text, {
       completionParams: { max_tokens: 2048 },

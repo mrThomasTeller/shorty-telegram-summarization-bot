@@ -1,7 +1,7 @@
-import getTgCommands from '../config/tgCommands.js';
-import type DbService from '../services/DbService.js';
-import type TelegramBotService from '../services/TelegramBotService.js';
-import { catchError } from './async.js';
+import getTgCommands from '../config/tgCommands';
+import type DbService from '../services/DbService';
+import type TelegramBotService from '../services/TelegramBotService';
+import { catchError } from './async';
 
 class TelegramConnection {
   constructor(readonly bot: TelegramBotService, private readonly dbService: DbService) {

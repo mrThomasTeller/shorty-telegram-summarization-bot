@@ -1,23 +1,26 @@
-import { ChatGPTAPI, type ChatMessage, type SendMessageOptions } from 'chatgpt';
+import { type ChatGPTAPI, type ChatMessage, type SendMessageOptions } from 'chatgpt';
 import type GptService from './GptService';
-import { required } from '../lib/utils.js';
-import { getEnv } from '../config/env.js';
+import { required } from '../lib/utils';
+import { getEnv } from '../config/env';
 
 export default class GptServiceImpl implements GptService {
-  constructor(
-    private readonly api = new ChatGPTAPI({
-      apiKey: required(getEnv().GPT_API_KEY),
-      completionParams: {
-        max_tokens: 2048,
-        model: 'gpt-4',
-      },
-    })
-  ) {}
+  private api?: ChatGPTAPI;
 
-  sendMessage(
+  async sendMessage(
     message: string,
     options?: Pick<SendMessageOptions, 'completionParams'>
   ): Promise<ChatMessage> {
-    return this.api.sendMessage(message, options);
+    const { ChatGPTAPI } = await import('chatgpt');
+    if (this.api === undefined) {
+      this.api = new ChatGPTAPI({
+        apiKey: required(getEnv().GPT_API_KEY),
+        completionParams: {
+          max_tokens: 2048,
+          model: 'gpt-4',
+        },
+      });
+    }
+
+    return await this.api.sendMessage(message, options);
   }
 }

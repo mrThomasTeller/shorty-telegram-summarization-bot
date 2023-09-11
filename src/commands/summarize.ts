@@ -1,11 +1,11 @@
-import { sendMessageToGpt } from '../lib/gpt.js';
-import { reEnumerateText, splitText } from '../lib/text.js';
-import type TelegramConnection from '../lib/TelegramConnection.js';
-import { getFormattedMessage } from '../lib/summarizeUtils.js';
+import { sendMessageToGpt } from '../lib/gpt';
+import { reEnumerateText, splitText } from '../lib/text';
+import type TelegramConnection from '../lib/TelegramConnection';
+import { getFormattedMessage } from '../lib/summarizeUtils';
 import type TelegramBot from 'node-telegram-bot-api';
-import type Store from '../lib/Store.js';
-import type TelegramBotService from '../services/TelegramBotService.js';
-import { yesterday } from '../lib/utils.js';
+import type Store from '../lib/Store';
+import type TelegramBotService from '../services/TelegramBotService';
+import { yesterday } from '../lib/utils';
 import type GptService from '../services/GptService';
 
 export default async function summarize({

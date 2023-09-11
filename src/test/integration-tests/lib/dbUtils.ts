@@ -1,7 +1,7 @@
 import type TelegramBot from 'node-telegram-bot-api';
 import type DbChatMessage from '../../../lib/types/DbChatMessage';
-import { myTgGroupId, myTgUser } from './tgUtils.js';
-import { yesterday } from '../../../lib/utils.js';
+import { myTgGroupId, myTgUser } from './tgUtils';
+import { yesterday } from '../../../lib/utils';
 
 export function createDbMessageInGroup({
   text,

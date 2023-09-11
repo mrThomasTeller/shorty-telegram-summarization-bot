@@ -1,6 +1,6 @@
 import TelegramBot from 'node-telegram-bot-api';
 import type TelegramBotService from './TelegramBotService';
-import { getEnv } from '../config/env.js';
+import { getEnv } from '../config/env';
 
 export default class TelegramBotServiceImpl implements TelegramBotService {
   readonly bot: TelegramBot;

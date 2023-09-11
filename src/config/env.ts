@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { required } from '../lib/utils.js';
+import { required } from '../lib/utils';
 
 type Env = {
   TELEGRAM_BOT_TOKEN: string;

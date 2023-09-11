@@ -2,25 +2,25 @@ import {
   getStartSummarizeMessage,
   getEndSummarizeMessage,
   getSummaryHeader,
-} from '../../../../commands/summarize.js';
+} from '../../../../commands/summarize';
 import {
   myTgUser,
   myTgGroupId,
   otherTgUser,
   createSummarizeCommandMessage,
   createTgMessages,
-} from '../../lib/tgUtils.js';
+} from '../../lib/tgUtils';
 import _ from 'lodash';
-import { mapTgMessagesToDbMessages } from '../../lib/dbUtils.js';
+import { mapTgMessagesToDbMessages } from '../../lib/dbUtils';
 import {
   expectBotHasRetrievedMessagesFromDb,
   expectTgBotServiceHasSentMessages,
   expectBotHasCreatedUsers,
   expectBotHasCreatedDbChatMessages,
   expectBotHasQueriedSummaryFromGpt,
-} from '../../lib/expectations.js';
-import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils.js';
-import createSummarizeBotServerContext from '../createSummarizeBotServerContext.js';
+} from '../../lib/expectations';
+import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils';
+import createSummarizeBotServerContext from '../createSummarizeBotServerContext';
 
 describe('summarizeBotServer summarize command', () => {
   it('without messages', async () => {

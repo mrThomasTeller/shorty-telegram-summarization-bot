@@ -1,5 +1,5 @@
-import TelegramConnection from '../lib/TelegramConnection.js';
-import { type EntryPointParams } from './EntryPoint.js';
+import TelegramConnection from '../lib/TelegramConnection';
+import { type EntryPointParams } from './EntryPoint';
 
 export default async function recoveryMessage(params: EntryPointParams): Promise<void> {
   const tg = new TelegramConnection(params.telegramBotService, params.dbService);

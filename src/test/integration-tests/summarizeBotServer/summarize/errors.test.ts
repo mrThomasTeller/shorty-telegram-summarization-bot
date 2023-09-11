@@ -5,18 +5,18 @@ import {
   getQueryProcessErrorMessage,
   getTooManyRequestsToGptErrorMessage,
   getMaxQueriesToGptExceeded,
-} from '../../../../commands/summarize.js';
+} from '../../../../commands/summarize';
 import {
   myTgUser,
   myTgGroupId,
   createSummarizeCommandMessage,
   createTgMessages,
-} from '../../lib/tgUtils.js';
+} from '../../lib/tgUtils';
 import { ChatGPTError } from 'chatgpt';
-import { mapTgMessagesToDbMessages } from '../../lib/dbUtils.js';
-import { expectTgBotServiceHasSentMessages } from '../../lib/expectations.js';
-import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils.js';
-import createSummarizeBotServerContext from '../createSummarizeBotServerContext.js';
+import { mapTgMessagesToDbMessages } from '../../lib/dbUtils';
+import { expectTgBotServiceHasSentMessages } from '../../lib/expectations';
+import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils';
+import createSummarizeBotServerContext from '../createSummarizeBotServerContext';
 
 describe('summarizeBotServer summarize command', () => {
   it('with unexpected error from gpt', async (): Promise<void> => {

@@ -1,9 +1,9 @@
 import recoveryMessage, {
   getRecoveryMessage,
   getRecoveryMessagesSentInfoMessage,
-} from '../../entryPoints/recoveryMessage.js';
-import { consoleMock } from '../env.js';
-import createContext from './lib/createContext.js';
+} from '../../entryPoints/recoveryMessage';
+import { consoleMock } from '../env';
+import createContext from './lib/createContext';
 import { type Chat } from '@prisma/client';
 
 describe('recoveryMessage', () => {

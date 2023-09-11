@@ -1,4 +1,4 @@
-import { splitText, reEnumerateText } from '../text.js'; // Замените на имя вашего файла
+import { splitText, reEnumerateText } from '../text'; // Замените на имя вашего файла
 
 describe('splitText function', () => {
   it('should correctly split text into chunks of specified length', () => {

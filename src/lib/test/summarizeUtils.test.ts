@@ -1,5 +1,5 @@
-import { getAuthorName, getFormattedMessage } from '../summarizeUtils.js';
-import type DbChatMessage from '../types/DbChatMessage.js';
+import { getAuthorName, getFormattedMessage } from '../summarizeUtils';
+import type DbChatMessage from '../types/DbChatMessage';
 
 describe('getAuthorName', () => {
   it('should return undefined if author is null', () => {

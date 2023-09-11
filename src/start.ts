@@ -1,10 +1,10 @@
-import { type EntryPointParams } from './entryPoints/EntryPoint.js';
-import recoveryMessage from './entryPoints/recoveryMessage.js';
-import summarizeBotServer from './entryPoints/summarizeBotServer.js';
-import { catchError } from './lib/async.js';
-import DbServiceImpl from './services/DbServiceImpl.js';
-import GptServiceImpl from './services/GptServiceImpl.js';
-import TelegramBotServiceImpl from './services/TelegramBotServiceImpl.js';
+import { type EntryPointParams } from './entryPoints/EntryPoint';
+import recoveryMessage from './entryPoints/recoveryMessage';
+import summarizeBotServer from './entryPoints/summarizeBotServer';
+import { catchError } from './lib/async';
+import DbServiceImpl from './services/DbServiceImpl';
+import GptServiceImpl from './services/GptServiceImpl';
+import TelegramBotServiceImpl from './services/TelegramBotServiceImpl';
 
 async function main(): Promise<void> {
   const entryPointName = process.argv[2];

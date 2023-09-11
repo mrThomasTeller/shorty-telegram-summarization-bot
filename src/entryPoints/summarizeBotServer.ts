@@ -1,10 +1,10 @@
-import TelegramConnection from '../lib/TelegramConnection.js';
-import Store from '../lib/Store.js';
-import { isCommandForBot } from '../lib/tgUtils.js';
-import summarize from '../commands/summarize.js';
-import ping from '../commands/ping.js';
-import { type EntryPointParams } from './EntryPoint.js';
-import { getEnv, getWhiteChatsList } from '../config/env.js';
+import TelegramConnection from '../lib/TelegramConnection';
+import Store from '../lib/Store';
+import { isCommandForBot } from '../lib/tgUtils';
+import summarize from '../commands/summarize';
+import ping from '../commands/ping';
+import { type EntryPointParams } from './EntryPoint';
+import { getEnv, getWhiteChatsList } from '../config/env';
 import type TelegramBot from 'node-telegram-bot-api';
 
 export default async function summarizeBotServer(params: EntryPointParams): Promise<void> {
