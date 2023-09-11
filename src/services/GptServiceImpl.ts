@@ -10,8 +10,8 @@ export default class GptServiceImpl implements GptService {
     message: string,
     options?: Pick<SendMessageOptions, 'completionParams'>
   ): Promise<ChatMessage> {
-    const { ChatGPTAPI } = await import('chatgpt');
     if (this.api === undefined) {
+      const { ChatGPTAPI } = await import('chatgpt');
       this.api = new ChatGPTAPI({
         apiKey: required(getEnv().GPT_API_KEY),
         completionParams: {
