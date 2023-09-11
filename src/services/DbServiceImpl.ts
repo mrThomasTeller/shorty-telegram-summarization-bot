@@ -1,4 +1,4 @@
-import type DbChatMessage from '../lib/types/DbChatMessage.ts';
+import type DbChatMessage from '../data/DbChatMessage.ts';
 import type DbService from './DbService.ts';
 import { type Chat, PrismaClient, type User } from '@prisma/client';
 import { type MessageCreateInput, type UserCreateInput } from './DbService.ts';

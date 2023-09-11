@@ -4,19 +4,20 @@ import type TelegramBot from 'node-telegram-bot-api';
 import { getEnv } from '../../../config/env.ts';
 import type DbService from '../../../services/DbService.ts';
 import type GptService from '../../../services/GptService.ts';
+import { setTimeout } from 'node:timers/promises';
 
 export type TestContext = ReturnType<typeof createContext>;
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default function createContext() {
-  const { telegramBotService, simulateChatMessage } = createTelegramBotServiceMock();
-  const dbService = createDbServiceMock();
-  const gptService = mock<GptService>();
+  const { telegramBot, simulateChatMessage } = createTelegramBotServiceMock();
+  const db = createDbServiceMock();
+  const gpt = mock<GptService>();
 
   return {
-    telegramBotService,
-    dbService,
-    gptService,
+    telegramBot,
+    db,
+    gpt,
     simulateChatMessage,
   };
 }
@@ -38,6 +39,8 @@ function createDbServiceMock() {
 
   service.createChatMessageIfNotExists.mockResolvedValue(undefined);
 
+  service.hasMessage.mockResolvedValue(false);
+
   return service;
 }
 
@@ -46,20 +49,26 @@ function createTelegramBotServiceMock() {
   const service = mock<TelegramBotService>();
 
   // eslint-disable-next-line unicorn/consistent-function-scoping
-  let simulateChatMessage = (msg: TelegramBot.Message): Promise<TelegramBot.Message> =>
+  const initialSimulateChatMessage = (msg: TelegramBot.Message): Promise<TelegramBot.Message> =>
     Promise.resolve(msg);
+  let simulateChatMessage = initialSimulateChatMessage;
 
   service.getUsername.mockResolvedValue(getEnv().BOT_NAME);
 
-  service.onAnyMessage.mockImplementation(async (callback) => {
+  service.onAnyMessage.mockImplementation((callback) => {
     simulateChatMessage = async (msg) => {
-      await callback(msg);
+      callback(msg);
+      await setTimeout(0);
       return msg;
+    };
+
+    return () => {
+      simulateChatMessage = initialSimulateChatMessage;
     };
   });
 
   return {
-    telegramBotService: service,
+    telegramBot: service,
     simulateChatMessage: (msg: TelegramBot.Message): Promise<TelegramBot.Message> =>
       simulateChatMessage(msg),
   };

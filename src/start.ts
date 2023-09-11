@@ -1,26 +1,26 @@
-import { type EntryPointParams } from './entryPoints/EntryPoint.ts';
 import recoveryMessage from './entryPoints/recoveryMessage.ts';
 import summarizeBotServer from './entryPoints/summarizeBotServer.ts';
 import DbServiceImpl from './services/DbServiceImpl.ts';
 import GptServiceImpl from './services/GptServiceImpl.ts';
+import type Services from './services/Services.ts';
 import TelegramBotServiceImpl from './services/TelegramBotServiceImpl.ts';
 
 const entryPointName = process.argv[2];
 
-const params: EntryPointParams = {
-  dbService: new DbServiceImpl(),
-  telegramBotService: new TelegramBotServiceImpl(),
-  gptService: new GptServiceImpl(),
+const services: Services = {
+  db: new DbServiceImpl(),
+  telegramBot: new TelegramBotServiceImpl(),
+  gpt: new GptServiceImpl(),
 };
 
 switch (entryPointName) {
   case 'summarizeBotServer': {
-    await summarizeBotServer(params);
+    await summarizeBotServer(services);
     break;
   }
 
   case 'recoveryMessage': {
-    await recoveryMessage(params);
+    await recoveryMessage(services);
     break;
   }
 

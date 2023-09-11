@@ -1,17 +1,17 @@
-import { getPingResponseMessage } from '../../../commands/ping';
-import { getEnv } from '../../../config/env';
-import { createTgMessageInGroup, myTgGroupId } from '../lib/tgUtils';
+import { getPingResponseMessage } from '../../../controllers/commands/pingCommandController.ts';
+import { getEnv } from '../../../config/env.ts';
+import { createTgMessageInGroup, myTgGroupId, myTgUser } from '../lib/tgUtils.ts';
 import createSummarizeBotServerContext from './createSummarizeBotServerContext.ts';
 
 describe('summarizeBotServer ping command', () => {
   it('is correct', async () => {
-    const { telegramBotService, simulateChatMessage } = await createSummarizeBotServerContext();
+    const { telegramBot, simulateChatMessage } = await createSummarizeBotServerContext();
 
     await simulateChatMessage(createTgMessageInGroup({ text: `/ping@${getEnv().BOT_NAME}` }));
 
-    expect(telegramBotService.sendMessage).toHaveBeenCalledWith(
+    expect(telegramBot.sendMessage).toHaveBeenCalledWith(
       myTgGroupId,
-      getPingResponseMessage()
+      getPingResponseMessage(myTgGroupId, myTgUser.id)
     );
   });
 });

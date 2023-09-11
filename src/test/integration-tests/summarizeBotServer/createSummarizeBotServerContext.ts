@@ -4,12 +4,12 @@ import createContext, { type TestContext } from '../lib/createContext.ts';
 
 export default async function createSummarizeBotServerContext(): Promise<TestContext> {
   const context = createContext();
-  const { telegramBotService, dbService, gptService } = context;
+  const { telegramBot, db, gpt } = context;
 
   void summarizeBotServer({
-    telegramBotService,
-    dbService,
-    gptService,
+    telegramBot,
+    db,
+    gpt,
   });
   await setTimeout(0);
 

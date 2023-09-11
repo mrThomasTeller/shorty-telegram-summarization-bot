@@ -1,13 +1,5 @@
-import type DbService from '../services/DbService.ts';
-import type TelegramBotService from '../services/TelegramBotService.ts';
-import type GptService from '../services/GptService.ts';
+import type Services from '../services/Services';
 
-export type EntryPointParams = {
-  dbService: DbService;
-  telegramBotService: TelegramBotService;
-  gptService: GptService;
-};
-
-type EntryPoint = (params: EntryPointParams) => void | Promise<void>;
+type EntryPoint = (services: Services) => void | Promise<void>;
 
 export default EntryPoint;

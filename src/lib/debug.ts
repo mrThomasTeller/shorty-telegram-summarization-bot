@@ -1,18 +1,14 @@
-import assert from 'node:assert';
-
-export function isPromiseLike<T>(value: unknown): value is PromiseLike<T> {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'then' in value &&
-    typeof (value as PromiseLike<T>).then === 'function'
-  );
-}
+import { isPromiseLike } from './common.ts';
 
 // eslint-disable-next-line no-restricted-syntax
-export function logValue<T>(value: T): T {
-  // eslint-disable-next-line no-console
-  console.log(value);
+export function logValue<T>(value: T, label?: string): T {
+  if (label === undefined) {
+    // eslint-disable-next-line no-console
+    console.log(value);
+  } else {
+    // eslint-disable-next-line no-console
+    console.log(label, value);
+  }
   return value;
 }
 
@@ -38,21 +34,4 @@ export function logResult<This, Args extends unknown[], Return>(
   }
 
   return replacementMethod;
-}
-
-export function required<T>(x: T | undefined | null): T {
-  assert(x);
-  return x;
-}
-
-export function yesterday(): Date {
-  const date = new Date();
-  date.setDate(date.getDate() - 1);
-  return date;
-}
-
-export function yesterdayBeforeYesterday(): Date {
-  const date = new Date();
-  date.setDate(date.getDate() - 2);
-  return date;
 }

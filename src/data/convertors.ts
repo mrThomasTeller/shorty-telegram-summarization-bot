@@ -1,0 +1,22 @@
+import type TelegramBot from 'node-telegram-bot-api';
+import { type MessageCreateInput, type UserCreateInput } from '../services/DbService.ts';
+import { type Chat, type User } from '@prisma/client';
+
+export const convertTgUserToDbUserInput = (user: TelegramBot.User): UserCreateInput => ({
+  id: user.id,
+  firstName: user.first_name,
+  lastName: user.last_name,
+  username: user.username,
+});
+
+export const convertTgMessageToDbMessageInput = (
+  msg: TelegramBot.Message,
+  chat: Chat,
+  user: User | undefined
+): MessageCreateInput => ({
+  messageId: msg.message_id,
+  chatId: chat.id,
+  text: msg.text,
+  date: new Date(msg.date * 1000),
+  userId: user?.id,
+});

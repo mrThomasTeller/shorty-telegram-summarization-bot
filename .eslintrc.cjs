@@ -37,9 +37,16 @@ module.exports = {
       { selector: "Identifier[name='logValue']", message: 'log functions are not allowed' },
       { selector: "Identifier[name='logResult']", message: 'log functions are not allowed' },
     ],
-    'n/no-callback-literal': 0,
     'max-lines': 'error',
     'max-params': ['error', 3],
+    'import/extensions': [
+      'error',
+      'ignorePackages',
+      {
+        ts: 'always',
+      },
+    ],
+    'n/no-callback-literal': 0,
 
     // typescript
     '@typescript-eslint/no-explicit-any': 'error',
@@ -66,6 +73,9 @@ module.exports = {
     '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
     '@typescript-eslint/promise-function-async': 0,
     '@typescript-eslint/naming-convention': 0,
+    '@typescript-eslint/strict-boolean-expressions': ['error', { allowNullableObject: true }],
+    '@typescript-eslint/switch-exhaustiveness-check': 'error',
+    '@typescript-eslint/array-type': ['error', { default: 'array' }],
 
     // unicorn
     'unicorn/prevent-abbreviations': 0,
@@ -85,5 +95,8 @@ module.exports = {
     // eslint-comments
     'eslint-comments/disable-enable-pair': 0,
     'eslint-comments/no-unused-disable': 'error',
+
+    // sonarjs
+    'sonarjs/no-duplicate-string': 0,
   },
 };

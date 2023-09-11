@@ -13,8 +13,10 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
     await this.bot.sendMessage(chatId, text);
   }
 
-  onAnyMessage(callback: (msg: TelegramBot.Message) => Promise<void>): void {
-    this.bot.onText(/.*/, callback);
+  onAnyMessage(callback: (msg: TelegramBot.Message) => void): VoidFunction {
+    const regexp = /.*/;
+    this.bot.onText(regexp, callback);
+    return () => this.bot.removeTextListener(regexp);
   }
 
   async setMyCommands(commands: TelegramBot.BotCommand[]): Promise<void> {

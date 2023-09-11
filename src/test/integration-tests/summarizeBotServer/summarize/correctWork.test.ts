@@ -1,15 +1,10 @@
 import {
-  getStartSummarizeMessage,
-  getEndSummarizeMessage,
-  getSummaryHeader,
-} from '../../../../commands/summarize';
-import {
   myTgUser,
   myTgGroupId,
   otherTgUser,
   createSummarizeCommandMessage,
   createTgMessages,
-} from '../../lib/tgUtils';
+} from '../../lib/tgUtils.ts';
 import _ from 'lodash';
 import { mapTgMessagesToDbMessages } from '../../lib/dbUtils.ts';
 import {
@@ -18,27 +13,27 @@ import {
   expectBotHasCreatedUsers,
   expectBotHasCreatedDbChatMessages,
   expectBotHasQueriedSummaryFromGpt,
-} from '../../lib/expectations';
+} from '../../lib/expectations.ts';
 import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils.ts';
 import createSummarizeBotServerContext from '../createSummarizeBotServerContext.ts';
+import { t } from '../../../../config/translations/index.ts';
 
 describe('summarizeBotServer summarize command', () => {
   it('without messages', async () => {
-    const { telegramBotService, dbService, gptService, simulateChatMessage } =
-      await createSummarizeBotServerContext();
+    const { telegramBot, db, gpt, simulateChatMessage } = await createSummarizeBotServerContext();
 
     // mocks
-    dbService.getChatMessages.mockResolvedValue([]);
+    db.getChatMessages.mockResolvedValue([]);
 
     // story
     await simulateChatMessage(createSummarizeCommandMessage(myTgUser));
 
     // expectations
-    expectBotHasRetrievedMessagesFromDb(dbService);
-    expect(gptService.sendMessage).not.toHaveBeenCalled();
-    expectTgBotServiceHasSentMessages(telegramBotService, myTgGroupId, [
-      getStartSummarizeMessage(),
-      getEndSummarizeMessage(),
+    expectBotHasRetrievedMessagesFromDb(db);
+    expect(gpt.sendMessage).not.toHaveBeenCalled();
+    expectTgBotServiceHasSentMessages(telegramBot, myTgGroupId, [
+      t('summarize.message.start'),
+      t('summarize.message.end'),
     ]);
   });
 
@@ -97,8 +92,7 @@ function testCorrectSummary({
   messagesCountInOneSummaryQuery?: number;
 }) {
   return async (): Promise<void> => {
-    const { telegramBotService, dbService, gptService, simulateChatMessage } =
-      await createSummarizeBotServerContext();
+    const { telegramBot, db, gpt, simulateChatMessage } = await createSummarizeBotServerContext();
 
     const tgMessages = createTgMessages(messagesCount);
     const dbMessages = mapTgMessagesToDbMessages(tgMessages);
@@ -112,10 +106,10 @@ function testCorrectSummary({
     );
 
     // mocks
-    dbService.getChatMessages.mockResolvedValue(dbMessages);
+    db.getChatMessages.mockResolvedValue(dbMessages);
 
     for (const summary of gptTestSummaries)
-      gptService.sendMessage.mockResolvedValueOnce(createGptChatMessage(summary));
+      gpt.sendMessage.mockResolvedValueOnce(createGptChatMessage(summary));
 
     // story
     for (const tgMessage of tgMessages) {
@@ -124,16 +118,16 @@ function testCorrectSummary({
     await simulateChatMessage(createSummarizeCommandMessage(myTgUser));
 
     // expectations
-    expectBotHasCreatedUsers(dbService, [myTgUser, otherTgUser]);
-    expect(dbService.getOrCreateChat).toHaveBeenCalledWith(myTgGroupId);
-    expectBotHasCreatedDbChatMessages(dbService, tgMessages);
-    expectBotHasRetrievedMessagesFromDb(dbService);
-    expectBotHasQueriedSummaryFromGpt(gptService, summaryPartPointsCount, dbMessagesChunksForGpt);
-    expectTgBotServiceHasSentMessages(telegramBotService, myTgGroupId, [
-      getStartSummarizeMessage(),
-      getSummaryHeader(),
+    expectBotHasCreatedUsers(db, [myTgUser, otherTgUser]);
+    expect(db.getOrCreateChat).toHaveBeenCalledWith(myTgGroupId);
+    expectBotHasCreatedDbChatMessages(db, tgMessages);
+    expectBotHasRetrievedMessagesFromDb(db);
+    expectBotHasQueriedSummaryFromGpt(gpt, summaryPartPointsCount, dbMessagesChunksForGpt);
+    expectTgBotServiceHasSentMessages(telegramBot, myTgGroupId, [
+      t('summarize.message.start'),
+      t('summarize.message.header'),
       ...gptTestSummariesWithReEnumeratedPoints,
-      getEndSummarizeMessage(),
+      t('summarize.message.end'),
     ]);
   };
 }

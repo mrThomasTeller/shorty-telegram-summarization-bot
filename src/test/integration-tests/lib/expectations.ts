@@ -1,17 +1,15 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import { getSummaryQueryMessage } from '../../../commands/summarize.ts';
-import { getFormattedMessage } from '../../../lib/summarizeUtils.ts';
-import type DbChatMessage from '../../../lib/types/DbChatMessage.ts';
-import { yesterday, required } from '../../../lib/utils.ts';
+import { getFormattedMessage } from '../../../data/dbChatMessageUtils.ts';
+import type DbChatMessage from '../../../data/DbChatMessage.ts';
+import { required } from '../../../lib/common.ts';
+import { yesterday } from '../../../lib/date.ts';
 import { type TestContext } from './createContext.ts';
 import { myTgGroupId } from './tgUtils.ts';
+import { t } from '../../../config/translations/index.ts';
 
-export function expectBotHasCreatedUsers(
-  dbService: TestContext['dbService'],
-  users: TelegramBot.User[]
-): void {
+export function expectBotHasCreatedUsers(db: TestContext['db'], users: TelegramBot.User[]): void {
   for (const user of users) {
-    expect(dbService.getOrCreateUser).toHaveBeenCalledWith(
+    expect(db.getOrCreateUser).toHaveBeenCalledWith(
       expect.objectContaining({
         id: user.id,
         firstName: user.first_name,
@@ -23,11 +21,11 @@ export function expectBotHasCreatedUsers(
 }
 
 export function expectBotHasCreatedDbChatMessages(
-  dbService: TestContext['dbService'],
+  db: TestContext['db'],
   messages: TelegramBot.Message[]
 ): void {
   for (const message of messages) {
-    expect(dbService.createChatMessageIfNotExists).toHaveBeenCalledWith(
+    expect(db.createChatMessageIfNotExists).toHaveBeenCalledWith(
       expect.objectContaining({
         text: message.text,
         userId: BigInt(required(message.from?.id)),
@@ -36,26 +34,26 @@ export function expectBotHasCreatedDbChatMessages(
   }
 }
 
-export function expectBotHasRetrievedMessagesFromDb(dbService: TestContext['dbService']): void {
+export function expectBotHasRetrievedMessagesFromDb(db: TestContext['db']): void {
   const [getChatMessagesChatId, getChatMessagesFromDate] = required(
-    dbService.getChatMessages.mock.calls[0]
+    db.getChatMessages.mock.calls[0]
   );
   expect(getChatMessagesChatId).toBe(myTgGroupId);
   expect(getChatMessagesFromDate?.getTime()).toBeCloseTo(yesterday().getTime(), -4);
 }
 
 export function expectBotHasQueriedSummaryFromGpt(
-  gptService: TestContext['gptService'],
+  gpt: TestContext['gpt'],
   summaryPartPointsCount: number,
   messagesBunches: DbChatMessage[][]
 ): void {
   for (const [index, messages] of messagesBunches.entries()) {
-    expect(gptService.sendMessage).toHaveBeenNthCalledWith(
+    expect(gpt.sendMessage).toHaveBeenNthCalledWith(
       index + 1,
-      getSummaryQueryMessage(
-        summaryPartPointsCount,
-        messages.map((message) => getFormattedMessage(message)).join('\n')
-      ),
+      t('summarize.gptQuery', {
+        pointsCount: summaryPartPointsCount,
+        part: messages.map((message) => getFormattedMessage(message)).join('\n'),
+      }),
       expect.objectContaining({
         completionParams: { max_tokens: 2048 },
       })
@@ -64,11 +62,11 @@ export function expectBotHasQueriedSummaryFromGpt(
 }
 
 export function expectTgBotServiceHasSentMessages(
-  telegramBotService: TestContext['telegramBotService'],
+  telegramBot: TestContext['telegramBot'],
   userId: number,
   messages: string[]
 ): void {
   for (const [index, message] of messages.entries()) {
-    expect(telegramBotService.sendMessage).toHaveBeenNthCalledWith(index + 1, userId, message);
+    expect(telegramBot.sendMessage).toHaveBeenNthCalledWith(index + 1, userId, message);
   }
 }
