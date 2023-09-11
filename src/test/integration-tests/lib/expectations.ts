@@ -1,11 +1,10 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import { getSummaryQueryMessage } from '../../commands/summarize.js';
-import { getFormattedMessage } from '../../lib/summarizeUtils.js';
-import type DbChatMessage from '../../lib/types/DbChatMessage.js';
-import { yesterday, required } from '../../lib/utils.js';
-import { type TestContext } from '../lib/createContext.js';
-import '../lib/env.js';
-import { myTgGroupId } from '../lib/utils.js';
+import { getSummaryQueryMessage } from '../../../commands/summarize.js';
+import { getFormattedMessage } from '../../../lib/summarizeUtils.js';
+import type DbChatMessage from '../../../lib/types/DbChatMessage.js';
+import { yesterday, required } from '../../../lib/utils.js';
+import { type TestContext } from './createContext.js';
+import { myTgGroupId } from './tgUtils.js';
 
 export function expectBotHasCreatedUsers(
   dbService: TestContext['dbService'],

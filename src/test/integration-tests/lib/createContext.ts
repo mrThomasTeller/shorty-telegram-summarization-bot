@@ -1,26 +1,17 @@
-import summarizeBotServer from '../../entryPoints/summarizeBotServer.js';
-import { setTimeout } from 'timers/promises';
 import { mock } from 'jest-mock-extended';
-import type TelegramBotService from '../../services/TelegramBotService.js';
+import type TelegramBotService from '../../../services/TelegramBotService.js';
 import type TelegramBot from 'node-telegram-bot-api';
-import { getEnv } from '../../config/env.js';
-import type DbService from '../../services/DbService.js';
-import type GptService from '../../services/GptService.js';
+import { getEnv } from '../../../config/env.js';
+import type DbService from '../../../services/DbService.js';
+import type GptService from '../../../services/GptService.js';
 
-export type TestContext = Awaited<ReturnType<typeof createContext>>;
+export type TestContext = ReturnType<typeof createContext>;
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export default async function createContext() {
+export default function createContext() {
   const { telegramBotService, simulateChatMessage } = createTelegramBotServiceMock();
   const dbService = createDbServiceMock();
   const gptService = mock<GptService>();
-
-  void summarizeBotServer({
-    telegramBotService,
-    dbService,
-    gptService,
-  });
-  await setTimeout(0);
 
   return {
     telegramBotService,

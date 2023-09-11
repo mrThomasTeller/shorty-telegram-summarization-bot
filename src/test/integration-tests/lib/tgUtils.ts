@@ -1,8 +1,7 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import type DbChatMessage from '../../lib/types/DbChatMessage';
-import { type ChatMessage } from 'chatgpt';
+import { required, yesterday, yesterdayBeforeYesterday } from '../../../lib/utils.js';
+import { getEnv } from '../../../config/env.js';
 import _ from 'lodash';
-import { required } from '../../lib/utils.js';
 
 export const myTgUser: TelegramBot.User = {
   id: 111,
@@ -52,40 +51,17 @@ export function createTgMessageInGroup({
   };
 }
 
-export function createDbMessageInGroup({
-  text,
-  messageId,
-  chatId = myTgGroupId,
-  user = myTgUser,
-  date = new Date(),
-}: {
-  text: string;
-  messageId: bigint | number;
-  chatId?: bigint | number;
-  user?: TelegramBot.User;
-  date?: Date;
-}): DbChatMessage {
-  return {
-    messageId: BigInt(messageId),
-    text,
-    date,
-    userId: BigInt(user.id),
-    chatId: BigInt(chatId),
-    from: {
-      id: BigInt(user.id),
-      firstName: user.first_name,
-      lastName: user.last_name ?? null,
-      username: user.username ?? null,
-    },
-  };
-}
+export const createSummarizeCommandMessage = (user: TelegramBot.User): TelegramBot.Message =>
+  createTgMessageInGroup({ text: `/summarize@${getEnv().BOT_NAME}`, user });
 
-export function createGptChatMessage(text: string): ChatMessage {
-  return {
-    role: 'assistant',
-    id: _.uniqueId('gpt-mock-'),
-    conversationId: undefined,
-    parentMessageId: _.uniqueId('gpt-mock-'),
-    text,
-  };
-}
+export const createTgMessages = (
+  currentCount: number,
+  outdatedCount: number = 10
+): TelegramBot.Message[] =>
+  _.range(-outdatedCount + 1, currentCount).map((num) =>
+    createTgMessageInGroup({
+      text: `Message: ${num}. Text: ${'a'.repeat(100)}}`,
+      user: num % 2 === 0 ? myTgUser : otherTgUser,
+      date: num < 1 ? yesterdayBeforeYesterday() : yesterday(),
+    })
+  );
