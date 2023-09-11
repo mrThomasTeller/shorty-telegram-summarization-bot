@@ -3,11 +3,11 @@ import Store from '../lib/Store';
 import { isCommandForBot } from '../lib/tgUtils';
 import summarize from '../commands/summarize';
 import ping from '../commands/ping';
-import { type EntryPointParams } from './EntryPoint';
+import type EntryPoint from './EntryPoint';
 import { getEnv, getWhiteChatsList } from '../config/env';
 import type TelegramBot from 'node-telegram-bot-api';
 
-export default async function summarizeBotServer(params: EntryPointParams): Promise<void> {
+const summarizeBotServer: EntryPoint = (params) => {
   const whiteChatsList = getWhiteChatsList();
 
   const tg = new TelegramConnection(params.telegramBotService, params.dbService);
@@ -47,7 +47,9 @@ export default async function summarizeBotServer(params: EntryPointParams): Prom
   });
 
   console.info('Summarize telegram bot started');
-}
+};
+
+export default summarizeBotServer;
 
 export const getLogMessage = (msg: TelegramBot.Message): string =>
   `Message from chat ${msg.chat.id}, user ${String(msg.from?.id)} (${String(msg.from?.username)})`;

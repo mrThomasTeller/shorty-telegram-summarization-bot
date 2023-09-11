@@ -8,6 +8,6 @@ export type EntryPointParams = {
   gptService: GptService;
 };
 
-type EntryPoint = (params: EntryPointParams) => Promise<void>;
+type EntryPoint = (params: EntryPointParams) => void | Promise<void>;
 
 export default EntryPoint;

@@ -64,6 +64,7 @@ async function printSummary({
   await bot.sendMessage(chatId, getStartSummarizeMessage());
 
   const maxLength = 3400;
+
   const textParts = splitText(text, maxLength);
   const pointsCount =
     textParts.length === 1 ? 5 : textParts.length === 2 ? 4 : textParts.length === 3 ? 3 : 2;

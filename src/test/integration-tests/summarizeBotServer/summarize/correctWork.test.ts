@@ -69,6 +69,7 @@ describe('summarizeBotServer summarize command', () => {
 
       // mocks
       dbService.getChatMessages.mockResolvedValue(dbMessages);
+
       gptTestSummaries.forEach((summary) =>
         gptService.sendMessage.mockResolvedValueOnce(createGptChatMessage(summary))
       );

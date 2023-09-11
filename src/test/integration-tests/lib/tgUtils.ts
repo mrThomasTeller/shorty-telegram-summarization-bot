@@ -1,5 +1,5 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import { required, yesterday, yesterdayBeforeYesterday } from '../../../lib/utils';
+import { required, yesterdayBeforeYesterday } from '../../../lib/utils';
 import { getEnv } from '../../../config/env';
 import _ from 'lodash';
 
@@ -62,6 +62,6 @@ export const createTgMessages = (
     createTgMessageInGroup({
       text: `Message: ${num}. Text: ${'a'.repeat(100)}}`,
       user: num % 2 === 0 ? myTgUser : otherTgUser,
-      date: num < 1 ? yesterdayBeforeYesterday() : yesterday(),
+      date: num < 1 ? yesterdayBeforeYesterday() : new Date(),
     })
   );

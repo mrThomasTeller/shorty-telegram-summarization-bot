@@ -9,8 +9,4 @@ beforeAll(() => {
   mockConsole(['info', 'warn', 'error']);
 });
 
-beforeEach(() => {
-  jest.clearAllMocks();
-});
-
 export const consoleMock = console as _MockProxy<Console> & Console;
