@@ -3,7 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "main": "src/start.ts",
+  "engines": {
+    "npm": "please-use-pnpm",
+    "pnpm": ">= 8",
+    "node": ">= 18"
+  },
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "postinstall": "pnpm db:gen-types",
     "deploy": "pnpm prod:deploy",
     "dev": "NODE_NO_WARNINGS=1 pnpm dev:watch",
     "start": "NODE_NO_WARNINGS=1 pnpm dev:start",
@@ -43,6 +50,7 @@
     "jest-mock-extended": "^3.0.5",
     "lodash": "^4.17.21",
     "node-telegram-bot-api": "^0.61.0",
+    "only-allow": "^1.1.1",
     "pm2": "^5.3.0",
     "prisma": "^4.13.0",
     "ts-node": "^10.9.1",
