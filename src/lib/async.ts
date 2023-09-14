@@ -4,8 +4,8 @@ export function wait(ms: number): Promise<void> {
   });
 }
 
-export function catchError(promise: Promise<unknown>): void {
-  promise.catch((error) => {
+export function catchError(promise: Promise<unknown> | undefined): void {
+  promise?.catch((error) => {
     console.error(error);
   });
 }

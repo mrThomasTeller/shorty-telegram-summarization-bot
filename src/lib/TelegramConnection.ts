@@ -1,18 +1,15 @@
-import TelegramBot from 'node-telegram-bot-api';
-import { PrismaClient } from '@prisma/client';
-import { required } from './utils.js';
-
-const prisma = new PrismaClient();
+import getTgCommands from '../config/tgCommands';
+import type DbService from '../services/DbService';
+import type TelegramBotService from '../services/TelegramBotService';
+import { catchError } from './async';
 
 class TelegramConnection {
-  readonly bot: TelegramBot;
-
-  constructor(bot = new TelegramBot(required(process.env.TELEGRAM_BOT_TOKEN), { polling: true })) {
-    this.bot = bot;
+  constructor(readonly bot: TelegramBotService, private readonly dbService: DbService) {
+    catchError(this.bot.setMyCommands(getTgCommands()));
   }
 
   async sendToAllChats(text: string): Promise<number> {
-    const chats = await prisma.chat.findMany();
+    const chats = await this.dbService.getAllChats();
 
     let count = 0;
     for (const chat of chats) {

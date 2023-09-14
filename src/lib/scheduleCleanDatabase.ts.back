@@ -10,5 +10,5 @@ export async function scheduleCleanDatabase(): Promise<void> {
     },
   });
 
-  console.log(`Deleted ${result.count} messages`);
+  console.info(`Deleted ${result.count} messages`);
 }
