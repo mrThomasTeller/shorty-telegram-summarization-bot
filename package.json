@@ -24,7 +24,7 @@
     "dev:start": "npx ts-node-esm src/start.ts summarizeBotServer",
     "dev:watch": "nodemon -x 'npx ts-node-esm src/start.ts summarizeBotServer' --ext ts,js,json,jsx",
     "db:gen-types": "npx prisma generate",
-    "server:start": "pm2 start 'npx ts-node-esm src/start.ts summarizeBotServer' --name summarizeBotServer",
+    "server:start": "pm2 delete summarizeBotServer && pm2 start 'npx ts-node-esm src/start.ts summarizeBotServer' --name summarizeBotServer",
     "server:stop": "pm2 stop summarizeBotServer",
     "server:restart": "pm2 restart summarizeBotServer || pnpm server:start",
     "server:status": "pm2 list",
