@@ -1,7 +1,7 @@
-import { getEnv } from '../../../config/env';
-import { getMaintenanceMessage } from '../../../entryPoints/summarizeBotServer';
-import { createTgMessageInGroup, otherTgUser } from '../lib/tgUtils';
-import createSummarizeBotServerContext from './createSummarizeBotServerContext';
+import { getEnv } from '../../../config/env.ts';
+import { getMaintenanceMessage } from '../../../entryPoints/summarizeBotServer.ts';
+import { createTgMessageInGroup, otherTgUser } from '../lib/tgUtils.ts';
+import createSummarizeBotServerContext from './createSummarizeBotServerContext.ts';
 
 describe('summarizeBotServer common', () => {
   it('respond to messages from non-white chats with maintenance message', async () => {

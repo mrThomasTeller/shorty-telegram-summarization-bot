@@ -1,9 +1,9 @@
 import { mock } from 'jest-mock-extended';
-import type TelegramBotService from '../../../services/TelegramBotService';
+import type TelegramBotService from '../../../services/TelegramBotService.ts';
 import type TelegramBot from 'node-telegram-bot-api';
-import { getEnv } from '../../../config/env';
-import type DbService from '../../../services/DbService';
-import type GptService from '../../../services/GptService';
+import { getEnv } from '../../../config/env.ts';
+import type DbService from '../../../services/DbService.ts';
+import type GptService from '../../../services/GptService.ts';
 
 export type TestContext = ReturnType<typeof createContext>;
 

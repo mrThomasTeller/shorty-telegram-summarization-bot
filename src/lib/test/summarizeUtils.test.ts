@@ -1,5 +1,5 @@
-import { getAuthorName, getFormattedMessage } from '../summarizeUtils';
-import type DbChatMessage from '../types/DbChatMessage';
+import { getAuthorName, getFormattedMessage } from '../summarizeUtils.ts';
+import type DbChatMessage from '../types/DbChatMessage.ts';
 
 describe('getAuthorName', () => {
   it('should return undefined if author is null', () => {

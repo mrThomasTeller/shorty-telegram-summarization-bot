@@ -11,7 +11,7 @@ import {
   createTgMessages,
 } from '../../lib/tgUtils';
 import _ from 'lodash';
-import { mapTgMessagesToDbMessages } from '../../lib/dbUtils';
+import { mapTgMessagesToDbMessages } from '../../lib/dbUtils.ts';
 import {
   expectBotHasRetrievedMessagesFromDb,
   expectTgBotServiceHasSentMessages,
@@ -19,8 +19,8 @@ import {
   expectBotHasCreatedDbChatMessages,
   expectBotHasQueriedSummaryFromGpt,
 } from '../../lib/expectations';
-import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils';
-import createSummarizeBotServerContext from '../createSummarizeBotServerContext';
+import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils.ts';
+import createSummarizeBotServerContext from '../createSummarizeBotServerContext.ts';
 
 describe('summarizeBotServer summarize command', () => {
   it('without messages', async () => {

@@ -1,5 +1,5 @@
 import { type User, type Chat, type PrismaClient } from '@prisma/client';
-import type DbChatMessage from '../lib/types/DbChatMessage';
+import type DbChatMessage from '../lib/types/DbChatMessage.ts';
 
 export type UserCreateInput = Parameters<PrismaClient['user']['upsert']>[0]['create'];
 export type MessageCreateInput = Parameters<PrismaClient['message']['upsert']>[0]['create'] & {

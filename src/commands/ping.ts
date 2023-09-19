@@ -1,7 +1,15 @@
-import type TelegramConnection from '../lib/TelegramConnection';
+import type TelegramConnection from '../lib/TelegramConnection.ts';
 import type TelegramBot from 'node-telegram-bot-api';
-import packageJson from '../../package.json';
-import { getEnv } from '../config/env';
+import type PackageJson from '../../package.json';
+import { getEnv } from '../config/env.ts';
+import { dirname } from '@darkobits/fd-name';
+import fs from 'fs';
+import path from 'path';
+import { required } from '../lib/utils.ts';
+
+const packageJson = JSON.parse(
+  fs.readFileSync(path.join(required(dirname()), '../../package.json'), 'utf-8')
+) as typeof PackageJson;
 
 export default async function ping(
   telegramConnection: TelegramConnection,

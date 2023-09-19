@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import type DbChatMessage from './types/DbChatMessage';
+import type DbChatMessage from './types/DbChatMessage.ts';
 
 export function getAuthorName(msg: DbChatMessage): string | undefined {
   const author = msg.from;

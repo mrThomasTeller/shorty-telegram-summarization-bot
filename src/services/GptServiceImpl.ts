@@ -1,7 +1,7 @@
-import { type ChatGPTAPI, type ChatMessage, type SendMessageOptions } from 'chatgpt';
-import type GptService from './GptService';
-import { required } from '../lib/utils';
-import { getEnv } from '../config/env';
+import { ChatGPTAPI, type ChatMessage, type SendMessageOptions } from 'chatgpt';
+import type GptService from './GptService.ts';
+import { required } from '../lib/utils.ts';
+import { getEnv } from '../config/env.ts';
 
 export default class GptServiceImpl implements GptService {
   private api?: ChatGPTAPI;
@@ -11,7 +11,6 @@ export default class GptServiceImpl implements GptService {
     options?: Pick<SendMessageOptions, 'completionParams'>
   ): Promise<ChatMessage> {
     if (this.api === undefined) {
-      const { ChatGPTAPI } = await import('chatgpt');
       this.api = new ChatGPTAPI({
         apiKey: required(getEnv().GPT_API_KEY),
         completionParams: {

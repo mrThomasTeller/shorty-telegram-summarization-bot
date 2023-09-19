@@ -13,10 +13,10 @@ import {
   createTgMessages,
 } from '../../lib/tgUtils';
 import { ChatGPTError } from 'chatgpt';
-import { mapTgMessagesToDbMessages } from '../../lib/dbUtils';
-import { expectTgBotServiceHasSentMessages } from '../../lib/expectations';
-import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils';
-import createSummarizeBotServerContext from '../createSummarizeBotServerContext';
+import { mapTgMessagesToDbMessages } from '../../lib/dbUtils.ts';
+import { expectTgBotServiceHasSentMessages } from '../../lib/expectations.ts';
+import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils.ts';
+import createSummarizeBotServerContext from '../createSummarizeBotServerContext.ts';
 
 describe('summarizeBotServer summarize command', () => {
   it('with unexpected error from gpt', async (): Promise<void> => {

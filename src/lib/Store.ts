@@ -1,6 +1,6 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import type DbChatMessage from './types/DbChatMessage';
-import type DbService from '../services/DbService';
+import type DbChatMessage from './types/DbChatMessage.ts';
+import type DbService from '../services/DbService.ts';
 
 class Store {
   constructor(private readonly dbService: DbService) {}

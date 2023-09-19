@@ -1,7 +1,7 @@
 import { mock } from 'jest-mock-extended';
-import { sendMessageToGpt } from '../gpt';
+import { sendMessageToGpt } from '../gpt.ts';
 import { ChatGPTError, type ChatMessage } from 'chatgpt';
-import type GptService from '../../services/GptService';
+import type GptService from '../../services/GptService.ts';
 
 const createChatGPTError = (statusCode: number, message: string): ChatGPTError => {
   const error = new ChatGPTError(message);

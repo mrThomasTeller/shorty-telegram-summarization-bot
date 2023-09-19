@@ -1,6 +1,6 @@
-import summarizeBotServer from '../../../entryPoints/summarizeBotServer';
+import summarizeBotServer from '../../../entryPoints/summarizeBotServer.ts';
 import { setTimeout } from 'timers/promises';
-import createContext, { type TestContext } from '../lib/createContext';
+import createContext, { type TestContext } from '../lib/createContext.ts';
 
 export default async function createSummarizeBotServerContext(): Promise<TestContext> {
   const context = createContext();

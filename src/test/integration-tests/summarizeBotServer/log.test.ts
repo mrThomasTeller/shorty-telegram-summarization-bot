@@ -1,8 +1,8 @@
-import { getEnv } from '../../../config/env';
-import { consoleMock } from '../../env';
-import { createTgMessageInGroup } from '../lib/tgUtils';
-import { getLogMessage } from '../../../entryPoints/summarizeBotServer';
-import createSummarizeBotServerContext from './createSummarizeBotServerContext';
+import { getEnv } from '../../../config/env.ts';
+import { consoleMock } from '../../env.ts';
+import { createTgMessageInGroup } from '../lib/tgUtils.ts';
+import { getLogMessage } from '../../../entryPoints/summarizeBotServer.ts';
+import createSummarizeBotServerContext from './createSummarizeBotServerContext.ts';
 
 describe('summarizeBotServer log command', () => {
   it('is correct', async () => {

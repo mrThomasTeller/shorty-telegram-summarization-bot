@@ -1,7 +1,7 @@
-import type DbChatMessage from '../lib/types/DbChatMessage';
-import type DbService from './DbService';
+import type DbChatMessage from '../lib/types/DbChatMessage.ts';
+import type DbService from './DbService.ts';
 import { type Chat, PrismaClient, type User } from '@prisma/client';
-import { type MessageCreateInput, type UserCreateInput } from './DbService';
+import { type MessageCreateInput, type UserCreateInput } from './DbService.ts';
 
 export default class DbServiceImpl implements DbService {
   private readonly prisma: PrismaClient;

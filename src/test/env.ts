@@ -1,6 +1,6 @@
 import { type _MockProxy } from 'jest-mock-extended/lib/Mock';
-import { setEnv, setWhiteChatsList } from '../config/env';
-import { myTgGroupId, myTgUser } from './integration-tests/lib/tgUtils';
+import { setEnv, setWhiteChatsList } from '../config/env.ts';
+import { myTgGroupId, myTgUser } from './integration-tests/lib/tgUtils.ts';
 import mockConsole from 'jest-mock-console';
 
 beforeAll(() => {

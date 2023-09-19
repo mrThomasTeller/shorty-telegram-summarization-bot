@@ -1,4 +1,4 @@
-import { wait, catchError } from '../async';
+import { wait, catchError } from '../async.ts';
 
 // Mock console.error to test catchError
 jest.spyOn(console, 'error').mockImplementation(() => {});

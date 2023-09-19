@@ -1,6 +1,6 @@
 import assert from 'assert';
 import type TelegramBot from 'node-telegram-bot-api';
-import type TelegramBotService from '../services/TelegramBotService';
+import type TelegramBotService from '../services/TelegramBotService.ts';
 
 // the message is in private chat with the bot or in a group chat addressed to the bot
 export async function isCommandForBot(
