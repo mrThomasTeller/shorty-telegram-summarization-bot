@@ -14,3 +14,6 @@ stop:
 
 bash:
 	docker exec -it summarize-tg-bot-app bash
+
+prepare:
+	docker || (curl -fsSL https://get.docker.com | sh)
