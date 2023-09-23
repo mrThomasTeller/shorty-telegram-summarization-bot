@@ -9,6 +9,7 @@ Steps:
 Срочно:
   ✔ message_id is not unique @done(23-05-10 17:36)
   - настроить резервное копирование
+  - поменять пароли для БД
 
 Release 1.0:
   ✔ DB @started(23-05-05 19:49) @done(23-05-10 17:35) @lasted(4d21h46m46s)
