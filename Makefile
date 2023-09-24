@@ -1,7 +1,10 @@
 all: deploy
 
 deploy:
-	git pull && docker compose build && make start
+	git pull && make build && make start
+
+build:
+	docker compose build
 
 start:
 	docker compose up --detach

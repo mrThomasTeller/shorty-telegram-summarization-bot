@@ -12,7 +12,6 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "postinstall": "pnpm db:gen-types",
-    "deploy": "pnpm prod:deploy",
     "dev": "NODE_NO_WARNINGS=1 pnpm dev:watch",
     "start": "NODE_NO_WARNINGS=1 pnpm dev:start",
     "status": "pnpm server:status",
@@ -30,6 +29,7 @@
     "server:status": "pm2 list",
     "server:log": "pm2 log summarizeBotServer",
     "prod:install": "pnpm install --prod --frozen-lockfile",
+    "prod:prepare-db": "prisma migrate deploy && pnpm db:gen-types",
     "git:commit": "git add -A && git commit && git push",
     "git:fcommit": "git add -A && git commit --no-verify && git push",
     "git:acommit": "git add -A && git commit --amend --no-edit && git push --force"

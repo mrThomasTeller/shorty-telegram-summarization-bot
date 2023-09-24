@@ -20,6 +20,8 @@ Release 1.0:
   ✔ setMyCommands @done(23-09-21 12:32)
   - сколько было потрачено денег
   - очистка базы данных
+  - проработать вопрос харнения у себя перс. данных
+  - настроить подключение к БД по ssh/ssl (не RSA)
 
 Refactor:
   - strict eslint rules (any, cognitive complexity, etc)

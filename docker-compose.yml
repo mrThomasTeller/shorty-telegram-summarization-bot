@@ -9,17 +9,17 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data:delegated
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    #ports:
-    #  - 5432:5432
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - 5432:5432
     container_name: summarize-tg-bot-db
 
   app:
     build: .
     working_dir: /root/app
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/summarize-bot?schema=public
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/summarize-bot?schema=public
     depends_on:
       - db
     container_name: summarize-tg-bot-app
