@@ -1,6 +1,6 @@
 {
   "name": "gpt-telegram-summarize-bot",
-  "version": "1.0.0",
+  "version": "0.3.1",
   "description": "",
   "main": "src/start.ts",
   "type": "module",
@@ -30,8 +30,9 @@
     "server:log": "pm2 log summarizeBotServer",
     "prod:install": "pnpm install --prod --frozen-lockfile",
     "prod:prepare-db": "prisma migrate deploy && pnpm db:gen-types",
-    "git:commit": "git add -A && git commit && git push",
-    "git:fcommit": "git add -A && git commit --no-verify && git push",
+    "git:minor-commit": "npm --no-git-tag-version version minor && git add -A && git commit && git push",
+    "git:commit": "npm --no-git-tag-version version patch && git add -A && git commit && git push",
+    "git:fcommit": "npm --no-git-tag-version version patch && git add -A && git commit --no-verify && git push",
     "git:acommit": "git add -A && git commit --amend --no-edit && git push --force"
   },
   "keywords": [],
