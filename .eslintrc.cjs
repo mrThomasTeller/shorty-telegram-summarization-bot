@@ -18,6 +18,30 @@ module.exports = {
     project: ['tsconfig.json'],
   },
   rules: {
+    // native
+    'no-warning-comments': [
+      'error',
+      {
+        terms: ['fixme'],
+        location: 'anywhere',
+      },
+    ],
+    'no-console': [
+      'error',
+      {
+        allow: ['warn', 'error', 'info'],
+      },
+    ],
+    'no-restricted-syntax': [
+      'error',
+      { selector: "Identifier[name='logValue']", message: 'log functions are not allowed' },
+      { selector: "Identifier[name='logResult']", message: 'log functions are not allowed' },
+    ],
+    'n/no-callback-literal': 0,
+    'max-lines': 'error',
+    'max-params': ['error', 3],
+
+    // typescript
     '@typescript-eslint/no-explicit-any': 'error',
     '@typescript-eslint/no-unsafe-argument': 'error',
     '@typescript-eslint/no-unsafe-assignment': 'error',
@@ -40,27 +64,8 @@ module.exports = {
       },
     ],
     '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
-    'no-warning-comments': [
-      'error',
-      {
-        terms: ['fixme'],
-        location: 'anywhere',
-      },
-    ],
-    'no-console': [
-      'error',
-      {
-        allow: ['warn', 'error', 'info'],
-      },
-    ],
-    'no-restricted-syntax': [
-      'error',
-      { selector: "Identifier[name='logValue']", message: 'log functions are not allowed' },
-      { selector: "Identifier[name='logResult']", message: 'log functions are not allowed' },
-    ],
     '@typescript-eslint/promise-function-async': 0,
     '@typescript-eslint/naming-convention': 0,
-    'n/no-callback-literal': 0,
 
     // unicorn
     'unicorn/prevent-abbreviations': 0,
@@ -77,6 +82,7 @@ module.exports = {
     'unicorn/no-nested-ternary': 0,
     'unicorn/no-null': 0,
 
+    // eslint-comments
     'eslint-comments/disable-enable-pair': 0,
     'eslint-comments/no-unused-disable': 'error',
   },

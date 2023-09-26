@@ -3,8 +3,8 @@ Release 0.3:
   - настроить резервное копирование БД
   - логи
   - вынести тексты в отдельные файлы
-  - strict eslint rules (any, cognitive complexity, etc)
-  - update prisma
+  ✔ strict eslint rules (any, cognitive complexity, etc) @done(23-09-26 22:10)
+  ✔ update prisma @done(23-09-26 22:10)
 
 Release 0.5:
   - ограничить количество запросов к боту
