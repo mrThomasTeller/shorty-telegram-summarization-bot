@@ -45,13 +45,17 @@ function createDbServiceMock() {
 function createTelegramBotServiceMock() {
   const service = mock<TelegramBotService>();
 
+  // eslint-disable-next-line unicorn/consistent-function-scoping
   let simulateChatMessage = (msg: TelegramBot.Message): Promise<TelegramBot.Message> =>
     Promise.resolve(msg);
 
   service.getUsername.mockResolvedValue(getEnv().BOT_NAME);
 
   service.onAnyMessage.mockImplementation(async (callback) => {
-    simulateChatMessage = (msg) => callback(msg).then(() => msg);
+    simulateChatMessage = async (msg) => {
+      await callback(msg);
+      return msg;
+    };
   });
 
   return {

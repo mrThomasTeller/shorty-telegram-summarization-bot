@@ -3,7 +3,14 @@
     "es2021": true,
     "node": true
   },
-  "extends": ["standard-with-typescript", "prettier"],
+  "plugins": ["sonarjs", "unicorn"],
+  "extends": [
+    "standard-with-typescript",
+    "prettier",
+    "plugin:sonarjs/recommended",
+    "plugin:unicorn/recommended",
+    "plugin:eslint-comments/recommended"
+  ],
   "overrides": [],
   "parserOptions": {
     "ecmaVersion": "latest",
@@ -11,6 +18,12 @@
     "project": ["tsconfig.json"]
   },
   "rules": {
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-unsafe-argument": "error",
+    "@typescript-eslint/no-unsafe-assignment": "error",
+    "@typescript-eslint/no-unsafe-call": "error",
+    "@typescript-eslint/no-unsafe-member-access": "error",
+    "@typescript-eslint/no-unsafe-return": "error",
     "@typescript-eslint/explicit-function-return-type": [
       "error",
       {
@@ -47,6 +60,24 @@
     ],
     "@typescript-eslint/promise-function-async": 0,
     "@typescript-eslint/naming-convention": 0,
-    "n/no-callback-literal": 0
+    "n/no-callback-literal": 0,
+
+    // unicorn
+    "unicorn/prevent-abbreviations": 0,
+    "unicorn/no-useless-undefined": 0,
+    "unicorn/filename-case": [
+      "error",
+      {
+        "cases": {
+          "camelCase": true,
+          "pascalCase": true
+        }
+      }
+    ],
+    "unicorn/no-nested-ternary": 0,
+    "unicorn/no-null": 0,
+
+    "eslint-comments/disable-enable-pair": 0,
+    "eslint-comments/no-unused-disable": "error"
   }
 }

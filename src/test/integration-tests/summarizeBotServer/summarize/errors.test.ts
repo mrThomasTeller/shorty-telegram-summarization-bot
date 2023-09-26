@@ -28,7 +28,7 @@ describe('summarizeBotServer summarize command', () => {
 
     // mocks
     dbService.getChatMessages.mockResolvedValue(dbMessages);
-    gptService.sendMessage.mockRejectedValue(new ChatGPTError('gpt summary error'));
+    gptService.sendMessage.mockRejectedValue(createGptSummaryError());
 
     // story
     for (const tgMessage of tgMessages) {
@@ -53,7 +53,7 @@ describe('summarizeBotServer summarize command', () => {
     // mocks
     dbService.getChatMessages.mockResolvedValue(dbMessages);
 
-    const error = new ChatGPTError('gpt summary error');
+    const error = createGptSummaryError();
     error.statusCode = 429;
     gptService.sendMessage.mockRejectedValueOnce(error);
     gptService.sendMessage.mockRejectedValueOnce(error);
@@ -86,7 +86,7 @@ describe('summarizeBotServer summarize command', () => {
     // mocks
     dbService.getChatMessages.mockResolvedValue(dbMessages);
 
-    const error = new ChatGPTError('gpt summary error');
+    const error = createGptSummaryError();
     error.statusCode = 429;
     gptService.sendMessage.mockRejectedValueOnce(error);
     gptService.sendMessage.mockRejectedValueOnce(error);
@@ -112,3 +112,5 @@ describe('summarizeBotServer summarize command', () => {
     ]);
   });
 });
+
+const createGptSummaryError = (): ChatGPTError => new ChatGPTError('gpt summary error');

@@ -1,4 +1,4 @@
-import { AssertionError } from 'assert';
+import { AssertionError } from 'node:assert';
 import { required } from '../utils.ts';
 
 describe('required function', () => {

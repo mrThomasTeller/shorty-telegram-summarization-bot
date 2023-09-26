@@ -1,3 +1,4 @@
+import { required } from './utils';
 export function splitText(text: string, maxLength: number): string[] {
   const parts: string[] = [];
   let startIndex = 0;
@@ -31,7 +32,7 @@ export function reEnumerateText(text: string, fromNumber: number): string {
     const match = line.match(/^(\d+)\./);
     if (match != null) {
       // Calculate the new number for this line
-      const newNumber = parseInt(match[1], 10) - 1 + fromNumber;
+      const newNumber = Number.parseInt(required(match[1]), 10) - 1 + fromNumber;
       // Replace the original number with the new number
       return line.replace(match[0], `${newNumber}.`);
     }

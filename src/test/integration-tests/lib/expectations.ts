@@ -37,7 +37,9 @@ export function expectBotHasCreatedDbChatMessages(
 }
 
 export function expectBotHasRetrievedMessagesFromDb(dbService: TestContext['dbService']): void {
-  const [getChatMessagesChatId, getChatMessagesFromDate] = dbService.getChatMessages.mock.calls[0];
+  const [getChatMessagesChatId, getChatMessagesFromDate] = required(
+    dbService.getChatMessages.mock.calls[0]
+  );
   expect(getChatMessagesChatId).toBe(myTgGroupId);
   expect(getChatMessagesFromDate?.getTime()).toBeCloseTo(yesterday().getTime(), -4);
 }
@@ -47,7 +49,7 @@ export function expectBotHasQueriedSummaryFromGpt(
   summaryPartPointsCount: number,
   messagesBunches: DbChatMessage[][]
 ): void {
-  messagesBunches.forEach((messages, index) => {
+  for (const [index, messages] of messagesBunches.entries()) {
     expect(gptService.sendMessage).toHaveBeenNthCalledWith(
       index + 1,
       getSummaryQueryMessage(
@@ -58,7 +60,7 @@ export function expectBotHasQueriedSummaryFromGpt(
         completionParams: { max_tokens: 2048 },
       })
     );
-  });
+  }
 }
 
 export function expectTgBotServiceHasSentMessages(
@@ -66,7 +68,7 @@ export function expectTgBotServiceHasSentMessages(
   userId: number,
   messages: string[]
 ): void {
-  messages.forEach((message, index) => {
+  for (const [index, message] of messages.entries()) {
     expect(telegramBotService.sendMessage).toHaveBeenNthCalledWith(index + 1, userId, message);
-  });
+  }
 }

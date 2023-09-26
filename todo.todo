@@ -4,6 +4,7 @@ Release 0.3:
   - логи
   - вынести тексты в отдельные файлы
   - strict eslint rules (any, cognitive complexity, etc)
+  - update prisma
 
 Release 0.5:
   - ограничить количество запросов к боту

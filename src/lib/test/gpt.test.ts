@@ -3,12 +3,6 @@ import { sendMessageToGpt } from '../gpt.ts';
 import { ChatGPTError, type ChatMessage } from 'chatgpt';
 import type GptService from '../../services/GptService.ts';
 
-const createChatGPTError = (statusCode: number, message: string): ChatGPTError => {
-  const error = new ChatGPTError(message);
-  error.statusCode = statusCode;
-  return error;
-};
-
 describe('sendMessageToGpt', () => {
   const text = 'Test message';
 
@@ -29,8 +23,8 @@ describe('sendMessageToGpt', () => {
   it('should retry on rate limit error', async () => {
     const expectedResult = 'Hello, rate limit test passed.';
 
-    gptService.sendMessage.mockRejectedValueOnce(createChatGPTError(429, 'Rate limit error.'));
-    gptService.sendMessage.mockRejectedValueOnce(createChatGPTError(429, 'Rate limit error.'));
+    gptService.sendMessage.mockRejectedValueOnce(gptRateLimitError);
+    gptService.sendMessage.mockRejectedValueOnce(gptRateLimitError);
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     gptService.sendMessage.mockResolvedValue({ text: expectedResult } as ChatMessage);
 
@@ -41,7 +35,7 @@ describe('sendMessageToGpt', () => {
   it('should throw error when maxTries reached', async () => {
     const expectedError = 'Максимальное количество попыток отправить сообщение GPT достигнуто';
 
-    gptService.sendMessage.mockRejectedValue(createChatGPTError(429, 'Rate limit error.'));
+    gptService.sendMessage.mockRejectedValue(gptRateLimitError);
 
     await expect(sendMessageToGpt({ text, maxTries: 1, gptService })).rejects.toThrow(
       expectedError
@@ -51,7 +45,7 @@ describe('sendMessageToGpt', () => {
   it('should call onBusy when rate limited', async () => {
     const onBusy = jest.fn();
 
-    gptService.sendMessage.mockRejectedValueOnce(createChatGPTError(429, 'Rate limit error.'));
+    gptService.sendMessage.mockRejectedValueOnce(gptRateLimitError);
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     gptService.sendMessage.mockResolvedValue({ text: 'Hello, onBusy test passed.' } as ChatMessage);
 
@@ -61,7 +55,7 @@ describe('sendMessageToGpt', () => {
 
   it('should call onBroken when maxTries reached', async () => {
     const onBroken = jest.fn();
-    gptService.sendMessage.mockRejectedValue(createChatGPTError(429, 'Rate limit error.'));
+    gptService.sendMessage.mockRejectedValue(gptRateLimitError);
 
     await sendMessageToGpt({ text, maxTries: 1, onBroken, gptService }).catch(() => {});
     expect(onBroken).toHaveBeenCalledTimes(1);
@@ -74,3 +68,11 @@ describe('sendMessageToGpt', () => {
     await expect(sendMessageToGpt({ text, gptService })).rejects.toThrow(expectedError);
   });
 });
+
+const createChatGPTError = (statusCode: number, message: string): ChatGPTError => {
+  const error = new ChatGPTError(message);
+  error.statusCode = statusCode;
+  return error;
+};
+
+const gptRateLimitError = createChatGPTError(429, 'Rate limit error.');

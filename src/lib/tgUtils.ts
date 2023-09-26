@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import type TelegramBot from 'node-telegram-bot-api';
 import type TelegramBotService from '../services/TelegramBotService.ts';
 

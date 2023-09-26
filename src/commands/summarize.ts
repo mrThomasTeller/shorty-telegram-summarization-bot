@@ -24,7 +24,7 @@ export default async function summarize({
   console.info(`Запрос на создание выжимки из чата ${chatId}`);
 
   try {
-    const text = messagesForLastDay.map(getFormattedMessage).join('\n');
+    const text = messagesForLastDay.map((msg) => getFormattedMessage(msg)).join('\n');
     await printSummary({ bot: telegramConnection.bot, gptService, chatId, text });
   } catch (error) {
     console.error(error);

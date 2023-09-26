@@ -24,9 +24,7 @@ export function getEnv(): Env {
 }
 
 export function getWhiteChatsList(): number[] {
-  return getEnv()
-    .WHITE_CHATS_LIST.split(',')
-    .map((chatId) => Number(chatId));
+  return getEnv().WHITE_CHATS_LIST.split(',').map(Number);
 }
 
 export function setWhiteChatsList(chatIds: number[]): void {

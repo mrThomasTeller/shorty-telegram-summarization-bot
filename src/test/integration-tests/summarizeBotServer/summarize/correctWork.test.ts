@@ -42,58 +42,6 @@ describe('summarizeBotServer summarize command', () => {
     ]);
   });
 
-  const testCorrectSummary =
-    ({
-      messagesCount,
-      summaryPartPointsCount,
-      messagesCountInOneSummaryQuery = Number.MAX_SAFE_INTEGER,
-    }: {
-      messagesCount: number;
-      summaryPartPointsCount: number;
-      messagesCountInOneSummaryQuery?: number;
-    }) =>
-    async (): Promise<void> => {
-      const { telegramBotService, dbService, gptService, simulateChatMessage } =
-        await createSummarizeBotServerContext();
-
-      const tgMessages = createTgMessages(messagesCount);
-      const dbMessages = mapTgMessagesToDbMessages(tgMessages);
-      const dbMessagesChunksForGpt = _.chunk(dbMessages, messagesCountInOneSummaryQuery);
-
-      const gptTestSummaries = _.range(dbMessagesChunksForGpt.length).map(() =>
-        gptTestSummary(0, summaryPartPointsCount)
-      );
-      const gptTestSummariesWithReEnumeratedPoints = gptTestSummaries.map((_, page) =>
-        gptTestSummary(page, summaryPartPointsCount)
-      );
-
-      // mocks
-      dbService.getChatMessages.mockResolvedValue(dbMessages);
-
-      gptTestSummaries.forEach((summary) =>
-        gptService.sendMessage.mockResolvedValueOnce(createGptChatMessage(summary))
-      );
-
-      // story
-      for (const tgMessage of tgMessages) {
-        await simulateChatMessage(tgMessage);
-      }
-      await simulateChatMessage(createSummarizeCommandMessage(myTgUser));
-
-      // expectations
-      expectBotHasCreatedUsers(dbService, [myTgUser, otherTgUser]);
-      expect(dbService.getOrCreateChat).toHaveBeenCalledWith(myTgGroupId);
-      expectBotHasCreatedDbChatMessages(dbService, tgMessages);
-      expectBotHasRetrievedMessagesFromDb(dbService);
-      expectBotHasQueriedSummaryFromGpt(gptService, summaryPartPointsCount, dbMessagesChunksForGpt);
-      expectTgBotServiceHasSentMessages(telegramBotService, myTgGroupId, [
-        getStartSummarizeMessage(),
-        getSummaryHeader(),
-        ...gptTestSummariesWithReEnumeratedPoints,
-        getEndSummarizeMessage(),
-      ]);
-    };
-
   it(
     'with 10 messages (5 summary part points)',
     testCorrectSummary({
@@ -138,3 +86,54 @@ describe('summarizeBotServer summarize command', () => {
     })
   );
 });
+
+function testCorrectSummary({
+  messagesCount,
+  summaryPartPointsCount,
+  messagesCountInOneSummaryQuery = Number.MAX_SAFE_INTEGER,
+}: {
+  messagesCount: number;
+  summaryPartPointsCount: number;
+  messagesCountInOneSummaryQuery?: number;
+}) {
+  return async (): Promise<void> => {
+    const { telegramBotService, dbService, gptService, simulateChatMessage } =
+      await createSummarizeBotServerContext();
+
+    const tgMessages = createTgMessages(messagesCount);
+    const dbMessages = mapTgMessagesToDbMessages(tgMessages);
+    const dbMessagesChunksForGpt = _.chunk(dbMessages, messagesCountInOneSummaryQuery);
+
+    const gptTestSummaries = _.range(dbMessagesChunksForGpt.length).map(() =>
+      gptTestSummary(0, summaryPartPointsCount)
+    );
+    const gptTestSummariesWithReEnumeratedPoints = gptTestSummaries.map((_, page) =>
+      gptTestSummary(page, summaryPartPointsCount)
+    );
+
+    // mocks
+    dbService.getChatMessages.mockResolvedValue(dbMessages);
+
+    for (const summary of gptTestSummaries)
+      gptService.sendMessage.mockResolvedValueOnce(createGptChatMessage(summary));
+
+    // story
+    for (const tgMessage of tgMessages) {
+      await simulateChatMessage(tgMessage);
+    }
+    await simulateChatMessage(createSummarizeCommandMessage(myTgUser));
+
+    // expectations
+    expectBotHasCreatedUsers(dbService, [myTgUser, otherTgUser]);
+    expect(dbService.getOrCreateChat).toHaveBeenCalledWith(myTgGroupId);
+    expectBotHasCreatedDbChatMessages(dbService, tgMessages);
+    expectBotHasRetrievedMessagesFromDb(dbService);
+    expectBotHasQueriedSummaryFromGpt(gptService, summaryPartPointsCount, dbMessagesChunksForGpt);
+    expectTgBotServiceHasSentMessages(telegramBotService, myTgGroupId, [
+      getStartSummarizeMessage(),
+      getSummaryHeader(),
+      ...gptTestSummariesWithReEnumeratedPoints,
+      getEndSummarizeMessage(),
+    ]);
+  };
+}

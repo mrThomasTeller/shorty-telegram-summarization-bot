@@ -9,7 +9,7 @@ import { type Chat } from '@prisma/client';
 describe('recoveryMessage', () => {
   it('respond to messages from non-white chats with maintenance message', async () => {
     const context = createContext();
-    const { dbService } = context;
+    const { dbService, telegramBotService } = context;
 
     const chats: Chat[] = [{ id: 1n }, { id: 2n }, { id: -1003n }];
     dbService.getAllChats.mockResolvedValue(chats);
@@ -17,7 +17,7 @@ describe('recoveryMessage', () => {
     await recoveryMessage(context);
 
     for (const { id } of chats) {
-      expect(context.telegramBotService.sendMessage).toHaveBeenCalledWith(
+      expect(telegramBotService.sendMessage).toHaveBeenCalledWith(
         Number(id),
         expect.stringContaining(getRecoveryMessage())
       );

@@ -3,12 +3,12 @@ import type TelegramBot from 'node-telegram-bot-api';
 import type PackageJson from '../../package.json';
 import { getEnv } from '../config/env.ts';
 import { dirname } from '@darkobits/fd-name';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import { required } from '../lib/utils.ts';
 
 const packageJson = JSON.parse(
-  fs.readFileSync(path.join(required(dirname()), '../../package.json'), 'utf-8')
+  fs.readFileSync(path.join(required(dirname()), '../../package.json'), 'utf8')
 ) as typeof PackageJson;
 
 export default async function ping(

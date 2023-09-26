@@ -31,7 +31,7 @@ export default class DbServiceImpl implements DbService {
     return this.prisma.message.findMany({
       where: {
         chatId,
-        date: fromDate !== undefined ? { gte: fromDate } : undefined,
+        date: fromDate === undefined ? undefined : { gte: fromDate },
       },
       include: {
         from: true,

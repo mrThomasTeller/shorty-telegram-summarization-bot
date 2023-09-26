@@ -30,13 +30,15 @@ const summarizeBotServer: EntryPoint = (params) => {
         await tg.bot.sendMessage(msg.chat.id, getMaintenanceMessage());
       } else {
         switch (command) {
-          case '/summarize':
+          case '/summarize': {
             await summarize({ telegramConnection: tg, gptService: params.gptService, store, msg });
             return;
+          }
 
-          case '/ping':
+          case '/ping': {
             await ping(tg, msg);
             return;
+          }
         }
       }
     }
