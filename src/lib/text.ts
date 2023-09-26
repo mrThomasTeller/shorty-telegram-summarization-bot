@@ -1,4 +1,5 @@
-import { required } from './utils';
+import { required } from './utils.ts';
+
 export function splitText(text: string, maxLength: number): string[] {
   const parts: string[] = [];
   let startIndex = 0;
