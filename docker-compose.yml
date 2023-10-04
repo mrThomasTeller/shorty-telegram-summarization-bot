@@ -23,3 +23,16 @@ services:
     depends_on:
       - db
     container_name: summarize-tg-bot-app
+
+  # по умолчанию запускается раз в день
+  backup:
+    image: prodrigestivill/postgres-backup-local
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=summarize-bot
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - ~/pgbackups:/backups # путь на хост-компьютере для хранения резервных копий
+    depends_on:
+      - db

@@ -15,5 +15,8 @@ stop:
 bash:
 	docker exec -it summarize-tg-bot-app bash
 
+logs:
+	docker compose logs -f
+
 prepare:
 	docker || (curl -fsSL https://get.docker.com | sh)
