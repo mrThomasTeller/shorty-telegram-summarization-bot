@@ -1,4 +1,4 @@
-import * as Either from 'fp-ts/Either';
+import * as Either from 'fp-ts/lib/Either.js';
 
 export const convertPromiseToEither =
   <L>() =>

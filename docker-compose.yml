@@ -36,3 +36,4 @@ services:
       - ~/pgbackups:/backups # путь на хост-компьютере для хранения резервных копий
     depends_on:
       - db
+    container_name: summarize-tg-bot-db-backup

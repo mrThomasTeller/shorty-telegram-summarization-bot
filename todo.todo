@@ -1,6 +1,6 @@
 Release 0.3:
   ✔ зарефакторить на RxJS @done(23-10-04 13:15)
-  - настроить резервное копирование БД
+  ✔ настроить резервное копирование БД @done(23-10-04 17:54)
   - логи
   ✔ вынести тексты в отдельные файлы @done(23-10-02 16:05)
   ✔ strict eslint rules (any, cognitive complexity, etc) @done(23-09-26 22:10)
@@ -34,6 +34,7 @@ Backlog:
   - сделать ChangeLog из коммитов
   - сделать id отдельными типами
   - tg timestamp отдельным типом
+  - собрать образ pgbackup из https://github.com/mrThomasTeller/docker-postgres-backup-local
 
 Study:
   - Читать книгу "Совершенный код"
