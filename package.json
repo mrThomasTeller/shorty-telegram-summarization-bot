@@ -1,6 +1,6 @@
 {
   "name": "gpt-telegram-summarize-bot",
-  "version": "0.5.0-alpha",
+  "version": "0.5.0-alpha.1",
   "description": "",
   "main": "src/start.ts",
   "type": "module",
@@ -39,8 +39,9 @@
     "prod:install": "pnpm install --prod --frozen-lockfile",
     "prod:prepare-db": "prisma migrate deploy && pnpm db:gen-types",
     "git:minor-commit": "npm --no-git-tag-version version minor && git add -A && git commit && git push",
-    "git:commit": "npm --no-git-tag-version version patch && git add -A && git commit && git push",
-    "git:fcommit": "npm --no-git-tag-version version patch && git add -A && git commit --no-verify && git push",
+    "git:patch-commit": "npm --no-git-tag-version version patch && git add -A && git commit && git push",
+    "git:commit": "npm --no-git-tag-version version prerelease && git add -A && git commit && git push",
+    "git:fcommit": "npm --no-git-tag-version version prerelease && git add -A && git commit --no-verify && git push",
     "git:acommit": "git add -A && git commit --amend --no-edit && git push --force",
     "git:facommit": "git add -A && git commit --amend --no-edit --no-verify && git push --force"
   },
