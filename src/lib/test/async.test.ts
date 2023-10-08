@@ -1,8 +1,9 @@
 import { setTimeout } from 'node:timers/promises';
 import { catchError } from '../async.ts';
+import logger from '../../config/logger.ts';
 
-// Mock console.error to test catchError
-jest.spyOn(console, 'error').mockImplementation(() => {});
+// Mock logger.error to test catchError
+jest.spyOn(logger, 'error').mockImplementation(() => logger);
 
 describe('catchError', () => {
   test('should catch a rejected promise and log the error', async () => {
@@ -12,7 +13,7 @@ describe('catchError', () => {
     catchError(errorPromise);
     await setTimeout(0); // Wait for the next event loop iteration to give catchError a chance to handle the error
 
-    expect(console.error).toHaveBeenCalledWith(new Error(errorMessage));
+    expect(logger.error).toHaveBeenCalledWith(new Error(errorMessage));
   });
 
   test('should not interfere with a resolved promise', async () => {
@@ -22,6 +23,6 @@ describe('catchError', () => {
     catchError(successPromise);
     await setTimeout(0); // Wait for the next event loop iteration to give catchError a chance to handle the error
 
-    expect(console.error).not.toHaveBeenCalled();
+    expect(logger.error).not.toHaveBeenCalled();
   });
 });

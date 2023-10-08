@@ -26,12 +26,7 @@ module.exports = {
         location: 'anywhere',
       },
     ],
-    'no-console': [
-      'error',
-      {
-        allow: ['warn', 'error', 'info'],
-      },
-    ],
+    'no-console': 'error',
     'no-restricted-syntax': [
       'error',
       { selector: "Identifier[name='logValue']", message: 'log functions are not allowed' },

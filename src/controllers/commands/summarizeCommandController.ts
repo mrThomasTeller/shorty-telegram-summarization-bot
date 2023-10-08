@@ -18,6 +18,7 @@ import type ChatController from '../ChatController.ts';
 import { t } from '../../config/translations/index.ts';
 import { insertBefore } from '../../lib/rxOperators.ts';
 import type Services from '../../services/Services.ts';
+import logger, { type LogLevel } from '../../config/logger.ts';
 
 type SummarizeResultCase =
   | GptResultCase
@@ -37,7 +38,7 @@ const singleSummarizeRequestController: ChatController = ({ chat$, chatId, servi
   chat$
     .pipe(
       tap(() => {
-        console.info(t('summarize.debug.queryInfo', { chatId }));
+        logger.info(t('summarize.debug.queryInfo', { chatId }));
       }),
       mergeMap(getFormattedChatMessagesFor24Hours(services, chatId)),
       concatMap(splitTextForGptQuery),
@@ -71,12 +72,31 @@ const querySummaryPartFromGptAndReEnumerateResponse$ =
 
 const handleSummaryResultCase =
   (services: Services, chatId: number) => async (resultCase: SummarizeResultCase) => {
-    if (resultCase.type === 'unknownError') {
-      console.error(resultCase.error);
-    }
+    const logArgs = getLogMessageForSummarizeResultCase(resultCase, chatId);
+    if (logArgs !== undefined) logger.log(...logArgs);
 
     await services.telegramBot.sendMessage(chatId, getBotMessageForSummarizeResultCase(resultCase));
   };
+
+function getLogMessageForSummarizeResultCase(
+  resultCase: SummarizeResultCase,
+  chatId: number
+): [level: LogLevel, message: string] | undefined {
+  switch (resultCase.type) {
+    case 'unknownError': {
+      return ['error', resultCase.error.message];
+    }
+    case 'tooManyRequests': {
+      return ['error', `Too many requests to GPT for chat ${chatId}`];
+    }
+    case 'responseFromGPT': {
+      return ['info', `Summarize part result for chat ${chatId} generated`];
+    }
+    default: {
+      return undefined;
+    }
+  }
+}
 
 function getBotMessageForSummarizeResultCase(resultCase: SummarizeResultCase): string {
   switch (resultCase.type) {

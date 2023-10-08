@@ -1,6 +1,6 @@
 import { type GroupedObservable, groupBy, map } from 'rxjs';
 import type ChatController from './ChatController.ts';
-import { getEnv, getWhiteChatsList } from '../config/env.ts';
+import { getEnv, getWhiteChatsList } from '../config/envVars.ts';
 import {
   type ParsedCommand,
   isCommandForBot,
@@ -16,6 +16,7 @@ import type TelegramBotService from '../services/TelegramBotService.ts';
 import { filterAsync } from '../lib/rxOperators.ts';
 import type TelegramBot from 'node-telegram-bot-api';
 import type Services from '../services/Services.ts';
+import logger from '../config/logger.ts';
 
 type ObserveCase = Command | 'maintenanceMessage';
 
@@ -59,19 +60,24 @@ const getObserveCaseForMessage =
       : command;
   };
 
-const sendMaintenanceMessageFn = (chatId: number, telegramBot: TelegramBotService) => () => {
-  catchError(telegramBot.sendMessage(chatId, t('server.maintenanceMessage')));
-};
+const sendMaintenanceMessageFn =
+  (chatId: number, telegramBot: TelegramBotService) => (msg: TelegramBot.Message) => {
+    logger.info(`Maintenance message sent to chat ${msg.chat.id}. Message: "${msg.text}".`);
+    catchError(telegramBot.sendMessage(chatId, t('server.maintenanceMessage')));
+  };
 
 const observeCommandsOrSendMaintenanceMessages =
   (chatId: number, services: Services) =>
-  (chatCommand$: GroupedObservable<ObserveCase, MessageAndParsedCommand>) => {
-    if (chatCommand$.key === 'maintenanceMessage') {
-      chatCommand$.subscribe(sendMaintenanceMessageFn(chatId, services.telegramBot));
+  (chatParsedCommand$: GroupedObservable<ObserveCase, MessageAndParsedCommand>) => {
+    const observeCase = chatParsedCommand$.key;
+    const chatCommandMessage$ = chatParsedCommand$.pipe(map(({ msg }) => msg));
+
+    if (observeCase === 'maintenanceMessage') {
+      chatCommandMessage$.subscribe(sendMaintenanceMessageFn(chatId, services.telegramBot));
     } else {
-      const controller = getCommandController(chatCommand$.key);
+      const controller = getCommandController(observeCase);
       controller({
-        chat$: chatCommand$.pipe(map(({ msg }) => msg)),
+        chat$: chatCommandMessage$,
         chatId,
         services,
       });

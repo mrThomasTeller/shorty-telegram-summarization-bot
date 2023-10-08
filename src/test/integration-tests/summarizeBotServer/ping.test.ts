@@ -1,5 +1,5 @@
 import { getPingResponseMessage } from '../../../controllers/commands/pingCommandController.ts';
-import { getEnv } from '../../../config/env.ts';
+import { getEnv } from '../../../config/envVars.ts';
 import { createTgMessageInGroup, myTgGroupId, myTgUser } from '../lib/tgUtils.ts';
 import createSummarizeBotServerContext from './createSummarizeBotServerContext.ts';
 

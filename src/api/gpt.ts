@@ -1,5 +1,5 @@
 import type GptService from '../services/GptService.ts';
-import { getEnv } from '../config/env.ts';
+import { getEnv } from '../config/envVars.ts';
 import { ChatGPTError, type ChatMessage } from 'chatgpt';
 import { type Observable, map, mergeMap, of } from 'rxjs';
 import * as Either from 'fp-ts/lib/Either.js';

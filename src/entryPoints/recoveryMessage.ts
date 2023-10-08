@@ -2,6 +2,7 @@ import { t } from '../config/translations/index.ts';
 import type EntryPoint from './EntryPoint.ts';
 import type TelegramBotService from '../services/TelegramBotService';
 import { type Chat } from '@prisma/client';
+import logger from '../config/logger.ts';
 
 const recoveryMessage: EntryPoint = async ({ db, telegramBot }) => {
   const chats = await db.getAllChats();
@@ -9,7 +10,7 @@ const recoveryMessage: EntryPoint = async ({ db, telegramBot }) => {
   const results = await Promise.all(chats.map((chat) => trySendMessage(telegramBot, chat)));
   const successCount = results.filter(Boolean).length;
 
-  console.info(t('recovery.debugInfo', { count: successCount }));
+  logger.info(t('recovery.debugInfo', { count: successCount }));
 };
 
 export default recoveryMessage;
@@ -23,7 +24,7 @@ async function trySendMessage(
     return true;
   } catch (error) {
     if (error instanceof Error) {
-      console.error(t('recovery.cantSendMessageError', { message: error.message }));
+      logger.error(t('recovery.cantSendMessageError', { message: error.message }));
     }
     return false;
   }

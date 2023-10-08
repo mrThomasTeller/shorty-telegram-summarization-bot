@@ -6,8 +6,7 @@ import { getRealCommands } from '../config/commands/index.ts';
 import type TelegramBotService from '../services/TelegramBotService.ts';
 import type Services from '../services/Services.ts';
 import _ from 'lodash';
-// import { enableLogToFile } from '../config/logToFile.ts';
-// enableLogToFile();
+import logger from '../config/logger.ts';
 
 const summarizeBotServer: EntryPoint = async (services) => {
   await services.telegramBot.setMyCommands(getRealCommands());
@@ -16,7 +15,7 @@ const summarizeBotServer: EntryPoint = async (services) => {
     .pipe(groupNonEmptyMessagesByChatId)
     .subscribe(observeChatWithMainController(services));
 
-  console.info('Summarize telegram bot started');
+  logger.info('Summarize telegram bot started');
 };
 
 export default summarizeBotServer;

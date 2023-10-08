@@ -1,5 +1,7 @@
+import logger from '../config/logger.ts';
+
 export function catchError(promise: Promise<unknown> | undefined): void {
   promise?.catch((error) => {
-    console.error(error);
+    logger.error(error);
   });
 }

@@ -1,7 +1,7 @@
 import { mock } from 'jest-mock-extended';
 import type TelegramBotService from '../../../services/TelegramBotService.ts';
 import type TelegramBot from 'node-telegram-bot-api';
-import { getEnv } from '../../../config/env.ts';
+import { getEnv } from '../../../config/envVars.ts';
 import type DbService from '../../../services/DbService.ts';
 import type GptService from '../../../services/GptService.ts';
 import { setTimeout } from 'node:timers/promises';
@@ -26,16 +26,22 @@ export default function createContext() {
 function createDbServiceMock() {
   const service = mock<DbService>();
 
-  service.getOrCreateUser.mockImplementation(async (user) => ({
-    id: BigInt(user.id),
-    firstName: user.firstName ?? null,
-    lastName: user.lastName ?? null,
-    username: user.username ?? null,
-  }));
+  service.getOrCreateUser.mockImplementation(async (user) => [
+    {
+      id: BigInt(user.id),
+      firstName: user.firstName ?? null,
+      lastName: user.lastName ?? null,
+      username: user.username ?? null,
+    },
+    false,
+  ]);
 
-  service.getOrCreateChat.mockImplementation(async (chatId) => ({
-    id: BigInt(chatId),
-  }));
+  service.getOrCreateChat.mockImplementation(async (chatId) => [
+    {
+      id: BigInt(chatId),
+    },
+    false,
+  ]);
 
   service.createChatMessageIfNotExists.mockResolvedValue(undefined);
 

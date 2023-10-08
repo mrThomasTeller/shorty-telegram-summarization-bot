@@ -1,5 +1,5 @@
 import type PackageJson from '../../../package.json';
-import { getEnv } from '../../config/env.ts';
+import { getEnv } from '../../config/envVars.ts';
 import { dirname } from '@darkobits/fd-name';
 import fs from 'node:fs';
 import path from 'node:path';

@@ -1,4 +1,4 @@
-import { getEnv } from '../../../config/env.ts';
+import { getEnv } from '../../../config/envVars.ts';
 import { t } from '../../../config/translations/index.ts';
 import { createTgMessageInGroup, otherTgUser } from '../lib/tgUtils.ts';
 import createSummarizeBotServerContext from './createSummarizeBotServerContext.ts';

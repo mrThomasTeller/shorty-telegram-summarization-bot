@@ -25,9 +25,9 @@ model Message {
   messageId BigInt
   text      String?
   date      DateTime
-  from      User?    @relation(fields: [userId], references: [id])
+  from      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    BigInt?
-  chat      Chat     @relation(fields: [chatId], references: [id])
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
   chatId    BigInt
 
   @@id([messageId, chatId])

@@ -10,8 +10,8 @@ type DbService = {
   createChatMessageIfNotExists: (message: MessageCreateInput) => Promise<void>;
   getAllChats: () => Promise<Chat[]>;
   getChatMessages: (chatId: number, fromDate?: Date) => Promise<DbChatMessage[]>;
-  getOrCreateChat: (chatId: number) => Promise<Chat>;
-  getOrCreateUser: (user: UserCreateInput) => Promise<User>;
+  getOrCreateChat: (chatId: number) => Promise<[chat: Chat, created: boolean]>;
+  getOrCreateUser: (userInput: UserCreateInput) => Promise<[user: User, created: boolean]>;
   hasMessage: (messageId: number, chatId: number) => Promise<boolean>;
 };
 

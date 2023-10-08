@@ -7,6 +7,7 @@ import {
   convertTgMessageToDbMessageInput,
   convertTgUserToDbUserInput,
 } from '../../data/convertors.ts';
+import logger from '../../config/logger.ts';
 
 const noneCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$
@@ -19,7 +20,14 @@ const noneCommandController: ChatController = ({ chat$, chatId, services }) => {
 export default noneCommandController;
 
 async function addMessageToDb(msg: TelegramBot.Message, db: DbService): Promise<void> {
-  const user = msg.from && (await db.getOrCreateUser(convertTgUserToDbUserInput(msg.from)));
-  const chat = await db.getOrCreateChat(msg.chat.id);
+  const userCreationResult =
+    msg.from && (await db.getOrCreateUser(convertTgUserToDbUserInput(msg.from)));
+  const user = userCreationResult?.[0];
+
+  const [chat, created] = await db.getOrCreateChat(msg.chat.id);
+  if (created) {
+    logger.info(`New chat created: ${msg.chat.id}`);
+  }
+
   await db.createChatMessageIfNotExists(convertTgMessageToDbMessageInput(msg, chat, user));
 }

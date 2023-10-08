@@ -1,6 +1,6 @@
 {
   "path-autocomplete.extensionOnImport": true,
-  "cSpell.words": ["acommit", "fcommit"],
+  "cSpell.words": ["acommit", "facommit", "fcommit"],
   "code-runner.executorMap": {
     "javascript": "node",
     "java": "cd $dir && javac $fileName && java $fileNameWithoutExt",

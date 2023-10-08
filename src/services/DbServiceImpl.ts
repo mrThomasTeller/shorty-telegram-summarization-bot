@@ -39,20 +39,18 @@ export default class DbServiceImpl implements DbService {
     });
   }
 
-  getOrCreateChat(chatId: number): Promise<Chat> {
-    return this.prisma.chat.upsert({
-      where: { id: chatId },
-      update: {},
-      create: { id: chatId },
-    });
+  async getOrCreateChat(chatId: number): Promise<[chat: Chat, created: boolean]> {
+    const chat = await this.prisma.chat.findUnique({ where: { id: chatId } });
+    return chat === null
+      ? [await this.prisma.chat.create({ data: { id: chatId } }), true]
+      : [chat, false];
   }
 
-  getOrCreateUser(user: UserCreateInput): Promise<User> {
-    return this.prisma.user.upsert({
-      where: { id: user.id },
-      update: {},
-      create: user,
-    });
+  async getOrCreateUser(userInput: UserCreateInput): Promise<[user: User, created: boolean]> {
+    const user = await this.prisma.user.findUnique({ where: { id: userInput.id } });
+    return user === null
+      ? [await this.prisma.user.create({ data: userInput }), true]
+      : [user, false];
   }
 
   async hasMessage(messageId: number, chatId: number): Promise<boolean> {
