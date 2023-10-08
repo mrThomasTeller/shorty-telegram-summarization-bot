@@ -19,6 +19,7 @@ import { t } from '../../config/translations/index.ts';
 import { insertBefore } from '../../lib/rxOperators.ts';
 import type Services from '../../services/Services.ts';
 import logger, { type LogLevel } from '../../config/logger.ts';
+import _ from 'lodash';
 
 type SummarizeResultCase =
   | GptResultCase
@@ -43,9 +44,13 @@ const singleSummarizeRequestController: ChatController = ({ chat$, chatId, servi
       mergeMap(getFormattedChatMessagesFor24Hours(services, chatId)),
       concatMap(splitTextForGptQuery),
       concatMap(querySummaryPartFromGptAndReEnumerateResponse$(services)),
-      insertSummaryLayout()
+      insertSummaryLayout(),
+      // I moved it from subscribe to pipe, because there is a problem with telegram messages when
+      // one sends them without delay. We need to wait for the previous message to be sent.
+      // todo move it to subscribe and make Facade for TelegramBotService, which queue messages
+      concatMap(handleSummaryResultCase(services, chatId))
     )
-    .subscribe(handleSummaryResultCase(services, chatId));
+    .subscribe(_.noop);
 };
 
 const getFormattedChatMessagesFor24Hours = (services: Services, chatId: number) => async () => {

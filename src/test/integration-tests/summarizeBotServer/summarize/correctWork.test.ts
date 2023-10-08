@@ -108,8 +108,9 @@ function testCorrectSummary({
     // mocks
     db.getChatMessages.mockResolvedValue(dbMessages);
 
-    for (const summary of gptTestSummaries)
+    for (const summary of gptTestSummaries) {
       gpt.sendMessage.mockResolvedValueOnce(createGptChatMessage(summary));
+    }
 
     // story
     for (const tgMessage of tgMessages) {

@@ -1,6 +1,6 @@
 {
   "name": "gpt-telegram-summarize-bot",
-  "version": "0.3.26",
+  "version": "0.3.28",
   "description": "",
   "main": "src/start.ts",
   "type": "module",
@@ -24,7 +24,7 @@
     "check:test": "jest src",
     "check:lint": "eslint src --ext ts,tsx,js,jsx",
     "check:ts": "tsc --noEmit",
-    "check:verify": "pnpm check:ts && pnpm check:test && pnpm check:lint",
+    "check:verify": "pnpm check:ts && pnpm check:lint && pnpm check:test",
     "dev:format": "prettier . --ignore-unknown --write",
     "dev:start": "ts-node-esm src/start.ts summarizeBotServer",
     "dev:watch": "nodemon -x 'ts-node-esm src/start.ts summarizeBotServer' --ext ts,js,json,jsx",
