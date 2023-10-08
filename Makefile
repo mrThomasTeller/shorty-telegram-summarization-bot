@@ -15,7 +15,10 @@ stop:
 bash:
 	docker exec -it summarize-tg-bot-app bash
 
-logs:
+app-log:
+	docker compose logs app -f
+
+all-logs:
 	docker compose logs -f
 
 prepare:
