@@ -22,6 +22,8 @@ services:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/summarize-bot?schema=public
     depends_on:
       - db
+    volumes:
+      - ./logs:/root/app/logs
     container_name: summarize-tg-bot-app
 
   # по умолчанию запускается раз в день
@@ -37,3 +39,12 @@ services:
     depends_on:
       - db
     container_name: summarize-tg-bot-db-backup
+
+  # logs ui
+  dozzle:
+    container_name: summarize-tg-bot-dozzle
+    image: amir20/dozzle:v5.0.5
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 9999:8080

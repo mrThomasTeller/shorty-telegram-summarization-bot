@@ -1,19 +1,33 @@
+import { dirname } from '@darkobits/fd-name';
+import path from 'node:path';
 import winston, { format } from 'winston';
+import { required } from '../lib/common.ts';
 const { combine, timestamp, printf, colorize } = format;
 
 export type LogLevel = 'error' | 'warn' | 'info';
 
-const myFormat = printf(({ level, message, timestamp }) => {
+const timeFormat = (): string => {
+  return new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }).replace(',', '');
+};
+
+const fileLogFormat = printf(({ level, message, timestamp }) => {
   return `${timestamp} ${level}: ${message}`;
+});
+
+const consoleLogFormat = printf(({ level, message }) => {
+  return `${level}: ${message}`;
 });
 
 const logger = winston.createLogger({
   level: 'info',
-  format: combine(timestamp({ format: 'DD.MM.YYYY HH:mm:ss' }), colorize(), myFormat),
   transports: [
-    // new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    // new winston.transports.File({ filename: 'combined.log' }),
-    new winston.transports.Console(),
+    new winston.transports.File({
+      filename: path.join(required(dirname()), '../../logs/summarize-server.log'),
+      format: combine(timestamp({ format: timeFormat }), fileLogFormat),
+    }),
+    new winston.transports.Console({
+      format: combine(colorize(), consoleLogFormat),
+    }),
   ],
 });
 
