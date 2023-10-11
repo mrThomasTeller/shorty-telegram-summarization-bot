@@ -1,69 +1,99 @@
 import { type GptResultCase, sendMessageToGptWithRetries$ } from '../../api/gpt.ts';
-import { reEnumerateText, splitText } from '../../lib/text.ts';
+import { reEnumerateText } from '../../lib/text.ts';
 import { getFormattedMessage } from '../../data/dbChatMessageUtils.ts';
 import { yesterday } from '../../lib/date.ts';
 import {
   type Observable,
   type UnaryFunction,
   concatMap,
-  endWith,
   map,
   mergeMap,
   of,
   pipe,
   startWith,
-  tap,
+  exhaustMap,
 } from 'rxjs';
 import type ChatController from '../ChatController.ts';
 import { t } from '../../config/translations/index.ts';
-import { insertBefore } from '../../lib/rxOperators.ts';
+import { endWithAfter, insertBefore } from '../../lib/rxOperators.ts';
 import type Services from '../../services/Services.ts';
 import logger, { type LogLevel } from '../../config/logger.ts';
 import _ from 'lodash';
+import type DbChatMessage from '../../data/DbChatMessage.ts';
+import { getEnv } from '../../config/envVars.ts';
+import { max as maxTime } from 'date-fns';
+import type TelegramBot from 'node-telegram-bot-api';
+import { getPartsAndPointsCountForText } from '../../data/summaryUtils.ts';
 
 type SummarizeResultCase =
   | GptResultCase
+  | { type: 'noMessages' }
+  | { type: 'fewMessages' }
+  | { type: 'tooManySummaries' }
   | { type: 'startSummary' }
   | { type: 'summaryHeader' }
   | { type: 'endSummary' };
 
 const summarizeCommandController: ChatController = ({ chat$, chatId, services }) => {
-  chat$.subscribe((msg) => {
-    singleSummarizeRequestController({ chat$: of(msg), chatId, services });
-  });
+  chat$.pipe(exhaustMap(handleSingleSummarizeRequest$(chatId, services))).subscribe(_.noop);
 };
 
 export default summarizeCommandController;
 
-const singleSummarizeRequestController: ChatController = ({ chat$, chatId, services }) => {
-  chat$
-    .pipe(
-      tap(() => {
-        logger.info(t('summarize.debug.queryInfo', { chatId }));
-      }),
-      mergeMap(getFormattedChatMessagesFor24Hours(services, chatId)),
-      concatMap(splitTextForGptQuery),
-      concatMap(querySummaryPartFromGptAndReEnumerateResponse$(services)),
-      insertSummaryLayout(),
+const handleSingleSummarizeRequest$ = _.curry(
+  (chatId: number, services: Services, msg: TelegramBot.Message): Observable<void> =>
+    of(msg).pipe(
+      mergeMap(getChatMessagesForSummary(services, chatId)),
+      mergeMap(queryGptOrReturnError$(services)),
       // I moved it from subscribe to pipe, because there is a problem with telegram messages when
       // one sends them without delay. We need to wait for the previous message to be sent.
       // todo move it to subscribe and make Facade for TelegramBotService, which queue messages
       concatMap(handleSummaryResultCase(services, chatId))
     )
-    .subscribe(_.noop);
-};
+);
 
-const getFormattedChatMessagesFor24Hours = (services: Services, chatId: number) => async () => {
-  const messagesForLastDay = await services.db.getChatMessages(chatId, yesterday());
-  return messagesForLastDay.length === 0
-    ? undefined
-    : messagesForLastDay.map((msg) => getFormattedMessage(msg)).join('\n');
-};
+const queryGptOrReturnError$ =
+  (services: Services) =>
+  (messages: SummarizeResultCase | DbChatMessage[]): Observable<SummarizeResultCase> => {
+    if (!Array.isArray(messages)) return of(messages);
+
+    const minMessagesCount = getEnv().MIN_MESSAGES_COUNT_TO_SUMMARIZE;
+    if (messages.length === 0) {
+      return of({ type: 'noMessages' });
+    } else if (messages.length < minMessagesCount) {
+      return of({ type: 'fewMessages' });
+    } else {
+      return of(messages).pipe(
+        map(formatChatMessages),
+        concatMap(splitTextForGptQuery),
+        concatMap(querySummaryPartFromGptAndReEnumerateResponse$(services)),
+        insertSummaryLayout()
+      );
+    }
+  };
+
+// todo refactor: make it to return Either<SummarizeResultCase, DbChatMessage[]>
+const getChatMessagesForSummary =
+  (services: Services, chatId: number) =>
+  async (): Promise<SummarizeResultCase | DbChatMessage[]> => {
+    const summaries = await services.db.getSummariesFrom(chatId, yesterday());
+
+    if (summaries.length > getEnv().MAX_SUMMARIES_PER_DAY - 1) {
+      return { type: 'tooManySummaries' };
+    }
+
+    const lastSummaryDate = summaries.at(-1)?.date ?? yesterday();
+    const startSummaryFrom = maxTime([lastSummaryDate, yesterday()]);
+    return await services.db.getChatMessages(chatId, startSummaryFrom);
+  };
+
+const formatChatMessages = (messages: DbChatMessage[]): string =>
+  messages.map((msg) => getFormattedMessage(msg)).join('\n');
 
 const querySummaryPartFromGptAndReEnumerateResponse$ =
   (services: Services) =>
-  ({ part, pointsCount, index }: { part: string; pointsCount: number; index: number }) =>
-    sendMessageToGptWithRetries$({ gpt: services.gpt, text: part }).pipe(
+  ({ text, pointsCount, index }: GptQueryPart) =>
+    sendMessageToGptWithRetries$({ gpt: services.gpt, text }).pipe(
       map(
         (gptResultCase): SummarizeResultCase =>
           gptResultCase.type === 'responseFromGPT'
@@ -80,7 +110,10 @@ const handleSummaryResultCase =
     const logArgs = getLogMessageForSummarizeResultCase(resultCase, chatId);
     if (logArgs !== undefined) logger.log(...logArgs);
 
-    await services.telegramBot.sendMessage(chatId, getBotMessageForSummarizeResultCase(resultCase));
+    await Promise.all([
+      resultCase.type === 'summaryHeader' && services.db.createSummary(chatId, new Date()),
+      services.telegramBot.sendMessage(chatId, getBotMessageForSummarizeResultCase(resultCase)),
+    ]);
   };
 
 function getLogMessageForSummarizeResultCase(
@@ -93,6 +126,9 @@ function getLogMessageForSummarizeResultCase(
     }
     case 'tooManyRequests': {
       return ['error', `Too many requests to GPT for chat ${chatId}`];
+    }
+    case 'startSummary': {
+      return ['info', t('summarize.debug.queryInfo', { chatId })];
     }
     case 'responseFromGPT': {
       return ['info', `Summarize part result for chat ${chatId} generated`];
@@ -126,36 +162,48 @@ function getBotMessageForSummarizeResultCase(resultCase: SummarizeResultCase): s
     case 'unknownError': {
       return t('summarize.errors.queryProcess');
     }
+    case 'fewMessages': {
+      return t('summarize.errors.fewMessages', { count: getEnv().MIN_MESSAGES_COUNT_TO_SUMMARIZE });
+    }
+    case 'noMessages': {
+      return t('summarize.errors.noMessages');
+    }
+    case 'tooManySummaries': {
+      return t('summarize.errors.maxSummariesPerDayExceeded', {
+        count: getEnv().MAX_SUMMARIES_PER_DAY,
+      });
+    }
   }
 }
 
-function splitTextForGptQuery(
-  text: string | undefined
-): { pointsCount: number; index: number; part: string }[] {
-  if (text === undefined) return [];
+type GptQueryPart = {
+  pointsCount: number;
+  index: number;
+  text: string;
+};
 
-  const maxLength = 3400;
-
-  const textParts = splitText(text, maxLength);
-  const pointsCount =
-    textParts.length === 1 ? 5 : textParts.length === 2 ? 4 : textParts.length === 3 ? 3 : 2;
-
-  return textParts.map((part, index) => ({
+const splitTextForGptQuery = (text: string): GptQueryPart[] =>
+  getPartsAndPointsCountForText(text).map(({ text, pointsCount }, index) => ({
     pointsCount,
     index,
-    part: t('summarize.gptQuery', { pointsCount, part }),
+    text: t(pointsCount === 1 ? 'summarize.gptQuery' : 'summarize.gptQueryWithPoints', {
+      pointsCount,
+      text,
+    }),
   }));
-}
 
+// todo make this function more expressive
 const insertSummaryLayout = (): UnaryFunction<
   Observable<SummarizeResultCase>,
   Observable<SummarizeResultCase>
 > =>
   pipe(
+    startWith<SummarizeResultCase>({ type: 'startSummary' }),
     insertBefore<SummarizeResultCase>(
       { type: 'summaryHeader' },
-      (resultCase) => resultCase.type === 'responseFromGPT'
+      (c) => c.type === 'responseFromGPT'
     ),
-    startWith<SummarizeResultCase>({ type: 'startSummary' }),
-    endWith<SummarizeResultCase>({ type: 'endSummary' })
+    endWithAfter<SummarizeResultCase>((c) => c.type === 'responseFromGPT', {
+      type: 'endSummary',
+    })
   );

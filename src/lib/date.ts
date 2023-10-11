@@ -4,8 +4,14 @@ export function yesterday(): Date {
   return date;
 }
 
-export function yesterdayBeforeYesterday(): Date {
+export function daysAgo(days: number): Date {
   const date = new Date();
-  date.setDate(date.getDate() - 2);
+  date.setDate(date.getDate() - days);
+  return date;
+}
+
+export function hoursAgo(hours: number): Date {
+  const date = new Date();
+  date.setHours(date.getHours() - hours);
   return date;
 }

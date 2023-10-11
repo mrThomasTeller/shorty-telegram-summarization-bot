@@ -21,7 +21,7 @@ export default pingCommandController;
 
 export const getPingResponseMessage = (chatId: number, userId?: number): string =>
   t('ping.response', {
-    nodeEnv: getEnv().NODE_ENV ?? 'unknown',
+    nodeEnv: getEnv().NODE_ENV,
     version: packageJson.version,
     chatId,
     userId,

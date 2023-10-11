@@ -12,6 +12,6 @@ export function createGptChatMessage(text: string): ChatMessage {
 }
 
 export const gptTestSummary = (page: number, itemsOnPage: number): string =>
-  `gpt test summary:\n${_.range(page * itemsOnPage + 1, (page + 1) * itemsOnPage)
+  `gpt test summary:\n${_.range(page * itemsOnPage + 1, (page + 1) * itemsOnPage + 1)
     .map((num) => `${num}. test summary point`)
     .join('\n')}`;

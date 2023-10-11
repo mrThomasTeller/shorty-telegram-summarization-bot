@@ -1,7 +1,8 @@
 import type DbChatMessage from '../data/DbChatMessage.ts';
 import type DbService from './DbService.ts';
-import { type Chat, PrismaClient, type User } from '@prisma/client';
+import { type Chat, PrismaClient, type User, type Summary } from '@prisma/client';
 import { type MessageCreateInput, type UserCreateInput } from './DbService.ts';
+import _ from 'lodash';
 
 export default class DbServiceImpl implements DbService {
   private readonly prisma: PrismaClient;
@@ -23,6 +24,15 @@ export default class DbServiceImpl implements DbService {
     });
   }
 
+  createSummary(chatId: number, date: Date): Promise<Summary> {
+    return this.prisma.summary.create({
+      data: {
+        chatId,
+        date,
+      },
+    });
+  }
+
   getAllChats(): Promise<Chat[]> {
     return this.prisma.chat.findMany();
   }
@@ -37,6 +47,20 @@ export default class DbServiceImpl implements DbService {
         from: true,
       },
     });
+  }
+
+  async getSummariesFrom(chatId: number, date: Date): Promise<Summary[]> {
+    const summaries = await this.prisma.summary.findMany({
+      where: {
+        chatId,
+        date: { gte: date },
+      },
+      orderBy: {
+        date: 'desc',
+      },
+    });
+
+    return _.sortBy(summaries, 'date');
   }
 
   async getOrCreateChat(chatId: number): Promise<[chat: Chat, created: boolean]> {

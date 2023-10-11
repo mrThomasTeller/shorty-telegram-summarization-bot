@@ -1,5 +1,5 @@
 import {
-  type Observable,
+  Observable,
   type UnaryFunction,
   filter,
   mergeMap,
@@ -63,3 +63,34 @@ export const insertBefore = <T>(
     ),
     concatMap(({ value }) => value ?? [])
   );
+
+// export const endWithAfter = <T>(...values: T[], predicate: (value: T) => boolean): OperatorFunction<T, T> => {
+
+// }
+
+export const endWithAfter =
+  <T>(predicate: (value: T) => boolean, ...values: T[]): OperatorFunction<T, T> =>
+  (source: Observable<T>): Observable<T> => {
+    return new Observable<T>((observer) => {
+      const noValue = Symbol('noValue');
+      let lastValue: T | typeof noValue = noValue;
+
+      return source.subscribe({
+        next(value) {
+          observer.next(value);
+          lastValue = value;
+        },
+        error(err) {
+          observer.error(err);
+        },
+        complete() {
+          if (lastValue !== noValue && predicate(lastValue)) {
+            for (const value of values) {
+              observer.next(value);
+            }
+          }
+          observer.complete();
+        },
+      });
+    });
+  };

@@ -2,8 +2,7 @@ import type GptService from '../services/GptService.ts';
 import { getEnv } from '../config/envVars.ts';
 import { ChatGPTError, type ChatMessage } from 'chatgpt';
 import { type Observable, map, mergeMap, of } from 'rxjs';
-import * as Either from 'fp-ts/lib/Either.js';
-import * as fp from 'fp-ts/lib/function.js';
+import { either, function as fp } from 'fp-ts';
 import { convertPromiseToEither } from '../lib/fp.ts';
 import _ from 'lodash';
 import { repeatWithDelay, stopWhen } from '../lib/rxOperators.ts';
@@ -30,7 +29,9 @@ export const sendMessageToGptWithRetries$ = ({
     mergeMap(sendMessageToGpt(gpt)),
     repeatWithDelay(retryTime),
     map((result, index) => convertGptApiResponseToResultCase(result, index === maxTries - 1)),
-    stopWhen((result) => result.type === 'responseFromGPT' || result.type === 'maxTriesExceeded')
+    stopWhen((result) =>
+      _.includes(['maxTriesExceeded', 'responseFromGPT', 'unknownError'], result.type)
+    )
   );
 
 const convertErrorToGptResultCase = _.curry((lastTry: boolean, error: Error): GptResultCase => {
@@ -54,12 +55,12 @@ const sendMessageToGpt = (gpt: GptService) =>
   );
 
 const convertGptApiResponseToResultCase = (
-  result: Either.Either<Error, ChatMessage>,
+  result: either.Either<Error, ChatMessage>,
   lastTry: boolean
 ): GptResultCase =>
   fp.pipe(
     result,
-    Either.match(
+    either.match(
       convertErrorToGptResultCase(lastTry),
       (response): GptResultCase => ({ type: 'responseFromGPT', text: response.text })
     )

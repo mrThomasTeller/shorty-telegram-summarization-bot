@@ -1,7 +1,6 @@
 import type TelegramBot from 'node-telegram-bot-api';
 import type DbChatMessage from '../../../data/DbChatMessage.ts';
-import { myTgGroupId, myTgUser } from './tgUtils.ts';
-import { yesterday } from '../../../lib/date.ts';
+import { myTgGroupId, myTgUser, type TestTgMessage } from './tgUtils.ts';
 
 export function createDbMessageInGroup({
   text,
@@ -32,16 +31,24 @@ export function createDbMessageInGroup({
 }
 
 export const mapTgMessagesToDbMessages = (
-  tgMessages: TelegramBot.Message[],
-  from: Date = yesterday()
-): DbChatMessage[] =>
-  tgMessages
-    .filter((tgMessage) => tgMessage.date >= from.getTime() / 1000)
-    .map((tgMessage) =>
-      createDbMessageInGroup({
-        text: tgMessage.text ?? '',
-        messageId: tgMessage.message_id,
-        date: new Date(tgMessage.date * 1000),
-        user: tgMessage.from,
-      })
-    );
+  tgMessages: TestTgMessage[]
+): {
+  all: DbChatMessage[];
+  actual: DbChatMessage[];
+} => {
+  const messagesData = tgMessages.map((tgMessage) => ({
+    message: createDbMessageInGroup({
+      text: tgMessage.text ?? '',
+      messageId: tgMessage.message_id,
+      date: new Date(tgMessage.date * 1000),
+      user: tgMessage.from,
+      chatId: tgMessage.chat.id,
+    }),
+    shouldBeSkipped: Boolean(tgMessage.shouldBeSkipped),
+  }));
+
+  return {
+    all: messagesData.map((d) => d.message),
+    actual: messagesData.filter((d) => !d.shouldBeSkipped).map((d) => d.message),
+  };
+};

@@ -17,8 +17,9 @@ model User {
 }
 
 model Chat {
-  id       BigInt    @id
-  messages Message[]
+  id        BigInt    @id
+  messages  Message[]
+  summaries Summary[]
 }
 
 model Message {
@@ -31,4 +32,11 @@ model Message {
   chatId    BigInt
 
   @@id([messageId, chatId])
+}
+
+model Summary {
+  id     Int      @id @default(autoincrement())
+  date   DateTime
+  chat   Chat     @relation(fields: [chatId], references: [id])
+  chatId BigInt
 }

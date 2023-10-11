@@ -1,9 +1,9 @@
-import * as Either from 'fp-ts/lib/Either.js';
+import { either } from 'fp-ts';
 
 export const convertPromiseToEither =
   <L>() =>
-  <R>(promise: Promise<R>): Promise<Either.Either<L, R>> =>
+  <R>(promise: Promise<R>): Promise<either.Either<L, R>> =>
     promise.then(
-      (response) => Either.right(response),
-      (error) => Either.left(error as L)
+      (response) => either.right(response),
+      (error) => either.left(error as L)
     );

@@ -2,10 +2,10 @@ import type TelegramBot from 'node-telegram-bot-api';
 import { getFormattedMessage } from '../../../data/dbChatMessageUtils.ts';
 import type DbChatMessage from '../../../data/DbChatMessage.ts';
 import { required } from '../../../lib/common.ts';
-import { yesterday } from '../../../lib/date.ts';
 import { type TestContext } from './createContext.ts';
-import { myTgGroupId } from './tgUtils.ts';
 import { t } from '../../../config/translations/index.ts';
+import { now } from 'lodash';
+import { myTgGroupId } from './tgUtils.ts';
 
 export function expectBotHasCreatedUsers(db: TestContext['db'], users: TelegramBot.User[]): void {
   for (const user of users) {
@@ -34,14 +34,6 @@ export function expectBotHasCreatedDbChatMessages(
   }
 }
 
-export function expectBotHasRetrievedMessagesFromDb(db: TestContext['db']): void {
-  const [getChatMessagesChatId, getChatMessagesFromDate] = required(
-    db.getChatMessages.mock.calls[0]
-  );
-  expect(getChatMessagesChatId).toBe(myTgGroupId);
-  expect(getChatMessagesFromDate?.getTime()).toBeCloseTo(yesterday().getTime(), -4);
-}
-
 export function expectBotHasQueriedSummaryFromGpt(
   gpt: TestContext['gpt'],
   summaryPartPointsCount: number,
@@ -50,9 +42,9 @@ export function expectBotHasQueriedSummaryFromGpt(
   for (const [index, messages] of messagesBunches.entries()) {
     expect(gpt.sendMessage).toHaveBeenNthCalledWith(
       index + 1,
-      t('summarize.gptQuery', {
+      t(summaryPartPointsCount === 1 ? 'summarize.gptQuery' : 'summarize.gptQueryWithPoints', {
         pointsCount: summaryPartPointsCount,
-        part: messages.map((message) => getFormattedMessage(message)).join('\n'),
+        text: messages.map((message) => getFormattedMessage(message)).join('\n'),
       }),
       expect.objectContaining({
         completionParams: { max_tokens: 2048 },
@@ -61,12 +53,26 @@ export function expectBotHasQueriedSummaryFromGpt(
   }
 }
 
-export function expectTgBotServiceHasSentMessages(
+export function expectBotSentMessagesToTg(
   telegramBot: TestContext['telegramBot'],
-  userId: number,
-  messages: string[]
+  messages: (string | [message: string, userId: number])[],
+  userId: number = myTgGroupId
 ): void {
   for (const [index, message] of messages.entries()) {
-    expect(telegramBot.sendMessage).toHaveBeenNthCalledWith(index + 1, userId, message);
+    const [messageText, messageUserId] = Array.isArray(message) ? message : [message, userId];
+    expect(telegramBot.sendMessage).toHaveBeenNthCalledWith(index + 1, messageUserId, messageText);
+  }
+  expect(telegramBot.sendMessage).toHaveBeenCalledTimes(messages.length);
+}
+
+export function expectBotHasAddedSummariesToDb(
+  db: TestContext['db'],
+  chatId: number,
+  gptTestSummariesCount: number
+): void {
+  expect(db.createSummary).toHaveBeenCalledTimes(gptTestSummariesCount);
+  for (const call of db.createSummary.mock.calls) {
+    expect(call[0]).toBe(chatId);
+    expect(call[1].getTime()).toBeCloseTo(now(), -4); // 10 seconds
   }
 }

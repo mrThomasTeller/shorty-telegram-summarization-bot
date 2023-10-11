@@ -5,7 +5,7 @@ export function getAuthorName(msg: DbChatMessage): string | undefined {
   const author = msg.from;
   if (author === null) return undefined;
 
-  if (author.firstName !== undefined) {
+  if (author.firstName != null) {
     return [author.firstName, author.lastName].filter(_.negate(_.isEmpty)).join(' ');
   }
 
