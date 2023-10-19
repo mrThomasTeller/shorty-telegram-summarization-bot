@@ -20,6 +20,7 @@ services:
     working_dir: /root/app
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/summarize-bot?schema=public
+      - CRYPTO_KEY=${CRYPTO_KEY}
     depends_on:
       - db
     volumes:

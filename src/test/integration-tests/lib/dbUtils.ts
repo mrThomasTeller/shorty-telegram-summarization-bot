@@ -1,6 +1,7 @@
 import type TelegramBot from 'node-telegram-bot-api';
 import type DbChatMessage from '../../../data/DbChatMessage.ts';
 import { myTgGroupId, myTgUser, type TestTgMessage } from './tgUtils.ts';
+import { encrypt, encryptIfExists } from '../../../data/encryption.ts';
 
 export function createDbMessageInGroup({
   text,
@@ -17,15 +18,15 @@ export function createDbMessageInGroup({
 }): DbChatMessage {
   return {
     messageId: BigInt(messageId),
-    text,
+    text: encrypt(text),
     date,
     userId: BigInt(user.id),
     chatId: BigInt(chatId),
     from: {
       id: BigInt(user.id),
-      firstName: user.first_name,
-      lastName: user.last_name ?? null,
-      username: user.username ?? null,
+      firstName: encrypt(user.first_name),
+      lastName: encryptIfExists(user.last_name) ?? null,
+      username: encryptIfExists(user.username) ?? null,
     },
   };
 }

@@ -10,9 +10,9 @@ generator client {
 
 model User {
   id        BigInt    @id
-  firstName String?
-  lastName  String?
-  username  String?
+  firstName Bytes?
+  lastName  Bytes?
+  username  Bytes?
   messages  Message[]
 }
 
@@ -24,7 +24,7 @@ model Chat {
 
 model Message {
   messageId BigInt
-  text      String?
+  text      Bytes?
   date      DateTime
   from      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    BigInt?

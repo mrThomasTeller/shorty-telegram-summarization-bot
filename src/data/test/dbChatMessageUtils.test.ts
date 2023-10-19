@@ -1,5 +1,6 @@
 import { getAuthorName, getFormattedMessage } from '../dbChatMessageUtils.ts';
 import type DbChatMessage from '../DbChatMessage.ts';
+import { encrypt } from '../encryption.ts';
 
 describe('getAuthorName', () => {
   it('should return undefined if author is null', () => {
@@ -13,8 +14,8 @@ describe('getAuthorName', () => {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const msg = {
       from: {
-        firstName: 'John',
-        lastName: 'Doe',
+        firstName: encrypt('John'),
+        lastName: encrypt('Doe'),
       },
     } as DbChatMessage;
 
@@ -25,7 +26,7 @@ describe('getAuthorName', () => {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const msg = {
       from: {
-        username: 'johndoe',
+        username: encrypt('johndoe'),
       },
     } as DbChatMessage;
 
@@ -59,10 +60,10 @@ describe('getFormattedMessage', () => {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const msg = {
       from: {
-        firstName: 'John',
-        lastName: 'Doe',
+        firstName: encrypt('John'),
+        lastName: encrypt('Doe'),
       },
-      text: 'Hello',
+      text: encrypt('Hello'),
     } as DbChatMessage;
 
     expect(getFormattedMessage(msg)).toBe('John Doe: Hello');
@@ -72,8 +73,8 @@ describe('getFormattedMessage', () => {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const msg = {
       from: {
-        firstName: 'John',
-        lastName: 'Doe',
+        firstName: encrypt('John'),
+        lastName: encrypt('Doe'),
       },
       text: null,
     } as DbChatMessage;
@@ -85,7 +86,7 @@ describe('getFormattedMessage', () => {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const msg = {
       from: null,
-      text: 'Hello',
+      text: encrypt('Hello'),
     } as DbChatMessage;
 
     expect(getFormattedMessage(msg)).toBe('Hello');

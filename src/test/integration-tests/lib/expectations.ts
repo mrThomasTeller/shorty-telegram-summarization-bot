@@ -6,17 +6,19 @@ import { type TestContext } from './createContext.ts';
 import { t } from '../../../config/translations/index.ts';
 import { now } from 'lodash';
 import { myTgGroupId } from './tgUtils.ts';
+import { decryptIfExists } from '../../../data/encryption.ts';
 
 export function expectBotHasCreatedUsers(db: TestContext['db'], users: TelegramBot.User[]): void {
   for (const user of users) {
-    expect(db.getOrCreateUser).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: user.id,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        username: user.username,
-      })
+    const userFound = db.users.some(
+      (dbUser) =>
+        dbUser.id === BigInt(user.id) &&
+        decryptIfExists(dbUser.username) === user.username &&
+        decryptIfExists(dbUser.firstName) === user.first_name &&
+        decryptIfExists(dbUser.lastName) === user.last_name
     );
+
+    expect(userFound).toBe(true);
   }
 }
 
@@ -25,12 +27,13 @@ export function expectBotHasCreatedDbChatMessages(
   messages: TelegramBot.Message[]
 ): void {
   for (const message of messages) {
-    expect(db.createChatMessageIfNotExists).toHaveBeenCalledWith(
-      expect.objectContaining({
-        text: message.text,
-        userId: BigInt(required(message.from?.id)),
-      })
+    const messageFound = db.messages.some(
+      (dbMessage) =>
+        decryptIfExists(dbMessage.text) === message.text &&
+        dbMessage.userId === BigInt(required(message.from?.id))
     );
+
+    expect(messageFound).toBe(true);
   }
 }
 
@@ -40,17 +43,23 @@ export function expectBotHasQueriedSummaryFromGpt(
   messagesBunches: DbChatMessage[][]
 ): void {
   for (const [index, messages] of messagesBunches.entries()) {
-    expect(gpt.sendMessage).toHaveBeenNthCalledWith(
-      index + 1,
+    const call = required(gpt.sendMessage.mock.calls[index]);
+
+    expect(call[0]).toBe(
       t(summaryPartPointsCount === 1 ? 'summarize.gptQuery' : 'summarize.gptQueryWithPoints', {
         pointsCount: summaryPartPointsCount,
         text: messages.map((message) => getFormattedMessage(message)).join('\n'),
-      }),
+      })
+    );
+
+    expect(call[1]).toEqual(
       expect.objectContaining({
         completionParams: { max_tokens: 2048 },
       })
     );
   }
+
+  expect(gpt.sendMessage).toHaveBeenCalledTimes(messagesBunches.length);
 }
 
 export function expectBotSentMessagesToTg(
