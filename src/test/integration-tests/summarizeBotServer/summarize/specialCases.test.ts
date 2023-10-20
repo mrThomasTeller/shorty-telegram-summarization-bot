@@ -5,7 +5,6 @@ import {
   createTgMessages,
   myTgGroup2Id,
 } from '../../lib/tgUtils.ts';
-import _ from 'lodash';
 import { mapTgMessagesToDbMessages } from '../../lib/dbUtils.ts';
 import { expectBotSentExactMessagesToTg } from '../../lib/expectations.ts';
 import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils.ts';

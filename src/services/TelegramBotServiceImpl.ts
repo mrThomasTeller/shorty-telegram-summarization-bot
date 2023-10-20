@@ -1,6 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import type TelegramBotService from './TelegramBotService.ts';
 import { getEnv } from '../config/envVars.ts';
+import { type TelegramBotSendMessageOptions } from './TelegramBotService.ts';
 
 export default class TelegramBotServiceImpl implements TelegramBotService {
   readonly bot: TelegramBot;
@@ -9,8 +10,12 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
     this.bot = new TelegramBot(getEnv().TELEGRAM_BOT_TOKEN, { polling: true });
   }
 
-  async sendMessage(chatId: number, text: string): Promise<void> {
-    await this.bot.sendMessage(chatId, text);
+  async sendMessage(
+    chatId: number,
+    text: string,
+    options?: TelegramBotSendMessageOptions
+  ): Promise<void> {
+    await this.bot.sendMessage(chatId, text, options);
   }
 
   onAnyMessage(callback: (msg: TelegramBot.Message) => void): VoidFunction {

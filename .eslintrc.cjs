@@ -50,8 +50,8 @@ module.exports = {
       {
         args: 'after-used',
         ignoreRestSiblings: true,
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_',
+        argsIgnorePattern: '^_.',
+        varsIgnorePattern: '^_.',
       },
     ],
     '@typescript-eslint/no-explicit-any': 'error',
@@ -96,6 +96,7 @@ module.exports = {
     ],
     'unicorn/no-nested-ternary': 0,
     'unicorn/no-null': 0,
+    'unicorn/no-array-reduce': 0,
 
     // eslint-comments
     'eslint-comments/disable-enable-pair': 0,

@@ -1,19 +1,30 @@
 import type Command from '../../config/commands/Command.ts';
+import helpCommand from '../../config/commands/help.ts';
+import noneCommand from '../../config/commands/none.ts';
+import pingCommand from '../../config/commands/ping.ts';
+import summarizeCommand from '../../config/commands/summarize.ts';
 import type ChatController from '../ChatController.ts';
+import helpCommandController from './helpCommandController.ts';
 import noneCommandController from './noneCommandController.ts';
 import pingCommandController from './pingCommandController.ts';
 import summarizeCommandController from './summarizeCommandController.ts';
 
 export default function getCommandController(command: Command): ChatController {
   switch (command.command) {
-    case 'ping': {
+    case pingCommand.command: {
       return pingCommandController;
     }
-    case 'summarize': {
+    case summarizeCommand.command: {
       return summarizeCommandController;
     }
-    default: {
+    case noneCommand.command: {
       return noneCommandController;
+    }
+    case helpCommand.command: {
+      return helpCommandController;
+    }
+    default: {
+      throw new Error(`Unknown command: ${command.command}`);
     }
   }
 }
