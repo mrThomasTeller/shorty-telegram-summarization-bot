@@ -25,3 +25,5 @@ export function getPartsAndPointsCountForText(
 
 const getPointsCountForOnePart = (text: string): number =>
   Math.min(Math.ceil(text.length / symbolsForOnePoint), maxPointsCount);
+
+export const formatSummaryFromGpt = (summary: string): string => summary.replace(/\.$/, '');

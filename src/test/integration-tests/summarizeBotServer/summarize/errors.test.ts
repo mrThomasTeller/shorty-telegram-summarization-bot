@@ -6,7 +6,7 @@ import {
 } from '../../lib/tgUtils.ts';
 import { ChatGPTError } from 'chatgpt';
 import { mapTgMessagesToDbMessages } from '../../lib/dbUtils.ts';
-import { expectBotSentMessagesToTg } from '../../lib/expectations.ts';
+import { expectBotSentExactMessagesToTg } from '../../lib/expectations.ts';
 import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils.ts';
 import createSummarizeBotServerContext from '../createSummarizeBotServerContext.ts';
 import { setTimeout } from 'node:timers/promises';
@@ -27,7 +27,7 @@ describe('summarizeBotServer summarize command errors', () => {
 
     // expectations
     expect(gpt.sendMessage).not.toHaveBeenCalled();
-    expectBotSentMessagesToTg(telegramBot, [t('summarize.errors.noMessages')]);
+    expectBotSentExactMessagesToTg(telegramBot, [t('summarize.errors.noMessages')]);
   });
 
   it('few messages to summarize', async () => {
@@ -43,7 +43,7 @@ describe('summarizeBotServer summarize command errors', () => {
     await simulateChatMessage(createSummarizeCommandMessage(myTgUser));
 
     // expectations
-    expectBotSentMessagesToTg(
+    expectBotSentExactMessagesToTg(
       telegramBot,
       [t('summarize.errors.fewMessages', { count: getEnv().MIN_MESSAGES_COUNT_TO_SUMMARIZE })],
       myTgGroupId
@@ -63,7 +63,7 @@ describe('summarizeBotServer summarize command errors', () => {
     await simulateChatMessage(createSummarizeCommandMessage(myTgUser));
 
     // expectations
-    expectBotSentMessagesToTg(
+    expectBotSentExactMessagesToTg(
       telegramBot,
       [t('summarize.message.start'), t('summarize.errors.queryProcess')],
       myTgGroupId
@@ -89,7 +89,7 @@ describe('summarizeBotServer summarize command errors', () => {
     await setTimeout(100);
 
     // expectations
-    expectBotSentMessagesToTg(
+    expectBotSentExactMessagesToTg(
       telegramBot,
       [
         t('summarize.message.start'),
@@ -125,7 +125,7 @@ describe('summarizeBotServer summarize command errors', () => {
     await setTimeout(100);
 
     // expectations
-    expectBotSentMessagesToTg(
+    expectBotSentExactMessagesToTg(
       telegramBot,
       [
         t('summarize.message.start'),
@@ -153,7 +153,7 @@ describe('summarizeBotServer summarize command errors', () => {
     await simulateChatMessage(createSummarizeCommandMessage(myTgUser));
 
     // expectations
-    expectBotSentMessagesToTg(
+    expectBotSentExactMessagesToTg(
       telegramBot,
       [
         t('summarize.message.start'),
@@ -179,7 +179,7 @@ describe('summarizeBotServer summarize command errors', () => {
     await simulateChatMessage(createSummarizeCommandMessage(myTgUser));
 
     // expectations
-    expectBotSentMessagesToTg(
+    expectBotSentExactMessagesToTg(
       telegramBot,
       [t('summarize.errors.maxSummariesPerDayExceeded', { count: getEnv().MAX_SUMMARIES_PER_DAY })],
       myTgGroupId
@@ -197,7 +197,7 @@ describe('summarizeBotServer summarize command errors', () => {
     await simulateChatMessage(createSummarizeCommandMessage(myTgUser));
 
     // expectations
-    expectBotSentMessagesToTg(
+    expectBotSentExactMessagesToTg(
       telegramBot,
       [t('summarize.errors.maxSummariesPerDayExceeded', { count: getEnv().MAX_SUMMARIES_PER_DAY })],
       myTgGroupId
@@ -220,7 +220,7 @@ describe('summarizeBotServer summarize command errors', () => {
     await setTimeout(50);
 
     // expectations
-    expectBotSentMessagesToTg(
+    expectBotSentExactMessagesToTg(
       telegramBot,
       [
         t('summarize.message.start'),
@@ -248,7 +248,7 @@ describe('summarizeBotServer summarize command errors', () => {
     await setTimeout(20);
 
     // expectations
-    expectBotSentMessagesToTg(
+    expectBotSentExactMessagesToTg(
       telegramBot,
       [
         t('summarize.message.start'),

@@ -9,11 +9,11 @@ import {
 import _ from 'lodash';
 import { mapTgMessagesToDbMessages } from '../../lib/dbUtils.ts';
 import {
-  expectBotSentMessagesToTg,
-  expectBotHasCreatedUsers,
-  expectBotHasCreatedDbChatMessages,
-  expectBotHasQueriedSummaryFromGpt,
-  expectBotHasAddedSummariesToDb,
+  expectBotSentExactMessagesToTg,
+  expectBotCreatedUsers,
+  expectBotCreatedDbChatMessages,
+  expectBotQueriedSummaryFromGpt,
+  expectBotAddedSummariesToDb,
 } from '../../lib/expectations.ts';
 import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils.ts';
 import createSummarizeBotServerContext from '../createSummarizeBotServerContext.ts';
@@ -181,12 +181,12 @@ function testCorrectSummary({
     await simulateChatMessage(createSummarizeCommandMessage(myTgUser));
 
     // expectations
-    expectBotHasCreatedUsers(db, [myTgUser, otherTgUser]);
+    expectBotCreatedUsers(db, [myTgUser, otherTgUser]);
     expect(db.getOrCreateChat).toHaveBeenCalledWith(myTgGroupId);
-    expectBotHasCreatedDbChatMessages(db, tgMessages);
-    expectBotHasQueriedSummaryFromGpt(gpt, summaryPartPointsCount, dbMessagesChunksForGpt);
-    expectBotHasAddedSummariesToDb(db, myTgGroupId, 1);
-    expectBotSentMessagesToTg(
+    expectBotCreatedDbChatMessages(db, tgMessages);
+    expectBotQueriedSummaryFromGpt(gpt, summaryPartPointsCount, dbMessagesChunksForGpt);
+    expectBotAddedSummariesToDb(db, myTgGroupId, 1);
+    expectBotSentExactMessagesToTg(
       telegramBot,
       [
         t('summarize.message.start'),

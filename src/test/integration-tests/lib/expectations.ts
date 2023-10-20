@@ -8,7 +8,7 @@ import { now } from 'lodash';
 import { myTgGroupId } from './tgUtils.ts';
 import { decryptIfExists } from '../../../data/encryption.ts';
 
-export function expectBotHasCreatedUsers(db: TestContext['db'], users: TelegramBot.User[]): void {
+export function expectBotCreatedUsers(db: TestContext['db'], users: TelegramBot.User[]): void {
   for (const user of users) {
     const userFound = db.users.some(
       (dbUser) =>
@@ -22,7 +22,7 @@ export function expectBotHasCreatedUsers(db: TestContext['db'], users: TelegramB
   }
 }
 
-export function expectBotHasCreatedDbChatMessages(
+export function expectBotCreatedDbChatMessages(
   db: TestContext['db'],
   messages: TelegramBot.Message[]
 ): void {
@@ -37,7 +37,7 @@ export function expectBotHasCreatedDbChatMessages(
   }
 }
 
-export function expectBotHasQueriedSummaryFromGpt(
+export function expectBotQueriedSummaryFromGpt(
   gpt: TestContext['gpt'],
   summaryPartPointsCount: number,
   messagesBunches: DbChatMessage[][]
@@ -62,7 +62,7 @@ export function expectBotHasQueriedSummaryFromGpt(
   expect(gpt.sendMessage).toHaveBeenCalledTimes(messagesBunches.length);
 }
 
-export function expectBotSentMessagesToTg(
+export function expectBotSentExactMessagesToTg(
   telegramBot: TestContext['telegramBot'],
   messages: (string | [message: string, userId: number])[],
   userId: number = myTgGroupId
@@ -74,7 +74,7 @@ export function expectBotSentMessagesToTg(
   expect(telegramBot.sendMessage).toHaveBeenCalledTimes(messages.length);
 }
 
-export function expectBotHasAddedSummariesToDb(
+export function expectBotAddedSummariesToDb(
   db: TestContext['db'],
   chatId: number,
   gptTestSummariesCount: number

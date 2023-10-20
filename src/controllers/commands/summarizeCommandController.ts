@@ -23,7 +23,7 @@ import type DbChatMessage from '../../data/DbChatMessage.ts';
 import { getEnv } from '../../config/envVars.ts';
 import { max as maxTime } from 'date-fns';
 import type TelegramBot from 'node-telegram-bot-api';
-import { getPartsAndPointsCountForText } from '../../data/summaryUtils.ts';
+import { formatSummaryFromGpt, getPartsAndPointsCountForText } from '../../data/summaryUtils.ts';
 
 type SummarizeResultCase =
   | GptResultCase
@@ -148,7 +148,7 @@ function getBotMessageForSummarizeResultCase(resultCase: SummarizeResultCase): s
       return t('summarize.message.header');
     }
     case 'responseFromGPT': {
-      return resultCase.text;
+      return formatSummaryFromGpt(resultCase.text);
     }
     case 'endSummary': {
       return t('summarize.message.end');
