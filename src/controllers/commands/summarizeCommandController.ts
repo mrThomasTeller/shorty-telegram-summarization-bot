@@ -12,6 +12,8 @@ import {
   pipe,
   startWith,
   exhaustMap,
+  concat,
+  from,
 } from 'rxjs';
 import type ChatController from '../ChatController.ts';
 import { t } from '../../config/translations/index.ts';
@@ -29,6 +31,7 @@ type SummarizeResultCase =
   | GptResultCase
   | { type: 'noMessages' }
   | { type: 'fewMessages' }
+  | { type: 'tooManySummaryParts'; count: number }
   | { type: 'tooManySummaries' }
   | { type: 'startSummary' }
   | { type: 'summaryHeader' }
@@ -65,8 +68,8 @@ const queryGptOrReturnError$ =
     } else {
       return of(messages).pipe(
         map(formatChatMessages),
-        concatMap(splitTextForGptQuery),
-        concatMap(querySummaryPartFromGptAndReEnumerateResponse$(services)),
+        map(getPartsAndPointsCountForText),
+        concatMap(rejectOverflowedSummaryPartsAndMakeSummary$(services)),
         insertSummaryLayout()
       );
     }
@@ -90,9 +93,24 @@ const getChatMessagesForSummary =
 const formatChatMessages = (messages: DbChatMessage[]): string =>
   messages.map((msg) => getFormattedMessage(msg)).join('\n');
 
-const querySummaryPartFromGptAndReEnumerateResponse$ =
-  (services: Services) =>
-  ({ text, pointsCount, index }: GptQueryPart) =>
+const rejectOverflowedSummaryPartsAndMakeSummary$ = _.curry(
+  (services: Services, parts: { text: string; pointsCount: number }[]) => {
+    const maxSummaryParts = getEnv().MAX_SUMMARY_PARTS;
+    const allowedParts = _.takeRight(parts, maxSummaryParts);
+    const gptQueryParts = mapSummaryPartsToGptQuery(allowedParts);
+
+    return concat<SummarizeResultCase[]>(
+      parts.length > maxSummaryParts
+        ? of({ type: 'tooManySummaryParts', count: parts.length })
+        : [],
+
+      from(gptQueryParts).pipe(mergeMap(querySummaryPartFromGptAndReEnumerateResponse$(services)))
+    );
+  }
+);
+
+const querySummaryPartFromGptAndReEnumerateResponse$ = _.curry(
+  (services: Services, { text, pointsCount, index }: GptQueryPart) =>
     sendMessageToGptWithRetries$({ gpt: services.gpt, text }).pipe(
       map(
         (gptResultCase): SummarizeResultCase =>
@@ -103,7 +121,8 @@ const querySummaryPartFromGptAndReEnumerateResponse$ =
               }
             : gptResultCase
       )
-    );
+    )
+);
 
 const handleSummaryResultCase =
   (services: Services, chatId: number) => async (resultCase: SummarizeResultCase) => {
@@ -173,6 +192,9 @@ function getBotMessageForSummarizeResultCase(resultCase: SummarizeResultCase): s
         count: getEnv().MAX_SUMMARIES_PER_DAY,
       });
     }
+    case 'tooManySummaryParts': {
+      return t('summarize.message.tooManyMessages');
+    }
   }
 }
 
@@ -182,8 +204,10 @@ type GptQueryPart = {
   text: string;
 };
 
-const splitTextForGptQuery = (text: string): GptQueryPart[] =>
-  getPartsAndPointsCountForText(text).map(({ text, pointsCount }, index) => ({
+const mapSummaryPartsToGptQuery = (
+  parts: { text: string; pointsCount: number }[]
+): GptQueryPart[] =>
+  parts.map(({ text, pointsCount }, index) => ({
     pointsCount,
     index,
     text: t(pointsCount === 1 ? 'summarize.gptQuery' : 'summarize.gptQueryWithPoints', {

@@ -3,6 +3,7 @@ import { required } from '../../../lib/common.ts';
 import { getEnv } from '../../../config/envVars.ts';
 import _ from 'lodash';
 import formatDate from 'date-fns/format';
+import { tgMessageLength } from './constants.ts';
 
 export type TestTgMessage = TelegramBot.Message & {
   shouldBeSkipped?: boolean;
@@ -96,7 +97,6 @@ export function createTgMessages(
 }
 
 function createSampleText(num: number, date: Date): string {
-  const testMessageLength = 120;
   const prefix = `Message: ${num}. Date: ${formatDate(date, 'dd.mm.yyyy HH:mm')}. Text: `;
-  return `${prefix}${'a'.repeat(testMessageLength - prefix.length)}`;
+  return `${prefix}${'a'.repeat(tgMessageLength - prefix.length)}`;
 }

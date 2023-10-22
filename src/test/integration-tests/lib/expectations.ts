@@ -64,7 +64,11 @@ export function expectBotQueriedSummaryFromGpt(
 
 export function expectBotSentExactMessagesToTg(
   telegramBot: TestContext['telegramBot'],
-  messages: (string | [message: string, userId: number])[],
+  messages: (
+    | string
+    | jest.AsymmetricMatcher
+    | [message: string | jest.AsymmetricMatcher, userId: number]
+  )[],
   userId: number = myTgGroupId
 ): void {
   for (const [index, message] of messages.entries()) {

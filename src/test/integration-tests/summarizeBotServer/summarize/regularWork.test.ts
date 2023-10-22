@@ -19,6 +19,7 @@ import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils.ts';
 import createSummarizeBotServerContext from '../createSummarizeBotServerContext.ts';
 import { t } from '../../../../config/translations/index.ts';
 import { daysAgo, hoursAgo } from '../../../../lib/date.ts';
+import { messagesCountInOneSummaryQuery } from '../../lib/constants.ts';
 
 // todo use text length instead of messages count
 // todo implement gpt.sendMessage mock as now I don't check that gpt.sendMessage was called with correct params
@@ -27,6 +28,7 @@ describe('summarizeBotServer summarize command regular work', () => {
     'with 3 messages (1 summary part, 1 point)',
     testCorrectSummary({
       messages: 3,
+      summaryPartsCount: 1,
       summaryPartPointsCount: 1,
     })
   );
@@ -35,6 +37,7 @@ describe('summarizeBotServer summarize command regular work', () => {
     'with 6 messages (1 summary part, 2 point)',
     testCorrectSummary({
       messages: 6,
+      summaryPartsCount: 1,
       summaryPartPointsCount: 2,
     })
   );
@@ -43,6 +46,7 @@ describe('summarizeBotServer summarize command regular work', () => {
     'with 9 messages (1 summary part, 3 point)',
     testCorrectSummary({
       messages: 9,
+      summaryPartsCount: 1,
       summaryPartPointsCount: 3,
     })
   );
@@ -51,6 +55,7 @@ describe('summarizeBotServer summarize command regular work', () => {
     'with 12 messages (1 summary part, 4 points)',
     testCorrectSummary({
       messages: 12,
+      summaryPartsCount: 1,
       summaryPartPointsCount: 4,
     })
   );
@@ -59,6 +64,7 @@ describe('summarizeBotServer summarize command regular work', () => {
     'with 15 messages (1 summary part, 5 points)',
     testCorrectSummary({
       messages: 15,
+      summaryPartsCount: 1,
       summaryPartPointsCount: 5,
     })
   );
@@ -67,6 +73,7 @@ describe('summarizeBotServer summarize command regular work', () => {
     'with 40 messages (2 summary parts, 4 points)',
     testCorrectSummary({
       messages: 40,
+      summaryPartsCount: 2,
       summaryPartPointsCount: 4,
     })
   );
@@ -75,6 +82,7 @@ describe('summarizeBotServer summarize command regular work', () => {
     'with 70 messages (3 summary parts, 3 points)',
     testCorrectSummary({
       messages: 70,
+      summaryPartsCount: 3,
       summaryPartPointsCount: 3,
     })
   );
@@ -84,14 +92,16 @@ describe('summarizeBotServer summarize command regular work', () => {
     testCorrectSummary({
       messages: 90,
       summaryPartPointsCount: 2,
+      summaryPartsCount: 4,
     })
   );
 
   it(
-    'with 140 messages (2 points)',
+    'with 120 messages (5 summary parts, 2 points, makes not less than 2 points)',
     testCorrectSummary({
-      messages: 140,
+      messages: 120,
       summaryPartPointsCount: 2,
+      summaryPartsCount: 5,
     })
   );
 
@@ -136,12 +146,12 @@ function testCorrectSummary({
   messages,
   lastSummaryDate,
   summaryPartPointsCount,
-  messagesCountInOneSummaryQuery = 25,
+  summaryPartsCount,
 }: {
   messages: number | TgMessagesBunchDesc[];
   lastSummaryDate?: Date;
   summaryPartPointsCount: number;
-  messagesCountInOneSummaryQuery?: number;
+  summaryPartsCount?: number;
 }) {
   return async (): Promise<void> => {
     const { telegramBot, db, gpt, simulateChatMessage } = await createSummarizeBotServerContext();
@@ -170,9 +180,11 @@ function testCorrectSummary({
       ];
     }
 
-    gpt.sendMessage.mockResolvedValue(
-      createGptChatMessage(gptTestSummary(0, summaryPartPointsCount))
-    );
+    for (const page of _.range(gptTestSummariesCount)) {
+      gpt.sendMessage.mockResolvedValueOnce(
+        createGptChatMessage(gptTestSummary(page, summaryPartPointsCount, 0))
+      );
+    }
 
     // story
     for (const tgMessage of tgMessages) {
@@ -181,6 +193,9 @@ function testCorrectSummary({
     await simulateChatMessage(createSummarizeCommandMessage(myTgUser));
 
     // expectations
+    if (summaryPartsCount !== undefined) {
+      expect(summaryPartsCount).toBe(gptTestSummariesCount);
+    }
     expectBotCreatedUsers(db, [myTgUser, otherTgUser]);
     expect(db.getOrCreateChat).toHaveBeenCalledWith(myTgGroupId);
     expectBotCreatedDbChatMessages(db, tgMessages);
