@@ -18,6 +18,18 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
     await this.bot.sendMessage(chatId, text, options);
   }
 
+  onAddedToChat(callback: (chatId: number) => void): VoidFunction {
+    const listener = async (msg: TelegramBot.ChatMemberUpdated): Promise<void> => {
+      const me = await this.bot.getMe();
+      if (msg.new_chat_member.status === 'member' && msg.new_chat_member.user.id === me.id) {
+        callback(msg.chat.id);
+      }
+    };
+
+    this.bot.on('my_chat_member', listener);
+    return () => this.bot.off('my_chat_member', listener);
+  }
+
   onAnyMessage(callback: (msg: TelegramBot.Message) => void): VoidFunction {
     const regexp = /.*/;
     this.bot.onText(regexp, callback);

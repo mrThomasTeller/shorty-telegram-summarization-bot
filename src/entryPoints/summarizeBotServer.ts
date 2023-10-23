@@ -7,9 +7,16 @@ import type TelegramBotService from '../services/TelegramBotService.ts';
 import type Services from '../services/Services.ts';
 import _ from 'lodash';
 import logger from '../config/logger.ts';
+import { sendHelpMessage } from '../controllers/commands/helpCommandController.ts';
+import { catchError } from '../lib/async.ts';
 
+// todo refactor this function
 const summarizeBotServer: EntryPoint = async (services) => {
   await services.telegramBot.setMyCommands(getRealCommands());
+
+  services.telegramBot.onAddedToChat((chatId) => {
+    catchError(sendHelpMessage(services.telegramBot, chatId));
+  });
 
   createTgMessagesObservable(services.telegramBot)
     .pipe(groupNonEmptyMessagesByChatId)

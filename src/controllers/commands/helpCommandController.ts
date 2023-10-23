@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import { required } from '../../lib/common.ts';
 import _ from 'lodash';
 import { escapeTelegramMarkdown } from '../../lib/tgUtils.ts';
+import type TelegramBotService from '../../services/TelegramBotService';
 
 const helpMessageTpl = _.template(
   fs.readFileSync(path.join(required(dirname()), '../../config/texts/help.tpl'), 'utf8')
@@ -20,11 +21,12 @@ export const renderHelpMessage = (): string =>
 
 // todo make html template
 const helpCommandController: ChatController = ({ chat$, chatId, services }) => {
-  chat$.subscribe(() =>
-    services.telegramBot.sendMessage(chatId, renderHelpMessage(), {
-      parse_mode: 'MarkdownV2',
-    })
-  );
+  chat$.subscribe(() => sendHelpMessage(services.telegramBot, chatId));
 };
 
 export default helpCommandController;
+
+export const sendHelpMessage = (telegramBot: TelegramBotService, chatId: number): Promise<void> =>
+  telegramBot.sendMessage(chatId, renderHelpMessage(), {
+    parse_mode: 'MarkdownV2',
+  });

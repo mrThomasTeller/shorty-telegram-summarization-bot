@@ -10,6 +10,11 @@ type TelegramBotService = {
   /**
    * @returns unsubscribe function
    */
+  onAddedToChat: (callback: (chatId: number) => void) => VoidFunction;
+
+  /**
+   * @returns unsubscribe function
+   */
   onAnyMessage: (callback: (msg: TelegramBot.Message) => void) => VoidFunction;
 
   sendMessage: (
@@ -17,6 +22,7 @@ type TelegramBotService = {
     text: string,
     options?: TelegramBotSendMessageOptions
   ) => Promise<void>;
+
   setMyCommands: (commands: TelegramBot.BotCommand[]) => Promise<void>;
 };
 

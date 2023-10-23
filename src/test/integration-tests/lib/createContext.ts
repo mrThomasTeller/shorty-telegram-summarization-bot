@@ -17,7 +17,7 @@ export type TestContext = ReturnType<typeof createContext>;
 // todo move all mocks factories to separate files
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default function createContext() {
-  const { telegramBot, simulateChatMessage } = createTelegramBotServiceMock();
+  const { telegramBot, simulateChatMessage, simulateAddedToChat } = createTelegramBotServiceMock();
   const db = createDbServiceMock();
   const gpt = createGptServiceMock();
 
@@ -26,6 +26,7 @@ export default function createContext() {
     db,
     gpt,
     simulateChatMessage,
+    simulateAddedToChat,
   };
 }
 
@@ -141,14 +142,16 @@ function createDbServiceMock() {
   return service;
 }
 
+const initialSimulateChatMessage = (msg: TelegramBot.Message): Promise<TelegramBot.Message> =>
+  Promise.resolve(msg);
+const initialSimulateAddedToChat = (_chatId: number): void => {};
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 function createTelegramBotServiceMock() {
   const service = mock<TelegramBotService>();
 
-  // eslint-disable-next-line unicorn/consistent-function-scoping
-  const initialSimulateChatMessage = (msg: TelegramBot.Message): Promise<TelegramBot.Message> =>
-    Promise.resolve(msg);
   let simulateChatMessage = initialSimulateChatMessage;
+  let simulateAddedToChat = initialSimulateAddedToChat;
 
   service.getUsername.mockResolvedValue(getEnv().BOT_NAME);
 
@@ -164,10 +167,23 @@ function createTelegramBotServiceMock() {
     };
   });
 
+  service.onAddedToChat.mockImplementation((callback) => {
+    simulateAddedToChat = (chatId) => {
+      callback(chatId);
+    };
+
+    return () => {
+      simulateAddedToChat = initialSimulateAddedToChat;
+    };
+  });
+
   return {
     telegramBot: service,
     simulateChatMessage: (msg: TelegramBot.Message): Promise<TelegramBot.Message> =>
       simulateChatMessage(msg),
+    simulateAddedToChat: (chatId: number): void => {
+      simulateAddedToChat(chatId);
+    },
   };
 }
 
