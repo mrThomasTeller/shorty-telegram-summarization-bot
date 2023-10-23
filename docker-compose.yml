@@ -47,5 +47,8 @@ services:
     image: amir20/dozzle:v5.0.5
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DOZZLE_USERNAME=${DOZZLE_USERNAME}
+      - DOZZLE_PASSWORD=${DOZZLE_PASSWORD}
     ports:
       - 9999:8080
