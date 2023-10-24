@@ -22,7 +22,7 @@ const logger = winston.createLogger({
   level: 'info',
   transports: [
     new winston.transports.File({
-      filename: path.join(required(dirname()), '../../logs/summarize-server.log'),
+      filename: path.join(required(dirname()), '../../logs/tg-bot.log'),
       format: combine(timestamp({ format: timeFormat }), fileLogFormat),
     }),
     new winston.transports.Console({

@@ -1,4 +1,4 @@
-const telegramMarkdownSpecialSymbols = ['.', '-', '!', '*', '_'];
+const telegramMarkdownSpecialSymbols = ['.', '-', '!', '*', '_', '(', ')'];
 
 export const escapeTelegramMarkdown = (text: string): string =>
   telegramMarkdownSpecialSymbols.reduce(
