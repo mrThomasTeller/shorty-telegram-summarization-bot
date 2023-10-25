@@ -7,6 +7,7 @@ type Env = {
   NODE_ENV: string;
   MODE: 'WORK' | 'MAINTENANCE';
   WHITE_CHATS_LIST: string;
+  ADMIN_ID: number;
   BOT_NAME: string;
   RETRY_GPT_QUERY_TIME: number;
   MIN_MESSAGES_COUNT_TO_SUMMARIZE: number;
@@ -22,6 +23,7 @@ export function getEnv(): Env {
     NODE_ENV: required(process.env.NODE_ENV),
     TELEGRAM_BOT_TOKEN: required(process.env.TELEGRAM_BOT_TOKEN),
     WHITE_CHATS_LIST: required(process.env.WHITE_CHATS_LIST),
+    ADMIN_ID: Number(required(process.env.ADMIN_ID)),
     BOT_NAME: required(process.env.BOT_NAME),
     RETRY_GPT_QUERY_TIME: Number(required(process.env.RETRY_GPT_QUERY_TIME)),
     MIN_MESSAGES_COUNT_TO_SUMMARIZE: Number(required(process.env.MIN_MESSAGES_COUNT_TO_SUMMARIZE)),
