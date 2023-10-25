@@ -15,7 +15,7 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
     text: string,
     options?: TelegramBotSendMessageOptions
   ): Promise<void> {
-    await this.bot.sendMessage(chatId, text, options);
+    await this.bot.sendMessage(chatId, text, { ...options, disable_web_page_preview: true });
   }
 
   onAddedToChat(callback: (chatId: number) => void): VoidFunction {
