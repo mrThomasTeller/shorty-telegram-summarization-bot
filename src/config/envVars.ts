@@ -33,7 +33,9 @@ export function getEnv(): Env {
 
 export function getWhiteChatsList(): number[] | undefined {
   const whiteChatsList = process.env.WHITE_CHATS_LIST;
-  return whiteChatsList === '' ? undefined : getEnv().WHITE_CHATS_LIST.split(',').map(Number);
+  return whiteChatsList === '' || whiteChatsList === undefined
+    ? undefined
+    : getEnv().WHITE_CHATS_LIST.split(',').map(Number);
 }
 
 export function setWhiteChatsList(chatIds: number[] | undefined): void {
