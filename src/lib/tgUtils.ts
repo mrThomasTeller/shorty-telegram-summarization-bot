@@ -5,3 +5,8 @@ export const escapeTelegramMarkdown = (text: string): string =>
     (acc, symbol) => acc.replaceAll(symbol, `\\${symbol}`),
     text
   );
+
+export const getTgCommandParams = (text: string): string => {
+  const [_command, params] = text.split(/[\n ](.*)/s);
+  return params ?? '';
+};
