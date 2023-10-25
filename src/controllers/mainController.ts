@@ -50,12 +50,14 @@ const messageHasCommandForBot =
   };
 
 const getObserveCaseForMessage =
-  (whiteChatsList: number[]) =>
+  (whiteChatsList: number[] | undefined) =>
   ({ msg, parsedCommand }: MessageAndParsedCommand): ObserveCase => {
     const command = required(commands[parsedCommand?.command ?? '']);
 
     return (getEnv().MODE === 'MAINTENANCE' && !command.allowInMaintenance) ||
-      (!whiteChatsList.includes(msg.chat.id) && command.whiteListOnly)
+      (whiteChatsList !== undefined &&
+        !whiteChatsList.includes(msg.chat.id) &&
+        command.whiteListOnly)
       ? 'maintenanceMessage'
       : command;
   };
