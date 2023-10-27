@@ -53,7 +53,12 @@ const messageHasCommandForBot =
 const getObserveCaseForMessage =
   (whiteChatsList: number[] | undefined) =>
   ({ msg, parsedCommand }: MessageAndParsedCommand): ObserveCase => {
-    const command = commands[parsedCommand?.command ?? ''] ?? noneCommand;
+    const parsedCommandName = parsedCommand?.command;
+    const command = commands[parsedCommandName ?? ''] ?? noneCommand;
+
+    if (parsedCommandName !== undefined && commands[parsedCommandName] === undefined) {
+      logger.warn(`unknown command: ${parsedCommandName}`);
+    }
 
     return (getEnv().MODE === 'MAINTENANCE' && !command.allowInMaintenance) ||
       (whiteChatsList !== undefined &&
