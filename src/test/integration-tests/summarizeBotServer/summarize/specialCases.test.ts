@@ -48,7 +48,7 @@ describe('summarizeBotServer summarize command special cases', () => {
   });
 
   // TODO: fix this test
-  xit('will not change order of summaries if second summary came earlier than first', async () => {
+  it('will not change order of summaries if second summary came earlier than first', async () => {
     const { telegramBot, db, gpt, simulateChatMessage } = await createSummarizeBotServerContext();
 
     // 40 messages turns into 2 summary parts with 4 points each
@@ -59,7 +59,7 @@ describe('summarizeBotServer summarize command special cases', () => {
     // mocks
     db.messages = dbMessages.all;
     // delay first response from gpt
-    gpt.sendMessage.mockReturnValue(
+    gpt.sendMessage.mockReturnValueOnce(
       setTimeout(20, createGptChatMessage(gptTestSummary(0, pointsCount, 0)))
     );
     gpt.sendMessage.mockResolvedValueOnce(createGptChatMessage(gptTestSummary(1, pointsCount, 0)));

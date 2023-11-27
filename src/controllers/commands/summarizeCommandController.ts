@@ -104,7 +104,7 @@ const rejectOverflowedSummaryPartsAndMakeSummary$ = _.curry(
         ? of({ type: 'tooManySummaryParts', count: parts.length })
         : [],
 
-      from(gptQueryParts).pipe(mergeMap(querySummaryPartFromGptAndReEnumerateResponse$(services)))
+      from(gptQueryParts).pipe(concatMap(querySummaryPartFromGptAndReEnumerateResponse$(services)))
     );
   }
 );

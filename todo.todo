@@ -36,6 +36,7 @@ Release 0.8 (open beta of the second app):
   - write news to all chat rooms where summarize bot is a member
 
 Release 0.9:
+  - audience reach calculation
   - regular Ping and notifications to your phone when bot crashes
   - try to increase prompt size
   - work out the issue of storing personal data.

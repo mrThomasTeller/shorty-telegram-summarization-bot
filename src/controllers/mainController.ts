@@ -17,6 +17,7 @@ import { filterAsync } from '../lib/rxOperators.ts';
 import type TelegramBot from 'node-telegram-bot-api';
 import type Services from '../services/Services.ts';
 import logger from '../config/logger.ts';
+import noneCommand from '../config/commands/none.ts';
 
 type ObserveCase = Command | 'maintenanceMessage';
 
@@ -50,12 +51,19 @@ const messageHasCommandForBot =
   };
 
 const getObserveCaseForMessage =
-  (whiteChatsList: number[]) =>
+  (whiteChatsList: number[] | undefined) =>
   ({ msg, parsedCommand }: MessageAndParsedCommand): ObserveCase => {
-    const command = required(commands[parsedCommand?.command ?? '']);
+    const parsedCommandName = parsedCommand?.command;
+    const command = commands[parsedCommandName ?? ''] ?? noneCommand;
+
+    if (parsedCommandName !== undefined && commands[parsedCommandName] === undefined) {
+      logger.warn(`unknown command: ${parsedCommandName}`);
+    }
 
     return (getEnv().MODE === 'MAINTENANCE' && !command.allowInMaintenance) ||
-      (!whiteChatsList.includes(msg.chat.id) && command.whiteListOnly)
+      (whiteChatsList !== undefined &&
+        !whiteChatsList.includes(msg.chat.id) &&
+        command.whiteListOnly)
       ? 'maintenanceMessage'
       : command;
   };

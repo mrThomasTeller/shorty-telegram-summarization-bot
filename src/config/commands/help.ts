@@ -5,7 +5,7 @@ const helpCommand: Command = {
   command: 'help',
   description: t('commands.help.description'),
   whiteListOnly: true,
-  allowInMaintenance: true,
+  allowInMaintenance: false,
 };
 
 export default helpCommand;
