@@ -144,7 +144,7 @@ function createDbServiceMock() {
 
 const initialSimulateChatMessage = (msg: TelegramBot.Message): Promise<TelegramBot.Message> =>
   Promise.resolve(msg);
-const initialSimulateAddedToChat = (_chatId: number): void => {};
+const initialSimulateAddedToChat = (_chatId: number): Promise<void> => Promise.resolve();
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 function createTelegramBotServiceMock() {
@@ -168,8 +168,9 @@ function createTelegramBotServiceMock() {
   });
 
   service.onAddedToChat.mockImplementation((callback) => {
-    simulateAddedToChat = (chatId) => {
+    simulateAddedToChat = async (chatId) => {
       callback(chatId);
+      await setTimeout(0);
     };
 
     return () => {
@@ -181,9 +182,7 @@ function createTelegramBotServiceMock() {
     telegramBot: service,
     simulateChatMessage: (msg: TelegramBot.Message): Promise<TelegramBot.Message> =>
       simulateChatMessage(msg),
-    simulateAddedToChat: (chatId: number): void => {
-      simulateAddedToChat(chatId);
-    },
+    simulateAddedToChat: (chatId: number): Promise<void> => simulateAddedToChat(chatId),
   };
 }
 

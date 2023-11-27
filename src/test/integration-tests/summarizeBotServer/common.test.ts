@@ -43,7 +43,7 @@ describe('summarizeBotServer common', () => {
   it('shows help when added to new chat', async () => {
     const { telegramBot, simulateAddedToChat } = await createSummarizeBotServerContext();
 
-    simulateAddedToChat(myTgGroupId);
+    await simulateAddedToChat(myTgGroupId);
 
     expect(telegramBot.sendMessage).toHaveBeenCalledWith(myTgGroupId, renderHelpMessage(botName), {
       parse_mode: 'MarkdownV2',
