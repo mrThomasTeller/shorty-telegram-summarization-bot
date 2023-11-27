@@ -1,7 +1,6 @@
 import { mock } from 'jest-mock-extended';
 import type TelegramBotService from '../../../services/TelegramBotService.ts';
 import type TelegramBot from 'node-telegram-bot-api';
-import { getEnv } from '../../../config/envVars.ts';
 import type DbService from '../../../services/DbService.ts';
 import type GptService from '../../../services/GptService.ts';
 import { setTimeout } from 'node:timers/promises';
@@ -11,6 +10,7 @@ import { type User, type Summary } from '@prisma/client';
 import { type MessageCreateInput } from '../../../services/DbService.ts';
 import { myTgUser, otherTgUser } from './tgUtils.ts';
 import { encrypt, encryptIfExists } from '../../../data/encryption.ts';
+import { botName } from './constants.ts';
 
 export type TestContext = ReturnType<typeof createContext>;
 
@@ -153,7 +153,7 @@ function createTelegramBotServiceMock() {
   let simulateChatMessage = initialSimulateChatMessage;
   let simulateAddedToChat = initialSimulateAddedToChat;
 
-  service.getUsername.mockResolvedValue(getEnv().BOT_NAME);
+  service.getUsername.mockResolvedValue(botName);
 
   service.onAnyMessage.mockImplementation((callback) => {
     simulateChatMessage = async (msg) => {

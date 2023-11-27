@@ -1,90 +1,88 @@
 Release 0.4:
-  ✔ зарефакторить на RxJS @done(23-10-04 13:15)
-  ✔ настроить резервное копирование БД @done(23-10-04 17:54)
-  ✔ логи @done(23-10-08 15:11)
-  ✔ вынести тексты в отдельные файлы @done(23-10-02 16:05)
+  ✔ refactor to RxJS @done(23-10-04 13:15)
+  ✔ configure database backup @done(23-10-04 17:54)
+  ✔ logs @done(23-10-08 15:11)
+  ✔ put texts in separate files @done(23-10-02 16:05)
   ✔ strict eslint rules (any, cognitive complexity, etc) @done(23-09-26 22:10)
   ✔ update prisma @done(23-09-26 22:10)
-  ✔ просмотр логов с телефона @done(23-10-09 20:43)
-  ✔ писать логи в файлы @done(23-10-09 20:43)
+  ✔ view logs from phone @done(23-10-09-09 20:43)
+  ✔ write logs to files @done(23-10-09-09 20:43)
 
 Release 0.5:
-  ✔ не делать выжимку если сообщений меньше 10 @done(23-10-11 16:43)
-  ✔ бот должен собирать сообщения начиная с последнего запроса @done(23-10-17 12:48)
-  ✔ ограничить количество запросов к боту @done(23-10-18 12:04)
-  ✔ запретить создание нескольких summary одновременно @done(23-10-18 14:48)
-  ✔ уменьшить количество пунктов если сообщений мало @done(23-10-18 21:09)
+  ✔ no squeeze if posts are less than 10 @done(23-10-11 16:43)
+  ✔ bot should collect messages starting from the last request @done(23-10-17 12:48)
+  ✔ limit the number of requests to the bot @done(23-10-18 12:04)
+  ✔ prohibit creating multiple summaries at the same time @done(23-10-18 14:48)
+  ✔ reduce the number of items if there are few messages @done(23-10-18 21:09)
 
 Release 0.6:
-  ✔ удалить точку в конце выжимки из одного пункта @done(23-10-20 10:01)
-  ✔ возможность сообщить об ошибке или отправить предложение по улучшению @done(23-10-20 19:00)
-  ✔ выяснить можно ли спрашивать про свои чаты из личного диалога (попробовать административные права) @done(23-10-20 19:00)
-  ✔ шифрование сообщений @done(23-10-19 15:36)
-    ✔ отключить историю bash @done(23-10-19 16:30)
+  ✔ remove the dot at the end of a single paragraph squeeze @done(23-10-20 10:01)
+  ✔ ability to report a bug or submit a suggestion for improvement @done(23-10-20 19:00)
+  ✔ find out if you can ask about your chats from a private dialogue (try administrative rights) @done(23-10-20 19:00)
+  ✔ encrypt messages @done(23-10-19 15:36)
+  ✔ disable bash history @done(23-10-19 16:30)
 
-Release 0.7 (открытая бета):
-  ✔ добавить ограничение на максимальное количество summary parts @done(23-10-22 14:49)
-  ✔ приветственное сообщение @done(23-10-23 19:10)
-  ✔ поставить авторизацию на dozzle @done(23-10-23 20:53)
-  ✔ оформить профиль бота, подумать о названии @done(23-10-24 22:49)
-  ✔ оформить профиль саппорт-бота @done(23-10-24 23:18)
-  ✔ оформить страницу на boosty @done(23-10-25 16:31)
+Release 0.7 (open beta):
+  ✔ add limit on maximum number of summary parts @done(23-10-22 14:49)
+  ✔ welcome message @done(23-10-23 19:10)
+  ✔ put authorisation on dozzle @done(23-10-23 20:53)
+  ✔ design bot profile, think of a name @done(23-10-24 22:49)
+  ✔ design a support bot profile @done(23-10-24 23:18)
+  ✔ design a page on boosty @done(23-10-25 16:31)
 
-Release 0.8 (открытая бета второго приложения):
-  - сделать второе приложения с забавными вопросами по диалогу (может даже несколько приложений)
-  - добавить во все боты ссылки на другие боты
-  - написать новость во все чаты, в которых состоит summarize bot
+Release 0.8 (open beta of the second app):
+  - make a second app with fun dialogue questions (maybe even multiple apps)
+  - add links to other bots in all bots
+  - write news to all chat rooms where summarize bot is a member
 
 Release 0.9:
-  - регулярный Пинг и уведомления на телефон о падении бота
-  - попробовать увеличить размер промпта
-  - проработать вопрос хранения у себя перс. данных
-  - подробная справка
-  - проработать вопрос с рекламой
+  - regular Ping and notifications to your phone when bot crashes
+  - try to increase prompt size
+  - work out the issue of storing personal data.
+  - detailed help
+  - work out the issue with adverts
 
 Backlog:
-  - предупредить, что сообщения собираются только с момента добавления бота в чат
-  - БАГ: пофиксить тест "will not change order of summaries if second summary came earlier than first"
-  - писать из скольки конкретно последних сообщений бот может сделать выжимку, если количество сообщений для выжимки превышено
-  - мониторинг состояния: количество потраченных денег, в скольких чатах состоит, активность пользователей, ошибки
-  - возможность запрашивать выжимку из каналов в личном диалоге
-  - шифровать также id чатов (либо делать хеши), лучше использовать id в качестве дополнительного ключа или соли
-  - добавить хештеги к выжимке
-  - сделать ограничение по размеру одного пункта
-  - очистка базы данных
-  - рассылка новостей
-  - настроить подключение к БД по ssh/ssl (не RSA)
-  - настроить CI/CD
-  - функция чтения сообщений за определенный день/время
-  - поддержка id чатов строк
-  - сделать ChangeLog из коммитов
-  - сделать id отдельными типами
-  - tg timestamp отдельным типом
-  - собрать образ pgbackup из https://github.com/mrThomasTeller/docker-postgres-backup-local
-  - Сделать интеграционные тесты для логов
-  - постепенное создание выжимки (gpt progress)
-  - удалять из БД удалённые сообщения, редактировать отредактированные
-  - удалять из БД сообщения когда бот выходит из чата
-  - лог о том что бот вышел из чата
-  - сделать unit-тесты для сервисов
-  - Обернуть сервис TelegramBotService в фасад, который будет ставить отправляемые сообщения в очередь
-  - доступ к dozzle по ssl
-  - jest matcher closeToDate (на замену toBeCloseTo)
-  - учитывать "ответы на"
-  - учитывать "пересланные сообщения"
-  - учитывать "кто-то зашёл в чат"
-  - поправить все TODO
-  - если в последнем summary part текста мало, то нужно уменьшать количество пунктов
-  - починить баг импорта: `import maxDate from 'date-fns/max';`, `import * as fp from 'fp-ts/lib/function.js';`
-  - вынести `getEnv` на самый верх, чтобы убрать зависимость модулей от него
-  - соблюсти стандарты хранения чувствительных данных
-  - отключить возможность сделать `docker inspect`
+  - warn that messages are collected only from the moment the bot is added to chat.
+  - BUG: fix test "will not change order of summaries if second summary came earlier than first".
+  - write how many recent messages the bot can make a summarisation from, if the number of messages for summarisation is exceeded.
+  - status monitoring: amount of money spent, how many chats it is in, user activity, errors
+  - ability to request a squeeze from channels in a private dialogue
+  - encrypt also chat id (or make hashes), it is better to use id as an additional key or salt
+  - add hashtags to the extract
+  - make a limit on the size of one item
+  - database cleanup
+  - newsletter
+  - set up connection to database via ssh/ssl (not RSA)
+  - configure CI/CD
+  - function to read messages for a certain day/time
+  - support chat id strings
+  - make ChangeLog from commits
+  - make id's separate types
+  - make tg timestamp a separate type
+  - build pgbackup image from https://github.com/mrThomasTeller/docker-postgres-backup-local
+  - Make integration tests for logs
+  - progressive squeeze creation (gpt progress)
+  - delete deleted messages from the database, edit edited messages
+  - delete messages from the database when a bot exits chat
+  - log that a bot has left the chat room
+  - make unit tests for services
+  - Wrap TelegramBotService into a facade that will queue messages to be sent.
+  - ssl access to dozzle
+  - jest matcher closeToDate (replacing toBeCloseTo)
+  - take into account "replies to"
+  - consider "forwarded messages"
+  - take into account "someone logged in"
+  - correct all TODOs
+  - if there is not enough text in the last summary part, you should reduce the number of items
+  - fix import bug: `import maxDate from 'date-fns/max';`, `import * as fp from 'fp-ts/lib/function.js';`
+  - move `getEnv` to the top to remove the dependency of modules on it
+  - enforce sensitive data storage standards
+  - disable the ability to do `docker inspect`.
 
-Возможно:
-  - Поставить APM для сбора логов
-  - Перейти на https://fider.io/ для обратной связи
+Questions bot:
+  - new questions every month
 
-Study:
-  - Читать книгу "Совершенный код"
-  - Изучить API Telegram
-  - Почитать про обработку ошибок
+Possible:
+  - Put APM to collect logs
+  - Go to https://fider.io/ for feedback

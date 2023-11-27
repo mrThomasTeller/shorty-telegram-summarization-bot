@@ -1,15 +1,15 @@
-import { getEnv } from '../../../config/envVars.ts';
 import { t } from '../../../config/translations/index.ts';
 import { createTgMessageInGroup, otherTgUser, myTgGroupId } from '../lib/tgUtils.ts';
 import createSummarizeBotServerContext from './createSummarizeBotServerContext.ts';
 import { renderHelpMessage } from '../../../controllers/commands/helpCommandController.ts';
+import { botName } from '../lib/constants.ts';
 
 describe('summarizeBotServer common', () => {
   it('respond to messages from non-white chats with maintenance message', async () => {
     const { telegramBot, simulateChatMessage } = await createSummarizeBotServerContext();
 
     await simulateChatMessage(
-      createTgMessageInGroup({ text: `/summarize@${getEnv().BOT_NAME}`, chatId: otherTgUser.id })
+      createTgMessageInGroup({ text: `/summarize@${botName}`, chatId: otherTgUser.id })
     );
 
     expect(telegramBot.sendMessage).toHaveBeenCalledWith(
@@ -23,7 +23,7 @@ describe('summarizeBotServer common', () => {
 
     simulateAddedToChat(myTgGroupId);
 
-    expect(telegramBot.sendMessage).toHaveBeenCalledWith(myTgGroupId, renderHelpMessage(), {
+    expect(telegramBot.sendMessage).toHaveBeenCalledWith(myTgGroupId, renderHelpMessage(botName), {
       parse_mode: 'MarkdownV2',
     });
   });

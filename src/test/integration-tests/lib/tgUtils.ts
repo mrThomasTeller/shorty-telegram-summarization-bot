@@ -1,9 +1,8 @@
 import type TelegramBot from 'node-telegram-bot-api';
 import { required } from '../../../lib/common.ts';
-import { getEnv } from '../../../config/envVars.ts';
 import _ from 'lodash';
 import formatDate from 'date-fns/format';
-import { tgMessageLength } from './constants.ts';
+import { botName, tgMessageLength } from './constants.ts';
 
 export type TestTgMessage = TelegramBot.Message & {
   shouldBeSkipped?: boolean;
@@ -65,7 +64,7 @@ export const createSummarizeCommandMessage = (
   user: TelegramBot.User,
   chatId: number = myTgGroupId
 ): TelegramBot.Message =>
-  createTgMessageInGroup({ text: `/summarize@${getEnv().BOT_NAME}`, user, chatId });
+  createTgMessageInGroup({ text: `/summarize@${botName}`, user, chatId });
 
 export type TgMessagesBunchDesc = {
   date: Date;
