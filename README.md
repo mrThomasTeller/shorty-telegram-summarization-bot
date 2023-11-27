@@ -1,6 +1,6 @@
 # Shorty - Telegram Summarization Bot
 
-![Shorty logo](logo.png)
+<p align="center"><img src="logo.png"></p>
 
 Shorty 🤖 (https://t.me/shorty_chat_bot) - is a telegram bot that makes a short summarization of chat messages for you. If you have a chat room that can accumulate hundreds of messages in a day, Shorty will save you time and make a short summary of them for you.
 
