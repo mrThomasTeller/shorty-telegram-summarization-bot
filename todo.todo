@@ -80,6 +80,7 @@ Backlog:
   - move `getEnv` to the top to remove the dependency of modules on it
   - enforce sensitive data storage standards
   - disable the ability to do `docker inspect`.
+  - support start command
 
 Questions bot:
   - new questions every month
