@@ -30,12 +30,17 @@ Release 0.7 (open beta):
   ✔ design a support bot profile @done(23-10-24 23:18)
   ✔ design a page on boosty @done(23-10-25 16:31)
 
-Release 0.8 (open beta of the second app):
+Release 0.8:
+  - make gpt requests as big as possible
+  - add possibility to show ads
+  - how to make it easier and more obvious to call the bot?
+
+Release 0.9 (open beta of the second app):
   - make a second app with fun dialogue questions (maybe even multiple apps)
   - add links to other bots in all bots
   - write news to all chat rooms where summarize bot is a member
 
-Release 0.9:
+Release 0.10:
   - audience reach calculation
   - regular Ping and notifications to your phone when bot crashes
   - try to increase prompt size
@@ -80,6 +85,7 @@ Backlog:
   - move `getEnv` to the top to remove the dependency of modules on it
   - enforce sensitive data storage standards
   - disable the ability to do `docker inspect`.
+  - support start command
 
 Questions bot:
   - new questions every month
