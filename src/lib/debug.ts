@@ -1,4 +1,4 @@
-import { isPromiseLike } from './common.ts';
+import { isPromiseLike } from './common.js';
 
 // eslint-disable-next-line no-restricted-syntax
 export function logValue<T>(value: T, label?: string): T {
@@ -15,7 +15,7 @@ export function logValue<T>(value: T, label?: string): T {
 // eslint-disable-next-line no-restricted-syntax
 export function logResult<This, Args extends unknown[], Return>(
   target: (this: This, ...args: Args) => Return,
-  _context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>
+  _context: any
 ): (this: This, ...args: Args) => Return {
   function replacementMethod(this: This, ...args: Args): Return {
     const result = target.call(this, ...args);

@@ -1,7 +1,7 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import type DbChatMessage from '../../../data/DbChatMessage.ts';
-import { myTgGroupId, myTgUser, type TestTgMessage } from './tgUtils.ts';
-import { encrypt, encryptIfExists } from '../../../data/encryption.ts';
+import type DbChatMessage from '../../../data/DbChatMessage.js';
+import { myTgGroupId, myTgUser, type TestTgMessage } from './tgUtils.js';
+import { encrypt, encryptIfExists } from '../../../data/encryption.js';
 
 export function createDbMessageInGroup({
   text,
@@ -50,6 +50,8 @@ export const mapTgMessagesToDbMessages = (
 
   return {
     all: messagesData.map((d) => d.message),
-    actual: messagesData.filter((d) => !d.shouldBeSkipped).map((d) => d.message),
+    actual: messagesData
+      .filter((d) => !d.shouldBeSkipped)
+      .map((d) => d.message),
   };
 };

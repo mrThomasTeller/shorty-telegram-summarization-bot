@@ -1,11 +1,11 @@
-import type GptService from '../services/GptService.ts';
-import { getEnv } from '../config/envVars.ts';
+import type GptService from '../services/GptService.js';
+import { getEnv } from '../config/envVars.js';
 import { ChatGPTError, type ChatMessage } from 'chatgpt';
 import { type Observable, map, mergeMap, of } from 'rxjs';
 import { either, function as fp } from 'fp-ts';
-import { convertPromiseToEither } from '../lib/fp.ts';
+import { convertPromiseToEither } from '../lib/fp.js';
 import _ from 'lodash';
-import { repeatWithDelay, stopWhen } from '../lib/rxOperators.ts';
+import { repeatWithDelay, stopWhen } from '../lib/rxOperators.js';
 
 export type GptResultCase =
   | { type: 'responseFromGPT'; text: string }
@@ -28,21 +28,28 @@ export const sendMessageToGptWithRetries$ = ({
   of(text).pipe(
     mergeMap(sendMessageToGpt(gpt)),
     repeatWithDelay(retryTime),
-    map((result, index) => convertGptApiResponseToResultCase(result, index === maxTries - 1)),
+    map((result, index) =>
+      convertGptApiResponseToResultCase(result, index === maxTries - 1)
+    ),
     stopWhen((result) =>
-      _.includes(['maxTriesExceeded', 'responseFromGPT', 'unknownError'], result.type)
+      _.includes(
+        ['maxTriesExceeded', 'responseFromGPT', 'unknownError'],
+        result.type
+      )
     )
   );
 
-const convertErrorToGptResultCase = _.curry((lastTry: boolean, error: Error): GptResultCase => {
-  if (error instanceof ChatGPTError && error.statusCode === 429) {
-    if (lastTry) {
-      return { type: 'maxTriesExceeded', error };
+const convertErrorToGptResultCase = _.curry(
+  (lastTry: boolean, error: Error): GptResultCase => {
+    if (error instanceof ChatGPTError && error.statusCode === 429) {
+      if (lastTry) {
+        return { type: 'maxTriesExceeded', error };
+      }
+      return { type: 'tooManyRequests', error };
     }
-    return { type: 'tooManyRequests', error };
+    return { type: 'unknownError', error };
   }
-  return { type: 'unknownError', error };
-});
+);
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendMessageToGpt = (gpt: GptService) =>
@@ -62,6 +69,9 @@ const convertGptApiResponseToResultCase = (
     result,
     either.match(
       convertErrorToGptResultCase(lastTry),
-      (response): GptResultCase => ({ type: 'responseFromGPT', text: response.text })
+      (response): GptResultCase => ({
+        type: 'responseFromGPT',
+        text: response.text,
+      })
     )
   );

@@ -1,4 +1,4 @@
-import { required } from './common.ts';
+import { required } from './common.js';
 
 export function splitText(text: string, maxLength: number): string[] {
   const parts: string[] = [];
@@ -33,9 +33,10 @@ export function reEnumerateText(text: string, fromNumber: number): string {
     const match = line.match(/^(\d+)\./);
     if (match != null) {
       // Calculate the new number for this line
-      const newNumber = Number.parseInt(required(match[1]), 10) - 1 + fromNumber;
+      const newNumber =
+        Number.parseInt(required(match[1]), 10) - 1 + fromNumber;
       // Replace the original number with the new number
-      return line.replace(match[0], `${newNumber}.`);
+      return line.replace(match[0] as any, `${newNumber}.`);
     }
     // If the line doesn't start with a number and a period, return it unchanged
     return line;

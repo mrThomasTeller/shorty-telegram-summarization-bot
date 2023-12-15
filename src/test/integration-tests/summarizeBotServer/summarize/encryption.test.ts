@@ -1,14 +1,14 @@
-import { getEnv, setEnv } from '../../../../config/envVars.ts';
-import { t } from '../../../../config/translations/index.ts';
-import { decrypt } from '../../../../data/encryption.ts';
-import { required } from '../../../../lib/common.ts';
-import { createGptChatMessage } from '../../lib/gptUtils.ts';
+import { getEnv, setEnv } from '../../../../config/envVars.js';
+import { t } from '../../../../config/translations/index.js';
+import { decrypt } from '../../../../data/encryption.js';
+import { required } from '../../../../lib/common.js';
+import { createGptChatMessage } from '../../lib/gptUtils.js';
 import {
   createSummarizeCommandMessage,
   createTgMessageInGroup,
   myTgUser,
-} from '../../lib/tgUtils.ts';
-import createSummarizeBotServerContext from '../createSummarizeBotServerContext.ts';
+} from '../../lib/tgUtils.js';
+import createSummarizeBotServerContext from '../createSummarizeBotServerContext.js';
 
 describe('summarizeBotServer summarize command encryption', () => {
   const minMessagesCountToSummarize = getEnv().MIN_MESSAGES_COUNT_TO_SUMMARIZE;
@@ -22,10 +22,14 @@ describe('summarizeBotServer summarize command encryption', () => {
   });
 
   it('bot encrypts message text and username before saving to db', async () => {
-    const { db, gpt, simulateChatMessage } = await createSummarizeBotServerContext();
+    const { db, gpt, simulateChatMessage } =
+      await createSummarizeBotServerContext();
 
     const messageText = 'text tg message text';
-    const tgMessage = createTgMessageInGroup({ text: messageText, user: myTgUser });
+    const tgMessage = createTgMessageInGroup({
+      text: messageText,
+      user: myTgUser,
+    });
 
     // mocks
     gpt.sendMessage.mockImplementation(async (message) => {

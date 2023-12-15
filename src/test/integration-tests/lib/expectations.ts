@@ -1,14 +1,17 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import { getFormattedMessage } from '../../../data/dbChatMessageUtils.ts';
-import type DbChatMessage from '../../../data/DbChatMessage.ts';
-import { required } from '../../../lib/common.ts';
-import { type TestContext } from './createContext.ts';
-import { t } from '../../../config/translations/index.ts';
+import { getFormattedMessage } from '../../../data/dbChatMessageUtils.js';
+import type DbChatMessage from '../../../data/DbChatMessage.js';
+import { required } from '../../../lib/common.js';
+import { type TestContext } from './createContext.js';
+import { t } from '../../../config/translations/index.js';
 import { now } from 'lodash';
-import { myTgGroupId } from './tgUtils.ts';
-import { decryptIfExists } from '../../../data/encryption.ts';
+import { myTgGroupId } from './tgUtils.js';
+import { decryptIfExists } from '../../../data/encryption.js';
 
-export function expectBotCreatedUsers(db: TestContext['db'], users: TelegramBot.User[]): void {
+export function expectBotCreatedUsers(
+  db: TestContext['db'],
+  users: TelegramBot.User[]
+): void {
   for (const user of users) {
     const userFound = db.users.some(
       (dbUser) =>
@@ -46,10 +49,17 @@ export function expectBotQueriedSummaryFromGpt(
     const call = required(gpt.sendMessage.mock.calls[index]);
 
     expect(call[0]).toBe(
-      t(summaryPartPointsCount === 1 ? 'summarize.gptQuery' : 'summarize.gptQueryWithPoints', {
-        pointsCount: summaryPartPointsCount,
-        text: messages.map((message) => getFormattedMessage(message)).join('\n'),
-      })
+      t(
+        summaryPartPointsCount === 1
+          ? 'summarize.gptQuery'
+          : 'summarize.gptQueryWithPoints',
+        {
+          pointsCount: summaryPartPointsCount,
+          text: messages
+            .map((message) => getFormattedMessage(message))
+            .join('\n'),
+        }
+      )
     );
 
     expect(call[1]).toEqual(
@@ -72,8 +82,14 @@ export function expectBotSentExactMessagesToTg(
   userId: number = myTgGroupId
 ): void {
   for (const [index, message] of messages.entries()) {
-    const [messageText, messageUserId] = Array.isArray(message) ? message : [message, userId];
-    expect(telegramBot.sendMessage).toHaveBeenNthCalledWith(index + 1, messageUserId, messageText);
+    const [messageText, messageUserId] = Array.isArray(message)
+      ? message
+      : [message, userId];
+    expect(telegramBot.sendMessage).toHaveBeenNthCalledWith(
+      index + 1,
+      messageUserId,
+      messageText
+    );
   }
   expect(telegramBot.sendMessage).toHaveBeenCalledTimes(messages.length);
 }

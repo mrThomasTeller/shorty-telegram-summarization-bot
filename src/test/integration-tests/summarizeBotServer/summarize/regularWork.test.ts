@@ -5,21 +5,21 @@ import {
   createSummarizeCommandMessage,
   createTgMessages,
   type TgMessagesBunchDesc,
-} from '../../lib/tgUtils.ts';
+} from '../../lib/tgUtils.js';
 import _ from 'lodash';
-import { mapTgMessagesToDbMessages } from '../../lib/dbUtils.ts';
+import { mapTgMessagesToDbMessages } from '../../lib/dbUtils.js';
 import {
   expectBotSentExactMessagesToTg,
   expectBotCreatedUsers,
   expectBotCreatedDbChatMessages,
   expectBotQueriedSummaryFromGpt,
   expectBotAddedSummariesToDb,
-} from '../../lib/expectations.ts';
-import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils.ts';
-import createSummarizeBotServerContext from '../createSummarizeBotServerContext.ts';
-import { t } from '../../../../config/translations/index.ts';
-import { daysAgo, hoursAgo } from '../../../../lib/date.ts';
-import { messagesCountInOneSummaryQuery } from '../../lib/constants.ts';
+} from '../../lib/expectations.js';
+import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils.js';
+import createSummarizeBotServerContext from '../createSummarizeBotServerContext.js';
+import { t } from '../../../../config/translations/index.js';
+import { daysAgo, hoursAgo } from '../../../../lib/date.js';
+import { messagesCountInOneSummaryQuery } from '../../lib/constants.js';
 
 // todo use text length instead of messages count
 // todo implement gpt.sendMessage mock as now I don't check that gpt.sendMessage was called with correct params
@@ -154,7 +154,8 @@ function testCorrectSummary({
   summaryPartsCount?: number;
 }) {
   return async (): Promise<void> => {
-    const { telegramBot, db, gpt, simulateChatMessage } = await createSummarizeBotServerContext();
+    const { telegramBot, db, gpt, simulateChatMessage } =
+      await createSummarizeBotServerContext();
 
     if (typeof messages === 'number') {
       messages = [{ date: new Date(), count: messages }];
@@ -162,12 +163,15 @@ function testCorrectSummary({
 
     const tgMessages = createTgMessages(messages);
     const dbMessages = mapTgMessagesToDbMessages(tgMessages);
-    const dbMessagesChunksForGpt = _.chunk(dbMessages.actual, messagesCountInOneSummaryQuery);
+    const dbMessagesChunksForGpt = _.chunk(
+      dbMessages.actual,
+      messagesCountInOneSummaryQuery
+    );
     const gptTestSummariesCount = dbMessagesChunksForGpt.length;
 
-    const gptTestSummariesWithReEnumeratedPoints = _.range(gptTestSummariesCount).map((page) =>
-      gptTestSummary(page, summaryPartPointsCount)
-    );
+    const gptTestSummariesWithReEnumeratedPoints = _.range(
+      gptTestSummariesCount
+    ).map((page) => gptTestSummary(page, summaryPartPointsCount));
 
     // mocks
     if (lastSummaryDate) {
@@ -199,7 +203,11 @@ function testCorrectSummary({
     expectBotCreatedUsers(db, [myTgUser, otherTgUser]);
     expect(db.getOrCreateChat).toHaveBeenCalledWith(myTgGroupId);
     expectBotCreatedDbChatMessages(db, tgMessages);
-    expectBotQueriedSummaryFromGpt(gpt, summaryPartPointsCount, dbMessagesChunksForGpt);
+    expectBotQueriedSummaryFromGpt(
+      gpt,
+      summaryPartPointsCount,
+      dbMessagesChunksForGpt
+    );
     expectBotAddedSummariesToDb(db, myTgGroupId, 1);
     expectBotSentExactMessagesToTg(
       telegramBot,

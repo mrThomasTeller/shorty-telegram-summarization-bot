@@ -1,14 +1,20 @@
-import type EntryPoint from './EntryPoint.ts';
+import type EntryPoint from './EntryPoint.js';
 import type TelegramBot from 'node-telegram-bot-api';
-import { type GroupedObservable, Observable, filter, groupBy, pipe } from 'rxjs';
-import mainController from '../controllers/mainController.ts';
-import { getRealCommands } from '../config/commands/index.ts';
-import type TelegramBotService from '../services/TelegramBotService.ts';
-import type Services from '../services/Services.ts';
+import {
+  type GroupedObservable,
+  Observable,
+  filter,
+  groupBy,
+  pipe,
+} from 'rxjs';
+import mainController from '../controllers/mainController.js';
+import { getRealCommands } from '../config/commands/index.js';
+import type TelegramBotService from '../services/TelegramBotService.js';
+import type Services from '../services/Services.js';
 import _ from 'lodash';
-import logger from '../config/logger.ts';
-import { sendHelpMessage } from '../controllers/commands/helpCommandController.ts';
-import { catchError } from '../lib/async.ts';
+import logger from '../config/logger.js';
+import { sendHelpMessage } from '../controllers/commands/helpCommandController.js';
+import { catchError } from '../lib/async.js';
 
 // todo refactor this function
 const summarizeBotServer: EntryPoint = async (services) => {
@@ -38,7 +44,10 @@ function createTgMessagesObservable(
 }
 
 const observeChatWithMainController = _.curry(
-  (services: Services, chat$: GroupedObservable<number, TelegramBot.Message>) => {
+  (
+    services: Services,
+    chat$: GroupedObservable<number, TelegramBot.Message>
+  ) => {
     mainController({ chat$, chatId: chat$.key, services });
   }
 );

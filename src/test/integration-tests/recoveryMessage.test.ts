@@ -1,7 +1,7 @@
-import { t } from '../../config/translations/index.ts';
-import recoveryMessage from '../../entryPoints/recoveryMessage.ts';
-import { loggerMock } from '../env.ts';
-import createContext from './lib/createContext.ts';
+import { t } from '../../config/translations/index.js';
+import recoveryMessage from '../../entryPoints/recoveryMessage.js';
+import { loggerMock } from '../env.js';
+import createContext from './lib/createContext.js';
 import { type Chat } from '@prisma/client';
 
 describe('recoveryMessage', () => {
@@ -21,6 +21,8 @@ describe('recoveryMessage', () => {
       );
     }
 
-    expect(loggerMock.info).toHaveBeenCalledWith(t('recovery.debugInfo', { count: chats.length }));
+    expect(loggerMock.info).toHaveBeenCalledWith(
+      t('recovery.debugInfo', { count: chats.length })
+    );
   });
 });

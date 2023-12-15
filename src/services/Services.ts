@@ -1,6 +1,6 @@
-import type DbService from './DbService.ts';
-import type TelegramBotService from './TelegramBotService.ts';
-import type GptService from './GptService.ts';
+import type DbService from './DbService.js';
+import type TelegramBotService from './TelegramBotService.js';
+import type GptService from './GptService.js';
 
 type Services = {
   db: DbService;

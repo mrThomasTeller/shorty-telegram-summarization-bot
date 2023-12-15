@@ -1,9 +1,14 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import { type MessageCreateInput, type UserCreateInput } from '../services/DbService.ts';
+import {
+  type MessageCreateInput,
+  type UserCreateInput,
+} from '../services/DbService.js';
 import { type Chat, type User } from '@prisma/client';
-import { encrypt, encryptIfExists } from './encryption.ts';
+import { encrypt, encryptIfExists } from './encryption.js';
 
-export const convertTgUserToDbUserInput = (user: TelegramBot.User): UserCreateInput => ({
+export const convertTgUserToDbUserInput = (
+  user: TelegramBot.User
+): UserCreateInput => ({
   id: user.id,
   firstName: encrypt(user.first_name),
   lastName: encryptIfExists(user.last_name),

@@ -1,9 +1,9 @@
-import recoveryMessage from './entryPoints/recoveryMessage.ts';
-import summarizeBotServer from './entryPoints/summarizeBotServer.ts';
-import DbServiceImpl from './services/DbServiceImpl.ts';
-import GptServiceImpl from './services/GptServiceImpl.ts';
-import type Services from './services/Services.ts';
-import TelegramBotServiceImpl from './services/TelegramBotServiceImpl.ts';
+import recoveryMessage from './entryPoints/recoveryMessage.js';
+import summarizeBotServer from './entryPoints/summarizeBotServer.js';
+import DbServiceImpl from './services/DbServiceImpl.js';
+import GptServiceImpl from './services/GptServiceImpl.js';
+import type Services from './services/Services.js';
+import TelegramBotServiceImpl from './services/TelegramBotServiceImpl.js';
 
 const entryPointName = process.argv[2];
 

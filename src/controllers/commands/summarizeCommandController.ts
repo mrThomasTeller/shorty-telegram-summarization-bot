@@ -1,7 +1,10 @@
-import { type GptResultCase, sendMessageToGptWithRetries$ } from '../../api/gpt.ts';
-import { reEnumerateText } from '../../lib/text.ts';
-import { getFormattedMessage } from '../../data/dbChatMessageUtils.ts';
-import { yesterday } from '../../lib/date.ts';
+import {
+  type GptResultCase,
+  sendMessageToGptWithRetries$,
+} from '../../api/gpt.js';
+import { reEnumerateText } from '../../lib/text.js';
+import { getFormattedMessage } from '../../data/dbChatMessageUtils.js';
+import { yesterday } from '../../lib/date.js';
 import {
   type Observable,
   type UnaryFunction,
@@ -15,17 +18,20 @@ import {
   concat,
   from,
 } from 'rxjs';
-import type ChatController from '../ChatController.ts';
-import { t } from '../../config/translations/index.ts';
-import { endWithAfter, insertBefore } from '../../lib/rxOperators.ts';
-import type Services from '../../services/Services.ts';
-import logger, { type LogLevel } from '../../config/logger.ts';
+import type ChatController from '../ChatController.js';
+import { t } from '../../config/translations/index.js';
+import { endWithAfter, insertBefore } from '../../lib/rxOperators.js';
+import type Services from '../../services/Services.js';
+import logger, { type LogLevel } from '../../config/logger.js';
 import _ from 'lodash';
-import type DbChatMessage from '../../data/DbChatMessage.ts';
-import { getEnv } from '../../config/envVars.ts';
+import type DbChatMessage from '../../data/DbChatMessage.js';
+import { getEnv } from '../../config/envVars.js';
 import { max as maxTime } from 'date-fns';
 import type TelegramBot from 'node-telegram-bot-api';
-import { formatSummaryFromGpt, getPartsAndPointsCountForText } from '../../data/summaryUtils.ts';
+import {
+  formatSummaryFromGpt,
+  getPartsAndPointsCountForText,
+} from '../../data/summaryUtils.js';
 
 type SummarizeResultCase =
   | GptResultCase
@@ -37,14 +43,24 @@ type SummarizeResultCase =
   | { type: 'summaryHeader' }
   | { type: 'endSummary' };
 
-const summarizeCommandController: ChatController = ({ chat$, chatId, services }) => {
-  chat$.pipe(exhaustMap(handleSingleSummarizeRequest$(chatId, services))).subscribe(_.noop);
+const summarizeCommandController: ChatController = ({
+  chat$,
+  chatId,
+  services,
+}) => {
+  chat$
+    .pipe(exhaustMap(handleSingleSummarizeRequest$(chatId, services)))
+    .subscribe(_.noop);
 };
 
 export default summarizeCommandController;
 
 const handleSingleSummarizeRequest$ = _.curry(
-  (chatId: number, services: Services, msg: TelegramBot.Message): Observable<void> =>
+  (
+    chatId: number,
+    services: Services,
+    msg: TelegramBot.Message
+  ): Observable<void> =>
     of(msg).pipe(
       mergeMap(getChatMessagesForSummary(services, chatId)),
       mergeMap(queryGptOrReturnError$(services)),
@@ -57,7 +73,9 @@ const handleSingleSummarizeRequest$ = _.curry(
 
 const queryGptOrReturnError$ =
   (services: Services) =>
-  (messages: SummarizeResultCase | DbChatMessage[]): Observable<SummarizeResultCase> => {
+  (
+    messages: SummarizeResultCase | DbChatMessage[]
+  ): Observable<SummarizeResultCase> => {
     if (!Array.isArray(messages)) return of(messages);
 
     const minMessagesCount = getEnv().MIN_MESSAGES_COUNT_TO_SUMMARIZE;
@@ -104,7 +122,9 @@ const rejectOverflowedSummaryPartsAndMakeSummary$ = _.curry(
         ? of({ type: 'tooManySummaryParts', count: parts.length })
         : [],
 
-      from(gptQueryParts).pipe(concatMap(querySummaryPartFromGptAndReEnumerateResponse$(services)))
+      from(gptQueryParts).pipe(
+        concatMap(querySummaryPartFromGptAndReEnumerateResponse$(services))
+      )
     );
   }
 );
@@ -117,7 +137,10 @@ const querySummaryPartFromGptAndReEnumerateResponse$ = _.curry(
           gptResultCase.type === 'responseFromGPT'
             ? {
                 ...gptResultCase,
-                text: reEnumerateText(gptResultCase.text.trim(), index * pointsCount + 1),
+                text: reEnumerateText(
+                  gptResultCase.text.trim(),
+                  index * pointsCount + 1
+                ),
               }
             : gptResultCase
       )
@@ -125,13 +148,18 @@ const querySummaryPartFromGptAndReEnumerateResponse$ = _.curry(
 );
 
 const handleSummaryResultCase =
-  (services: Services, chatId: number) => async (resultCase: SummarizeResultCase) => {
+  (services: Services, chatId: number) =>
+  async (resultCase: SummarizeResultCase) => {
     const logArgs = getLogMessageForSummarizeResultCase(resultCase, chatId);
     if (logArgs !== undefined) logger.log(...logArgs);
 
     await Promise.all([
-      resultCase.type === 'summaryHeader' && services.db.createSummary(chatId, new Date()),
-      services.telegramBot.sendMessage(chatId, getBotMessageForSummarizeResultCase(resultCase)),
+      resultCase.type === 'summaryHeader' &&
+        services.db.createSummary(chatId, new Date()),
+      services.telegramBot.sendMessage(
+        chatId,
+        getBotMessageForSummarizeResultCase(resultCase)
+      ),
     ]);
   };
 
@@ -158,7 +186,9 @@ function getLogMessageForSummarizeResultCase(
   }
 }
 
-function getBotMessageForSummarizeResultCase(resultCase: SummarizeResultCase): string {
+function getBotMessageForSummarizeResultCase(
+  resultCase: SummarizeResultCase
+): string {
   switch (resultCase.type) {
     case 'startSummary': {
       return t('summarize.message.start');
@@ -182,7 +212,9 @@ function getBotMessageForSummarizeResultCase(resultCase: SummarizeResultCase): s
       return t('summarize.errors.queryProcess');
     }
     case 'fewMessages': {
-      return t('summarize.errors.fewMessages', { count: getEnv().MIN_MESSAGES_COUNT_TO_SUMMARIZE });
+      return t('summarize.errors.fewMessages', {
+        count: getEnv().MIN_MESSAGES_COUNT_TO_SUMMARIZE,
+      });
     }
     case 'noMessages': {
       return t('summarize.errors.noMessages');
@@ -210,10 +242,13 @@ const mapSummaryPartsToGptQuery = (
   parts.map(({ text, pointsCount }, index) => ({
     pointsCount,
     index,
-    text: t(pointsCount === 1 ? 'summarize.gptQuery' : 'summarize.gptQueryWithPoints', {
-      pointsCount,
-      text,
-    }),
+    text: t(
+      pointsCount === 1 ? 'summarize.gptQuery' : 'summarize.gptQueryWithPoints',
+      {
+        pointsCount,
+        text,
+      }
+    ),
   }));
 
 // todo make this function more expressive

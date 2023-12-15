@@ -1,8 +1,8 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import { required } from '../../../lib/common.ts';
+import { required } from '../../../lib/common.js';
 import _ from 'lodash';
 import formatDate from 'date-fns/format';
-import { botName, tgMessageLength } from './constants.ts';
+import { botName, tgMessageLength } from './constants.js';
 
 export type TestTgMessage = TelegramBot.Message & {
   shouldBeSkipped?: boolean;
@@ -16,7 +16,9 @@ export const myTgUser: TelegramBot.User = {
   username: 'mrThomasTeller',
   language_code: 'en',
 };
-export const myFullName = `${myTgUser.first_name} ${required(myTgUser.last_name)}`;
+export const myFullName = `${myTgUser.first_name} ${required(
+  myTgUser.last_name
+)}`;
 
 export const otherTgUser: TelegramBot.User = {
   id: 333,
@@ -26,7 +28,9 @@ export const otherTgUser: TelegramBot.User = {
   username: 'vanya',
   language_code: 'en',
 };
-export const otherFullName = `${otherTgUser.first_name} ${required(otherTgUser.last_name)}`;
+export const otherFullName = `${otherTgUser.first_name} ${required(
+  otherTgUser.last_name
+)}`;
 
 export const myTgGroupId = 222;
 export const myTgGroup2Id = 223;
@@ -77,11 +81,17 @@ export function createTgMessages(
   chatId: number = myTgGroupId
 ): TestTgMessage[] {
   if (typeof currentCountOrBunches === 'number') {
-    return createTgMessages([{ date: new Date(), count: currentCountOrBunches }], chatId);
+    return createTgMessages(
+      [{ date: new Date(), count: currentCountOrBunches }],
+      chatId
+    );
   }
 
   const tgMessagesDates = currentCountOrBunches.flatMap((bunch) =>
-    _.range(bunch.count).map(() => ({ date: bunch.date, shouldBeSkipped: bunch.shouldBeSkipped }))
+    _.range(bunch.count).map(() => ({
+      date: bunch.date,
+      shouldBeSkipped: bunch.shouldBeSkipped,
+    }))
   );
 
   return tgMessagesDates.map(({ date, shouldBeSkipped }, num) =>
@@ -96,6 +106,9 @@ export function createTgMessages(
 }
 
 function createSampleText(num: number, date: Date): string {
-  const prefix = `Message: ${num}. Date: ${formatDate(date, 'dd.mm.yyyy HH:mm')}. Text: `;
+  const prefix = `Message: ${num}. Date: ${formatDate(
+    date,
+    'dd.mm.yyyy HH:mm'
+  )}. Text: `;
   return `${prefix}${'a'.repeat(tgMessageLength - prefix.length)}`;
 }

@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { required } from '../lib/common.ts';
+import { required } from '../lib/common.js';
 
 type Env = {
   TELEGRAM_BOT_TOKEN: string;
@@ -22,7 +22,9 @@ export function getEnv(): Env {
     TELEGRAM_BOT_TOKEN: required(process.env.TELEGRAM_BOT_TOKEN),
     WHITE_CHATS_LIST: process.env.WHITE_CHATS_LIST ?? '',
     RETRY_GPT_QUERY_TIME: Number(required(process.env.RETRY_GPT_QUERY_TIME)),
-    MIN_MESSAGES_COUNT_TO_SUMMARIZE: Number(required(process.env.MIN_MESSAGES_COUNT_TO_SUMMARIZE)),
+    MIN_MESSAGES_COUNT_TO_SUMMARIZE: Number(
+      required(process.env.MIN_MESSAGES_COUNT_TO_SUMMARIZE)
+    ),
     MAX_SUMMARIES_PER_DAY: Number(required(process.env.MAX_SUMMARIES_PER_DAY)),
     MAX_SUMMARY_PARTS: Number(required(process.env.MAX_SUMMARY_PARTS)),
     CRYPTO_KEY: required(process.env.CRYPTO_KEY),

@@ -1,4 +1,4 @@
-import { splitText } from '../lib/text.ts';
+import { splitText } from '../lib/text.js';
 import fp_ from 'lodash/fp.js';
 
 const maxPartLength = 3400;
@@ -26,4 +26,5 @@ export function getPartsAndPointsCountForText(
 const getPointsCountForOnePart = (text: string): number =>
   Math.min(Math.ceil(text.length / symbolsForOnePoint), maxPointsCount);
 
-export const formatSummaryFromGpt = (summary: string): string => summary.replace(/\.$/, '');
+export const formatSummaryFromGpt = (summary: string): string =>
+  summary.replace(/\.$/, '');

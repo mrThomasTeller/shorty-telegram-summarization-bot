@@ -1,16 +1,27 @@
-import { getWhiteChatsList, setWhiteChatsList } from '../../../config/envVars.ts';
-import { t } from '../../../config/translations/index.ts';
-import { createTgMessageInGroup, otherTgUser, myTgGroupId } from '../lib/tgUtils.ts';
-import createSummarizeBotServerContext from './createSummarizeBotServerContext.ts';
-import { renderHelpMessage } from '../../../controllers/commands/helpCommandController.ts';
-import { botName } from '../lib/constants.ts';
+import {
+  getWhiteChatsList,
+  setWhiteChatsList,
+} from '../../../config/envVars.js';
+import { t } from '../../../config/translations/index.js';
+import {
+  createTgMessageInGroup,
+  otherTgUser,
+  myTgGroupId,
+} from '../lib/tgUtils.js';
+import createSummarizeBotServerContext from './createSummarizeBotServerContext.js';
+import { renderHelpMessage } from '../../../controllers/commands/helpCommandController.js';
+import { botName } from '../lib/constants.js';
 
 describe('summarizeBotServer common', () => {
   it('respond to messages from non-white chats with maintenance message', async () => {
-    const { telegramBot, simulateChatMessage } = await createSummarizeBotServerContext();
+    const { telegramBot, simulateChatMessage } =
+      await createSummarizeBotServerContext();
 
     await simulateChatMessage(
-      createTgMessageInGroup({ text: `/help@${botName}`, chatId: otherTgUser.id })
+      createTgMessageInGroup({
+        text: `/help@${botName}`,
+        chatId: otherTgUser.id,
+      })
     );
 
     expect(telegramBot.sendMessage).toHaveBeenCalledWith(
@@ -23,10 +34,14 @@ describe('summarizeBotServer common', () => {
     const oldWhiteList = getWhiteChatsList();
     setWhiteChatsList(undefined);
 
-    const { telegramBot, simulateChatMessage } = await createSummarizeBotServerContext();
+    const { telegramBot, simulateChatMessage } =
+      await createSummarizeBotServerContext();
 
     await simulateChatMessage(
-      createTgMessageInGroup({ text: `/help@${botName}`, chatId: otherTgUser.id })
+      createTgMessageInGroup({
+        text: `/help@${botName}`,
+        chatId: otherTgUser.id,
+      })
     );
 
     expect(telegramBot.sendMessage).toHaveBeenCalledWith(
@@ -41,12 +56,17 @@ describe('summarizeBotServer common', () => {
   });
 
   it('shows help when added to new chat', async () => {
-    const { telegramBot, simulateAddedToChat } = await createSummarizeBotServerContext();
+    const { telegramBot, simulateAddedToChat } =
+      await createSummarizeBotServerContext();
 
     await simulateAddedToChat(myTgGroupId);
 
-    expect(telegramBot.sendMessage).toHaveBeenCalledWith(myTgGroupId, renderHelpMessage(botName), {
-      parse_mode: 'MarkdownV2',
-    });
+    expect(telegramBot.sendMessage).toHaveBeenCalledWith(
+      myTgGroupId,
+      renderHelpMessage(botName),
+      {
+        parse_mode: 'MarkdownV2',
+      }
+    );
   });
 });

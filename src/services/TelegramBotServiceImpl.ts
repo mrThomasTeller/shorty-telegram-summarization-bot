@@ -1,7 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
-import type TelegramBotService from './TelegramBotService.ts';
-import { getEnv } from '../config/envVars.ts';
-import { type TelegramBotSendMessageOptions } from './TelegramBotService.ts';
+import type TelegramBotService from './TelegramBotService.js';
+import { getEnv } from '../config/envVars.js';
+import { type TelegramBotSendMessageOptions } from './TelegramBotService.js';
 
 export default class TelegramBotServiceImpl implements TelegramBotService {
   readonly bot: TelegramBot;
@@ -15,13 +15,21 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
     text: string,
     options?: TelegramBotSendMessageOptions
   ): Promise<void> {
-    await this.bot.sendMessage(chatId, text, { ...options, disable_web_page_preview: true });
+    await this.bot.sendMessage(chatId, text, {
+      ...options,
+      disable_web_page_preview: true,
+    });
   }
 
   onAddedToChat(callback: (chatId: number) => void): VoidFunction {
-    const listener = async (msg: TelegramBot.ChatMemberUpdated): Promise<void> => {
+    const listener = async (
+      msg: TelegramBot.ChatMemberUpdated
+    ): Promise<void> => {
       const me = await this.bot.getMe();
-      if (msg.new_chat_member.status === 'member' && msg.new_chat_member.user.id === me.id) {
+      if (
+        msg.new_chat_member.status === 'member' &&
+        msg.new_chat_member.user.id === me.id
+      ) {
         callback(msg.chat.id);
       }
     };

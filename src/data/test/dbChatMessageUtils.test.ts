@@ -1,6 +1,6 @@
-import { getAuthorName, getFormattedMessage } from '../dbChatMessageUtils.ts';
-import type DbChatMessage from '../DbChatMessage.ts';
-import { encrypt } from '../encryption.ts';
+import { getAuthorName, getFormattedMessage } from '../dbChatMessageUtils.js';
+import type DbChatMessage from '../DbChatMessage.js';
+import { encrypt } from '../encryption.js';
 
 describe('getAuthorName', () => {
   it('should return undefined if author is null', () => {

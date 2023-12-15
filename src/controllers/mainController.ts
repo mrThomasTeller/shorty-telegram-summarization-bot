@@ -1,23 +1,23 @@
 import { type GroupedObservable, groupBy, map } from 'rxjs';
-import type ChatController from './ChatController.ts';
-import { getEnv, getWhiteChatsList } from '../config/envVars.ts';
+import type ChatController from './ChatController.js';
+import { getEnv, getWhiteChatsList } from '../config/envVars.js';
 import {
   type ParsedCommand,
   isCommandForBot,
   parseCommand,
-} from '../data/telegramBotMessageUtils.ts';
-import { required } from '../lib/common.ts';
-import commands from '../config/commands/index.ts';
-import getCommandController from './commands/getCommandController.ts';
-import type Command from '../config/commands/Command.ts';
-import { t } from '../config/translations/index.ts';
-import { catchError } from '../lib/async.ts';
-import type TelegramBotService from '../services/TelegramBotService.ts';
-import { filterAsync } from '../lib/rxOperators.ts';
+} from '../data/telegramBotMessageUtils.js';
+import { required } from '../lib/common.js';
+import commands from '../config/commands/index.js';
+import getCommandController from './commands/getCommandController.js';
+import type Command from '../config/commands/Command.js';
+import { t } from '../config/translations/index.js';
+import { catchError } from '../lib/async.js';
+import type TelegramBotService from '../services/TelegramBotService.js';
+import { filterAsync } from '../lib/rxOperators.js';
 import type TelegramBot from 'node-telegram-bot-api';
-import type Services from '../services/Services.ts';
-import logger from '../config/logger.ts';
-import noneCommand from '../config/commands/none.ts';
+import type Services from '../services/Services.js';
+import logger from '../config/logger.js';
+import noneCommand from '../config/commands/none.js';
 
 type ObserveCase = Command | 'maintenanceMessage';
 
@@ -47,7 +47,10 @@ const messageHasCommandForBot =
   (telegramBot: TelegramBotService) =>
   async ({ msg, parsedCommand }: MessageAndParsedCommand): Promise<boolean> => {
     const botName = required(await telegramBot.getUsername());
-    return parsedCommand === undefined || isCommandForBot(parsedCommand, msg, botName);
+    return (
+      parsedCommand === undefined ||
+      isCommandForBot(parsedCommand, msg, botName)
+    );
   };
 
 const getObserveCaseForMessage =
@@ -56,7 +59,10 @@ const getObserveCaseForMessage =
     const parsedCommandName = parsedCommand?.command;
     const command = commands[parsedCommandName ?? ''] ?? noneCommand;
 
-    if (parsedCommandName !== undefined && commands[parsedCommandName] === undefined) {
+    if (
+      parsedCommandName !== undefined &&
+      commands[parsedCommandName] === undefined
+    ) {
       logger.warn(`unknown command: ${parsedCommandName}`);
     }
 
@@ -69,19 +75,26 @@ const getObserveCaseForMessage =
   };
 
 const sendMaintenanceMessageFn =
-  (chatId: number, telegramBot: TelegramBotService) => (msg: TelegramBot.Message) => {
-    logger.info(`Maintenance message sent to chat ${msg.chat.id}. Message: "${msg.text}".`);
+  (chatId: number, telegramBot: TelegramBotService) =>
+  (msg: TelegramBot.Message) => {
+    logger.info(
+      `Maintenance message sent to chat ${msg.chat.id}. Message: "${msg.text}".`
+    );
     catchError(telegramBot.sendMessage(chatId, t('server.maintenanceMessage')));
   };
 
 const observeCommandsOrSendMaintenanceMessages =
   (chatId: number, services: Services) =>
-  (chatParsedCommand$: GroupedObservable<ObserveCase, MessageAndParsedCommand>) => {
+  (
+    chatParsedCommand$: GroupedObservable<ObserveCase, MessageAndParsedCommand>
+  ) => {
     const observeCase = chatParsedCommand$.key;
     const chatCommandMessage$ = chatParsedCommand$.pipe(map(({ msg }) => msg));
 
     if (observeCase === 'maintenanceMessage') {
-      chatCommandMessage$.subscribe(sendMaintenanceMessageFn(chatId, services.telegramBot));
+      chatCommandMessage$.subscribe(
+        sendMaintenanceMessageFn(chatId, services.telegramBot)
+      );
     } else {
       const controller = getCommandController(observeCase);
       controller({

@@ -1,5 +1,5 @@
 import { AssertionError } from 'node:assert';
-import { required } from '../common.ts';
+import { required } from '../common.js';
 
 describe('required function', () => {
   it('should return the same value when value is not null or undefined', () => {

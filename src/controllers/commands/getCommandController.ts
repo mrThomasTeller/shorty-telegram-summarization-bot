@@ -1,13 +1,13 @@
-import type Command from '../../config/commands/Command.ts';
-import helpCommand from '../../config/commands/help.ts';
-import noneCommand from '../../config/commands/none.ts';
-import pingCommand from '../../config/commands/ping.ts';
-import summarizeCommand from '../../config/commands/summarize.ts';
-import type ChatController from '../ChatController.ts';
-import helpCommandController from './helpCommandController.ts';
-import noneCommandController from './noneCommandController.ts';
-import pingCommandController from './pingCommandController.ts';
-import summarizeCommandController from './summarizeCommandController.ts';
+import type Command from '../../config/commands/Command.js';
+import helpCommand from '../../config/commands/help.js';
+import noneCommand from '../../config/commands/none.js';
+import pingCommand from '../../config/commands/ping.js';
+import summarizeCommand from '../../config/commands/summarize.js';
+import type ChatController from '../ChatController.js';
+import helpCommandController from './helpCommandController.js';
+import noneCommandController from './noneCommandController.js';
+import pingCommandController from './pingCommandController.js';
+import summarizeCommandController from './summarizeCommandController.js';
 
 export default function getCommandController(command: Command): ChatController {
   switch (command.command) {

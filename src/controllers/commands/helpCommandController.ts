@@ -1,15 +1,18 @@
 import path from 'node:path';
-import summarizeCommand from '../../config/commands/summarize.ts';
-import type ChatController from '../ChatController.ts';
+import summarizeCommand from '../../config/commands/summarize.js';
+import type ChatController from '../ChatController.js';
 import { dirname } from '@darkobits/fd-name';
 import fs from 'node:fs';
-import { required } from '../../lib/common.ts';
+import { required } from '../../lib/common.js';
 import _ from 'lodash';
-import { escapeTelegramMarkdown } from '../../lib/tgUtils.ts';
+import { escapeTelegramMarkdown } from '../../lib/tgUtils.js';
 import type TelegramBotService from '../../services/TelegramBotService';
 
 const helpMessageTpl = _.template(
-  fs.readFileSync(path.join(required(dirname()), '../../config/texts/help.tpl'), 'utf8')
+  fs.readFileSync(
+    path.join(required(dirname()), '../../config/texts/help.tpl'),
+    'utf8'
+  )
 );
 
 export const renderHelpMessage = (botName: string): string =>

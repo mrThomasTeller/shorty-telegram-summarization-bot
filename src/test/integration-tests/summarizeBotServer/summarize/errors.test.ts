@@ -3,21 +3,22 @@ import {
   myTgGroupId,
   createSummarizeCommandMessage,
   createTgMessages,
-} from '../../lib/tgUtils.ts';
+} from '../../lib/tgUtils.js';
 import { ChatGPTError } from 'chatgpt';
-import { mapTgMessagesToDbMessages } from '../../lib/dbUtils.ts';
-import { expectBotSentExactMessagesToTg } from '../../lib/expectations.ts';
-import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils.ts';
-import createSummarizeBotServerContext from '../createSummarizeBotServerContext.ts';
+import { mapTgMessagesToDbMessages } from '../../lib/dbUtils.js';
+import { expectBotSentExactMessagesToTg } from '../../lib/expectations.js';
+import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils.js';
+import createSummarizeBotServerContext from '../createSummarizeBotServerContext.js';
 import { setTimeout } from 'node:timers/promises';
-import { t } from '../../../../config/translations/index.ts';
-import { getEnv } from '../../../../config/envVars.ts';
+import { t } from '../../../../config/translations/index.js';
+import { getEnv } from '../../../../config/envVars.js';
 import _ from 'lodash';
-import { daysAgo, hoursAgo } from '../../../../lib/date.ts';
+import { daysAgo, hoursAgo } from '../../../../lib/date.js';
 
 describe('summarizeBotServer summarize command errors', () => {
   it('no messages to summarize', async () => {
-    const { telegramBot, db, gpt, simulateChatMessage } = await createSummarizeBotServerContext();
+    const { telegramBot, db, gpt, simulateChatMessage } =
+      await createSummarizeBotServerContext();
 
     // mocks
     db.messages = [];
@@ -27,13 +28,18 @@ describe('summarizeBotServer summarize command errors', () => {
 
     // expectations
     expect(gpt.sendMessage).not.toHaveBeenCalled();
-    expectBotSentExactMessagesToTg(telegramBot, [t('summarize.errors.noMessages')]);
+    expectBotSentExactMessagesToTg(telegramBot, [
+      t('summarize.errors.noMessages'),
+    ]);
   });
 
   it('few messages to summarize', async () => {
-    const { telegramBot, db, simulateChatMessage } = await createSummarizeBotServerContext();
+    const { telegramBot, db, simulateChatMessage } =
+      await createSummarizeBotServerContext();
 
-    const tgMessages = createTgMessages(getEnv().MIN_MESSAGES_COUNT_TO_SUMMARIZE - 1);
+    const tgMessages = createTgMessages(
+      getEnv().MIN_MESSAGES_COUNT_TO_SUMMARIZE - 1
+    );
     const dbMessages = mapTgMessagesToDbMessages(tgMessages);
 
     // mocks
@@ -45,13 +51,18 @@ describe('summarizeBotServer summarize command errors', () => {
     // expectations
     expectBotSentExactMessagesToTg(
       telegramBot,
-      [t('summarize.errors.fewMessages', { count: getEnv().MIN_MESSAGES_COUNT_TO_SUMMARIZE })],
+      [
+        t('summarize.errors.fewMessages', {
+          count: getEnv().MIN_MESSAGES_COUNT_TO_SUMMARIZE,
+        }),
+      ],
       myTgGroupId
     );
   });
 
   it('with unexpected error from gpt', async () => {
-    const { telegramBot, db, gpt, simulateChatMessage } = await createSummarizeBotServerContext();
+    const { telegramBot, db, gpt, simulateChatMessage } =
+      await createSummarizeBotServerContext();
 
     const dbMessages = mapTgMessagesToDbMessages(createTgMessages(10));
 
@@ -71,7 +82,8 @@ describe('summarizeBotServer summarize command errors', () => {
   });
 
   it('with Too Many Requests error from gpt', async () => {
-    const { telegramBot, db, gpt, simulateChatMessage } = await createSummarizeBotServerContext();
+    const { telegramBot, db, gpt, simulateChatMessage } =
+      await createSummarizeBotServerContext();
 
     const dbMessages = mapTgMessagesToDbMessages(createTgMessages(10));
 
@@ -82,7 +94,9 @@ describe('summarizeBotServer summarize command errors', () => {
     error.statusCode = 429;
     gpt.sendMessage.mockRejectedValueOnce(error);
     gpt.sendMessage.mockRejectedValueOnce(error);
-    gpt.sendMessage.mockResolvedValue(createGptChatMessage(gptTestSummary(0, 5)));
+    gpt.sendMessage.mockResolvedValue(
+      createGptChatMessage(gptTestSummary(0, 5))
+    );
 
     // story
     await simulateChatMessage(createSummarizeCommandMessage(myTgUser));
@@ -104,7 +118,8 @@ describe('summarizeBotServer summarize command errors', () => {
   });
 
   it('with 5 Too Many Requests errors from gpt', async () => {
-    const { telegramBot, db, gpt, simulateChatMessage } = await createSummarizeBotServerContext();
+    const { telegramBot, db, gpt, simulateChatMessage } =
+      await createSummarizeBotServerContext();
 
     const dbMessages = mapTgMessagesToDbMessages(createTgMessages(10));
 
@@ -118,7 +133,9 @@ describe('summarizeBotServer summarize command errors', () => {
     gpt.sendMessage.mockRejectedValueOnce(error);
     gpt.sendMessage.mockRejectedValueOnce(error);
     gpt.sendMessage.mockRejectedValueOnce(error);
-    gpt.sendMessage.mockResolvedValue(createGptChatMessage(gptTestSummary(0, 5)));
+    gpt.sendMessage.mockResolvedValue(
+      createGptChatMessage(gptTestSummary(0, 5))
+    );
 
     // story
     await simulateChatMessage(createSummarizeCommandMessage(myTgUser));
@@ -140,14 +157,21 @@ describe('summarizeBotServer summarize command errors', () => {
   });
 
   it('allowed count of summaries per day is ok', async () => {
-    const { telegramBot, db, gpt, simulateChatMessage } = await createSummarizeBotServerContext();
+    const { telegramBot, db, gpt, simulateChatMessage } =
+      await createSummarizeBotServerContext();
 
     const dbMessages = mapTgMessagesToDbMessages(createTgMessages(10));
 
     // mocks
     db.messages = dbMessages.all;
-    db.summaries = createSummaries(myTgGroupId, getEnv().MAX_SUMMARIES_PER_DAY - 1, 3);
-    gpt.sendMessage.mockResolvedValue(createGptChatMessage(gptTestSummary(0, 5)));
+    db.summaries = createSummaries(
+      myTgGroupId,
+      getEnv().MAX_SUMMARIES_PER_DAY - 1,
+      3
+    );
+    gpt.sendMessage.mockResolvedValue(
+      createGptChatMessage(gptTestSummary(0, 5))
+    );
 
     // story
     await simulateChatMessage(createSummarizeCommandMessage(myTgUser));
@@ -166,14 +190,21 @@ describe('summarizeBotServer summarize command errors', () => {
   });
 
   it('allowed count of summaries per day is exceeded', async () => {
-    const { telegramBot, db, gpt, simulateChatMessage } = await createSummarizeBotServerContext();
+    const { telegramBot, db, gpt, simulateChatMessage } =
+      await createSummarizeBotServerContext();
 
     const dbMessages = mapTgMessagesToDbMessages(createTgMessages(10));
 
     // mocks
     db.messages = dbMessages.all;
-    db.summaries = createSummaries(myTgGroupId, getEnv().MAX_SUMMARIES_PER_DAY, 3);
-    gpt.sendMessage.mockResolvedValue(createGptChatMessage(gptTestSummary(0, 5)));
+    db.summaries = createSummaries(
+      myTgGroupId,
+      getEnv().MAX_SUMMARIES_PER_DAY,
+      3
+    );
+    gpt.sendMessage.mockResolvedValue(
+      createGptChatMessage(gptTestSummary(0, 5))
+    );
 
     // story
     await simulateChatMessage(createSummarizeCommandMessage(myTgUser));
@@ -181,17 +212,24 @@ describe('summarizeBotServer summarize command errors', () => {
     // expectations
     expectBotSentExactMessagesToTg(
       telegramBot,
-      [t('summarize.errors.maxSummariesPerDayExceeded', { count: getEnv().MAX_SUMMARIES_PER_DAY })],
+      [
+        t('summarize.errors.maxSummariesPerDayExceeded', {
+          count: getEnv().MAX_SUMMARIES_PER_DAY,
+        }),
+      ],
       myTgGroupId
     );
   });
 
   it('no messages for summary and allowed count of summaries per day is exceeded', async () => {
-    const { telegramBot, db, gpt, simulateChatMessage } = await createSummarizeBotServerContext();
+    const { telegramBot, db, gpt, simulateChatMessage } =
+      await createSummarizeBotServerContext();
 
     // mocks
     db.summaries = createSummaries(myTgGroupId, getEnv().MAX_SUMMARIES_PER_DAY);
-    gpt.sendMessage.mockResolvedValue(createGptChatMessage(gptTestSummary(0, 5)));
+    gpt.sendMessage.mockResolvedValue(
+      createGptChatMessage(gptTestSummary(0, 5))
+    );
 
     // story
     await simulateChatMessage(createSummarizeCommandMessage(myTgUser));
@@ -199,19 +237,26 @@ describe('summarizeBotServer summarize command errors', () => {
     // expectations
     expectBotSentExactMessagesToTg(
       telegramBot,
-      [t('summarize.errors.maxSummariesPerDayExceeded', { count: getEnv().MAX_SUMMARIES_PER_DAY })],
+      [
+        t('summarize.errors.maxSummariesPerDayExceeded', {
+          count: getEnv().MAX_SUMMARIES_PER_DAY,
+        }),
+      ],
       myTgGroupId
     );
   });
 
   it('if you try to create two summaries at the same time, the second one will be just omitted', async () => {
-    const { telegramBot, db, gpt, simulateChatMessage } = await createSummarizeBotServerContext();
+    const { telegramBot, db, gpt, simulateChatMessage } =
+      await createSummarizeBotServerContext();
 
     const dbMessages = mapTgMessagesToDbMessages(createTgMessages(10));
 
     // mocks
     db.messages = dbMessages.all;
-    gpt.sendMessage.mockReturnValue(setTimeout(50, createGptChatMessage(gptTestSummary(0, 5))));
+    gpt.sendMessage.mockReturnValue(
+      setTimeout(50, createGptChatMessage(gptTestSummary(0, 5)))
+    );
 
     // story
     await simulateChatMessage(createSummarizeCommandMessage(myTgUser));
@@ -233,13 +278,16 @@ describe('summarizeBotServer summarize command errors', () => {
   });
 
   it('two summaries: one after another is ok (but too few messages for the second)', async () => {
-    const { telegramBot, db, gpt, simulateChatMessage } = await createSummarizeBotServerContext();
+    const { telegramBot, db, gpt, simulateChatMessage } =
+      await createSummarizeBotServerContext();
 
     const dbMessages = mapTgMessagesToDbMessages(createTgMessages(10));
 
     // mocks
     db.messages = dbMessages.all;
-    gpt.sendMessage.mockReturnValue(setTimeout(10, createGptChatMessage(gptTestSummary(0, 5))));
+    gpt.sendMessage.mockReturnValue(
+      setTimeout(10, createGptChatMessage(gptTestSummary(0, 5)))
+    );
 
     // story
     await simulateChatMessage(createSummarizeCommandMessage(myTgUser));
@@ -262,7 +310,8 @@ describe('summarizeBotServer summarize command errors', () => {
   });
 });
 
-const createGptSummaryError = (): ChatGPTError => new ChatGPTError('gpt summary error');
+const createGptSummaryError = (): ChatGPTError =>
+  new ChatGPTError('gpt summary error');
 
 function createSummaries(
   chatId: number,

@@ -34,7 +34,7 @@
     "dev:majestic": "npx majestic",
     "db:create-migration": "prisma migrate dev --name",
     "db:gen-types": "prisma generate",
-    "server:start": "pm2 delete summarizeBotServer || true && pm2 start 'ts-node-esm src/start.ts summarizeBotServer' --name summarizeBotServer --no-daemon",
+    "server:start": "pm2 delete summarizeBotServer || true && pm2 start 'node dist/src/start.js summarizeBotServer' --name summarizeBotServer --no-daemon",
     "server:stop": "pm2 stop summarizeBotServer",
     "server:restart": "pm2 restart summarizeBotServer || pnpm server:start",
     "server:status": "pm2 list",

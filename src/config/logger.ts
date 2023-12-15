@@ -1,13 +1,15 @@
 import { dirname } from '@darkobits/fd-name';
 import path from 'node:path';
 import winston, { format } from 'winston';
-import { required } from '../lib/common.ts';
+import { required } from '../lib/common.js';
 const { combine, timestamp, printf, colorize } = format;
 
 export type LogLevel = 'error' | 'warn' | 'info';
 
 const timeFormat = (): string => {
-  return new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }).replace(',', '');
+  return new Date()
+    .toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })
+    .replace(',', '');
 };
 
 const fileLogFormat = printf(({ level, message, timestamp }) => {

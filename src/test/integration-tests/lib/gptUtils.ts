@@ -1,6 +1,6 @@
 import { type ChatMessage } from 'chatgpt';
 import _ from 'lodash';
-import { gptTestSummaryPartStart } from './constants.ts';
+import { gptTestSummaryPartStart } from './constants.js';
 
 export function createGptChatMessage(text: string): ChatMessage {
   return {
