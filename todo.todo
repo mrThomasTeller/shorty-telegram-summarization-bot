@@ -51,7 +51,7 @@ Release 0.10:
 Backlog:
   - warn that messages are collected only from the moment the bot is added to chat.
   - BUG: fix test "will not change order of summaries if second summary came earlier than first".
-  - write how many recent messages the bot can make a summarisation from, if the number of messages for summarisation is exceeded.
+  - write how many recent messages the bot can make a summarization from, if the number of messages for summarization is exceeded.
   - status monitoring: amount of money spent, how many chats it is in, user activity, errors
   - ability to request a squeeze from channels in a private dialogue
   - encrypt also chat id (or make hashes), it is better to use id as an additional key or salt
@@ -79,7 +79,7 @@ Backlog:
   - take into account "replies to"
   - consider "forwarded messages"
   - take into account "someone logged in"
-  - correct all TODOs
+  - fix all TODOs
   - if there is not enough text in the last summary part, you should reduce the number of items
   - fix import bug: `import maxDate from 'date-fns/max';`, `import * as fp from 'fp-ts/lib/function.js';`
   - move `getEnv` to the top to remove the dependency of modules on it
