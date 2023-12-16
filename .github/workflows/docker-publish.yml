@@ -2,9 +2,9 @@ name: Docker
 
 on:
   push:
-    branches: [docker-image]
+    branches: [ts-node-esm-hotfix]
   pull_request:
-    branches: [docker-image]
+    branches: [ts-node-esm-hotfix]
 
 jobs:
   build-and-push:
