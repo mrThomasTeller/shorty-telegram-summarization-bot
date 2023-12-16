@@ -25,4 +25,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: mrThomasTeller/shorty-telegram-summarization-bot:latest
+          tags: mrthomasteller/shorty-telegram-summarization-bot:latest
