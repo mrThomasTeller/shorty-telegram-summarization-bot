@@ -15,6 +15,7 @@ services:
     ports:
       - 9345:5432
     container_name: summarize-tg-bot-db
+    restart: unless-stopped
 
   app:
     build: .
@@ -27,6 +28,7 @@ services:
     volumes:
       - ./logs:/root/app/logs
     container_name: summarize-tg-bot-app
+    restart: unless-stopped
 
   # по умолчанию запускается раз в день
   backup:
@@ -41,6 +43,7 @@ services:
     depends_on:
       - db
     container_name: summarize-tg-bot-db-backup
+    restart: unless-stopped
 
   # logs ui
   dozzle:
@@ -53,3 +56,4 @@ services:
       - DOZZLE_PASSWORD=${DOZZLE_PASSWORD}
     ports:
       - 9999:8080
+    restart: unless-stopped
