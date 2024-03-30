@@ -1,6 +1,6 @@
 {
   "name": "shorty-chat-bot",
-  "version": "0.7.9",
+  "version": "0.7.15-alpha.2",
   "description": "",
   "main": "src/start.ts",
   "type": "module",
@@ -10,7 +10,7 @@
   "engines": {
     "npm": "please-use-pnpm",
     "pnpm": ">= 8",
-    "node": ">= 18"
+    "node": ">= 20"
   },
   "scripts": {
     "preinstall": "npx only-allow pnpm",
@@ -21,6 +21,7 @@
     "test": "pnpm check:test",
     "lint": "pnpm check:lint",
     "commit": "pnpm git:commit",
+    "ts": "node --no-warnings --loader ts-node/esm",
     "check:test": "jest src --no-coverage",
     "check:test-only": "jest --no-coverage",
     "check:test-coverage": "jest src",
@@ -28,19 +29,19 @@
     "check:ts": "tsc --noEmit",
     "check:verify": "pnpm check:ts && pnpm check:lint && pnpm check:test",
     "dev:format": "prettier . --ignore-unknown --write",
-    "dev:start": "ts-node-esm src/start.ts summarizeBotServer",
+    "dev:start": "pnpm ts src/start.ts summarizeBotServer",
     "dev:start-debug": "node --loader ts-node/esm --inspect src/start.ts summarizeBotServer",
-    "dev:watch": "nodemon -x 'ts-node-esm src/start.ts summarizeBotServer' --ext ts,js,json,jsx",
+    "dev:watch": "nodemon -x 'pnpm ts src/start.ts summarizeBotServer' --ext ts,js,json,jsx",
     "dev:majestic": "npx majestic",
     "db:create-migration": "prisma migrate dev --name",
     "db:gen-types": "prisma generate",
-    "server:start": "pm2 delete summarizeBotServer || true && pm2 start 'ts-node-esm src/start.ts summarizeBotServer' --name summarizeBotServer --no-daemon",
+    "db:migrate": "prisma migrate deploy",
+    "server:start": "pm2 delete summarizeBotServer || true && pm2 start 'pnpm ts src/start.ts summarizeBotServer' --name summarizeBotServer --no-daemon",
     "server:stop": "pm2 stop summarizeBotServer",
     "server:restart": "pm2 restart summarizeBotServer || pnpm server:start",
     "server:status": "pm2 list",
     "server:log": "pm2 log summarizeBotServer",
     "prod:install": "pnpm install --prod --frozen-lockfile",
-    "prod:prepare-db": "prisma migrate deploy && pnpm db:gen-types",
     "git:minor-commit": "pnpm check:verify && npm --no-git-tag-version version minor && git add -A && git commit --no-verify && git push",
     "git:patch-commit": "pnpm check:verify && npm --no-git-tag-version version patch && git add -A && git commit --no-verify && git push",
     "git:patch-fcommit": "npm --no-git-tag-version version patch && git add -A && git commit --no-verify && git push",

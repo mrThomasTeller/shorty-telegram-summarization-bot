@@ -1,0 +1,34 @@
+name: Docker
+
+on:
+  push:
+    branches: [ts-node-esm-hotfix]
+  pull_request:
+    branches: [ts-node-esm-hotfix]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Get version
+        run: |
+          echo "VERSION=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | tr -d '[[:space:]]')" >> $GITHUB_ENV
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            mrthomasteller/shorty-telegram-summarization-bot:latest
+            mrthomasteller/shorty-telegram-summarization-bot:${{ env.VERSION }}

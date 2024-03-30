@@ -31,6 +31,8 @@ Release 0.7 (open beta):
   ✔ design a page on boosty @done(23-10-25 16:31)
 
 Release 0.8:
+  - fix freezing unit tests
+  - healthcheck
   - make gpt requests as big as possible
   - add possibility to show ads
   - how to make it easier and more obvious to call the bot?
@@ -86,6 +88,7 @@ Backlog:
   - enforce sensitive data storage standards
   - disable the ability to do `docker inspect`.
   - support start command
+  - see 2do tasks
 
 Questions bot:
   - new questions every month
