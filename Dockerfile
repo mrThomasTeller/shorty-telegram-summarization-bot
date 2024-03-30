@@ -14,4 +14,6 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm prod:install
 
 COPY . .
 
-CMD pnpm db:gen-types && npx prisma migrate deploy && pnpm server:start
+RUN pnpm prod:prepare-db
+
+CMD pnpm server:start

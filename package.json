@@ -1,6 +1,6 @@
 {
   "name": "shorty-chat-bot",
-  "version": "0.7.13",
+  "version": "0.7.14-0",
   "description": "",
   "main": "src/start.ts",
   "type": "module",
@@ -40,7 +40,7 @@
     "server:status": "pm2 list",
     "server:log": "pm2 log summarizeBotServer",
     "prod:install": "pnpm install --prod --frozen-lockfile",
-    "prod:prepare-db": "prisma migrate deploy && pnpm db:gen-types",
+    "prod:prepare-db": "pnpm db:gen-types && prisma migrate deploy",
     "git:minor-commit": "pnpm check:verify && npm --no-git-tag-version version minor && git add -A && git commit --no-verify && git push",
     "git:patch-commit": "pnpm check:verify && npm --no-git-tag-version version patch && git add -A && git commit --no-verify && git push",
     "git:patch-fcommit": "npm --no-git-tag-version version patch && git add -A && git commit --no-verify && git push",
