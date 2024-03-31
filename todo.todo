@@ -33,6 +33,7 @@ Release 0.7 (open beta):
 Release 0.8:
   - fix freezing unit tests
   - healthcheck
+  - check that crypto key is right
   - make gpt requests as big as possible
   - add possibility to show ads
   - how to make it easier and more obvious to call the bot?
