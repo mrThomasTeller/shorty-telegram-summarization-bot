@@ -26,6 +26,7 @@ import { getEnv } from '../../config/envVars.ts';
 import { max as maxTime } from 'date-fns';
 import type TelegramBot from 'node-telegram-bot-api';
 import { formatSummaryFromGpt, getPartsAndPointsCountForText } from '../../data/summaryUtils.ts';
+import { setTimeout } from 'node:timers/promises';
 
 type SummarizeResultCase =
   | GptResultCase
@@ -77,8 +78,7 @@ const queryGptOrReturnError$ =
 
 // todo refactor: make it to return Either<SummarizeResultCase, DbChatMessage[]>
 const getChatMessagesForSummary =
-  (services: Services, chatId: number) =>
-  async (): Promise<SummarizeResultCase | DbChatMessage[]> => {
+  (services: Services, chatId: number) => async (): Promise<SummarizeResultCase | DbChatMessage[]> => {
     const summaries = await services.db.getSummariesFrom(chatId, yesterday());
 
     if (summaries.length > getEnv().MAX_SUMMARIES_PER_DAY - 1) {
@@ -100,9 +100,7 @@ const rejectOverflowedSummaryPartsAndMakeSummary$ = _.curry(
     const gptQueryParts = mapSummaryPartsToGptQuery(allowedParts);
 
     return concat<SummarizeResultCase[]>(
-      parts.length > maxSummaryParts
-        ? of({ type: 'tooManySummaryParts', count: parts.length })
-        : [],
+      parts.length > maxSummaryParts ? of({ type: 'tooManySummaryParts', count: parts.length }) : [],
 
       from(gptQueryParts).pipe(concatMap(querySummaryPartFromGptAndReEnumerateResponse$(services)))
     );
@@ -124,16 +122,21 @@ const querySummaryPartFromGptAndReEnumerateResponse$ = _.curry(
     )
 );
 
-const handleSummaryResultCase =
-  (services: Services, chatId: number) => async (resultCase: SummarizeResultCase) => {
-    const logArgs = getLogMessageForSummarizeResultCase(resultCase, chatId);
-    if (logArgs !== undefined) logger.log(...logArgs);
+const handleSummaryResultCase = (services: Services, chatId: number) => async (resultCase: SummarizeResultCase) => {
+  const logArgs = getLogMessageForSummarizeResultCase(resultCase, chatId);
+  if (logArgs !== undefined) logger.log(...logArgs);
 
-    await Promise.all([
-      resultCase.type === 'summaryHeader' && services.db.createSummary(chatId, new Date()),
-      services.telegramBot.sendMessage(chatId, getBotMessageForSummarizeResultCase(resultCase)),
-    ]);
-  };
+  if (resultCase.type === 'summaryHeader') {
+    await services.db.createSummary(chatId, new Date());
+  }
+
+  await services.telegramBot.sendMessage(chatId, getBotMessageForSummarizeResultCase(resultCase));
+
+  if (resultCase.type === 'endSummary') {
+    await setTimeout(1000);
+    await services.ads.showAds(chatId);
+  }
+};
 
 function getLogMessageForSummarizeResultCase(
   resultCase: SummarizeResultCase,
@@ -182,7 +185,9 @@ function getBotMessageForSummarizeResultCase(resultCase: SummarizeResultCase): s
       return t('summarize.errors.queryProcess');
     }
     case 'fewMessages': {
-      return t('summarize.errors.fewMessages', { count: getEnv().MIN_MESSAGES_COUNT_TO_SUMMARIZE });
+      return t('summarize.errors.fewMessages', {
+        count: getEnv().MIN_MESSAGES_COUNT_TO_SUMMARIZE,
+      });
     }
     case 'noMessages': {
       return t('summarize.errors.noMessages');
@@ -204,9 +209,7 @@ type GptQueryPart = {
   text: string;
 };
 
-const mapSummaryPartsToGptQuery = (
-  parts: { text: string; pointsCount: number }[]
-): GptQueryPart[] =>
+const mapSummaryPartsToGptQuery = (parts: { text: string; pointsCount: number }[]): GptQueryPart[] =>
   parts.map(({ text, pointsCount }, index) => ({
     pointsCount,
     index,
@@ -217,16 +220,10 @@ const mapSummaryPartsToGptQuery = (
   }));
 
 // todo make this function more expressive
-const insertSummaryLayout = (): UnaryFunction<
-  Observable<SummarizeResultCase>,
-  Observable<SummarizeResultCase>
-> =>
+const insertSummaryLayout = (): UnaryFunction<Observable<SummarizeResultCase>, Observable<SummarizeResultCase>> =>
   pipe(
     startWith<SummarizeResultCase>({ type: 'startSummary' }),
-    insertBefore<SummarizeResultCase>(
-      { type: 'summaryHeader' },
-      (c) => c.type === 'responseFromGPT'
-    ),
+    insertBefore<SummarizeResultCase>({ type: 'summaryHeader' }, (c) => c.type === 'responseFromGPT'),
     endWithAfter<SummarizeResultCase>((c) => c.type === 'responseFromGPT', {
       type: 'endSummary',
     })

@@ -11,20 +11,24 @@ import { type MessageCreateInput } from '../../../services/DbService.ts';
 import { myTgUser, otherTgUser } from './tgUtils.ts';
 import { encrypt, encryptIfExists } from '../../../data/encryption.ts';
 import { botName } from './constants.ts';
+import type AdsService from '../../../services/AdsService.ts';
 
 export type TestContext = ReturnType<typeof createContext>;
 
 // todo move all mocks factories to separate files
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default function createContext() {
-  const { telegramBot, simulateChatMessage, simulateAddedToChat } = createTelegramBotServiceMock();
+  const { telegramBot, simulateChatMessage, simulateAddedToChat } =
+    createTelegramBotServiceMock();
   const db = createDbServiceMock();
   const gpt = createGptServiceMock();
+  const ads = mock<AdsService>();
 
   return {
     telegramBot,
     db,
     gpt,
+    ads,
     simulateChatMessage,
     simulateAddedToChat,
   };
@@ -78,13 +82,19 @@ function createDbServiceMock() {
 
   service.hasMessage.mockImplementation(async (messageId, chatId) =>
     service.messages.some(
-      (msg) => msg.messageId === BigInt(messageId) && msg.chatId === BigInt(chatId)
+      (msg) =>
+        msg.messageId === BigInt(messageId) && msg.chatId === BigInt(chatId)
     )
   );
 
   service.createChatMessageIfNotExists.mockImplementation(
     async (messageInput: MessageCreateInput): Promise<void> => {
-      if (await service.hasMessage(Number(messageInput.messageId), Number(messageInput.chatId))) {
+      if (
+        await service.hasMessage(
+          Number(messageInput.messageId),
+          Number(messageInput.chatId)
+        )
+      ) {
         return;
       }
 
@@ -98,7 +108,8 @@ function createDbServiceMock() {
       const message: DbChatMessage = {
         chatId: BigInt(messageInput.chatId),
         messageId: BigInt(messageInput.messageId),
-        userId: messageInput.userId == null ? null : BigInt(messageInput.userId),
+        userId:
+          messageInput.userId == null ? null : BigInt(messageInput.userId),
         date: new Date(messageInput.date),
         text: messageInput.text ?? null,
         from: user && {
@@ -135,16 +146,20 @@ function createDbServiceMock() {
   service.getChatMessages.mockImplementation(async (chatId, from) =>
     fp_.pipe(
       fp_.filter((msg: DbChatMessage) => msg.chatId === BigInt(chatId)),
-      from ? fp_.filter((msg) => msg.date >= from) : fp_.identity<DbChatMessage[]>
+      from
+        ? fp_.filter((msg) => msg.date >= from)
+        : fp_.identity<DbChatMessage[]>
     )(service.messages)
   );
 
   return service;
 }
 
-const initialSimulateChatMessage = (msg: TelegramBot.Message): Promise<TelegramBot.Message> =>
-  Promise.resolve(msg);
-const initialSimulateAddedToChat = (_chatId: number): Promise<void> => Promise.resolve();
+const initialSimulateChatMessage = (
+  msg: TelegramBot.Message
+): Promise<TelegramBot.Message> => Promise.resolve(msg);
+const initialSimulateAddedToChat = (_chatId: number): Promise<void> =>
+  Promise.resolve();
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 function createTelegramBotServiceMock() {
@@ -180,9 +195,11 @@ function createTelegramBotServiceMock() {
 
   return {
     telegramBot: service,
-    simulateChatMessage: (msg: TelegramBot.Message): Promise<TelegramBot.Message> =>
-      simulateChatMessage(msg),
-    simulateAddedToChat: (chatId: number): Promise<void> => simulateAddedToChat(chatId),
+    simulateChatMessage: (
+      msg: TelegramBot.Message
+    ): Promise<TelegramBot.Message> => simulateChatMessage(msg),
+    simulateAddedToChat: (chatId: number): Promise<void> =>
+      simulateAddedToChat(chatId),
   };
 }
 
@@ -190,7 +207,9 @@ function createTelegramBotServiceMock() {
 function createGptServiceMock() {
   const service = mock<GptService>();
 
-  service.sendMessage.mockRejectedValue(new Error('gpt.sendMessage is not mocked'));
+  service.sendMessage.mockRejectedValue(
+    new Error('gpt.sendMessage is not mocked')
+  );
 
   return service;
 }

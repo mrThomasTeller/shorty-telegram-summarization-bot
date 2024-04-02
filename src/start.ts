@@ -1,5 +1,6 @@
 import recoveryMessage from './entryPoints/recoveryMessage.ts';
 import summarizeBotServer from './entryPoints/summarizeBotServer.ts';
+import AdsServiceImpl from './services/AdsServiceImpl.ts';
 import DbServiceImpl from './services/DbServiceImpl.ts';
 import GptServiceImpl from './services/GptServiceImpl.ts';
 import type Services from './services/Services.ts';
@@ -8,6 +9,7 @@ import TelegramBotServiceImpl from './services/TelegramBotServiceImpl.ts';
 const entryPointName = process.argv[2];
 
 const services: Services = {
+  ads: new AdsServiceImpl(),
   db: new DbServiceImpl(),
   telegramBot: new TelegramBotServiceImpl(),
   gpt: new GptServiceImpl(),

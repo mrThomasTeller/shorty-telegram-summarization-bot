@@ -30,38 +30,46 @@ Release 0.7 (open beta):
   ✔ design a support bot profile @done(23-10-24 23:18)
   ✔ design a page on boosty @done(23-10-25 16:31)
 
-Release 0.8:
-  - fix freezing unit tests
+Release 1.0:
   - healthcheck
+  - use kubernetes or docker swarm
   - check that crypto key is right
   - make gpt requests as big as possible
   - add possibility to show ads
   - how to make it easier and more obvious to call the bot?
+  - regular Ping and notifications to your phone when bot crashes
+  - take into account "replies to" / "forwarded messages"
+  - delete deleted messages from the database, edit edited messages
+  - newsletter
+  - ssl access to dozzle
 
-Release 0.9 (open beta of the second app):
+Release 1.1 (open beta of the second app):
   - make a second app with fun dialogue questions (maybe even multiple apps)
   - add links to other bots in all bots
   - write news to all chat rooms where summarize bot is a member
 
-Release 0.10:
+Release 1.2:
   - audience reach calculation
-  - regular Ping and notifications to your phone when bot crashes
   - try to increase prompt size
   - work out the issue of storing personal data.
   - detailed help
   - work out the issue with adverts
 
+Users requests:
+  - increase max symbols limit for summary
+  - summary to private messages
+  - decode voice messages
+  - summary for more than 24 hours
+  - 
+
 Backlog:
-  - warn that messages are collected only from the moment the bot is added to chat.
   - BUG: fix test "will not change order of summaries if second summary came earlier than first".
   - write how many recent messages the bot can make a summarisation from, if the number of messages for summarisation is exceeded.
   - status monitoring: amount of money spent, how many chats it is in, user activity, errors
   - ability to request a squeeze from channels in a private dialogue
   - encrypt also chat id (or make hashes), it is better to use id as an additional key or salt
   - add hashtags to the extract
-  - make a limit on the size of one item
   - database cleanup
-  - newsletter
   - set up connection to database via ssh/ssl (not RSA)
   - configure CI/CD
   - function to read messages for a certain day/time
@@ -72,15 +80,11 @@ Backlog:
   - build pgbackup image from https://github.com/mrThomasTeller/docker-postgres-backup-local
   - Make integration tests for logs
   - progressive squeeze creation (gpt progress)
-  - delete deleted messages from the database, edit edited messages
   - delete messages from the database when a bot exits chat
   - log that a bot has left the chat room
   - make unit tests for services
   - Wrap TelegramBotService into a facade that will queue messages to be sent.
-  - ssl access to dozzle
   - jest matcher closeToDate (replacing toBeCloseTo)
-  - take into account "replies to"
-  - consider "forwarded messages"
   - take into account "someone logged in"
   - correct all TODOs
   - if there is not enough text in the last summary part, you should reduce the number of items
@@ -88,7 +92,6 @@ Backlog:
   - move `getEnv` to the top to remove the dependency of modules on it
   - enforce sensitive data storage standards
   - disable the ability to do `docker inspect`.
-  - support start command
   - see 2do tasks
 
 Questions bot:
