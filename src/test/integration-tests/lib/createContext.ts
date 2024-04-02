@@ -165,7 +165,7 @@ function createTelegramBotServiceMock() {
     };
   });
 
-  service.onAddedToChat.mockImplementation((callback) => {
+  service.onAddedToGroupChat.mockImplementation((callback) => {
     simulateAddedToChat = async (chatId) => {
       callback(chatId);
       await setTimeout(0);

@@ -10,18 +10,18 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
     this.bot = new TelegramBot(getEnv().TELEGRAM_BOT_TOKEN, { polling: true });
   }
 
-  async sendMessage(
-    chatId: number,
-    text: string,
-    options?: TelegramBotSendMessageOptions
-  ): Promise<void> {
+  async sendMessage(chatId: number, text: string, options?: TelegramBotSendMessageOptions): Promise<void> {
     await this.bot.sendMessage(chatId, text, { ...options, disable_web_page_preview: true });
   }
 
-  onAddedToChat(callback: (chatId: number) => void): VoidFunction {
+  onAddedToGroupChat(callback: (chatId: number) => void): VoidFunction {
     const listener = async (msg: TelegramBot.ChatMemberUpdated): Promise<void> => {
       const me = await this.bot.getMe();
-      if (msg.new_chat_member.status === 'member' && msg.new_chat_member.user.id === me.id) {
+      if (
+        msg.new_chat_member.status === 'member' &&
+        msg.new_chat_member.user.id === me.id &&
+        msg.chat.type !== 'private'
+      ) {
         callback(msg.chat.id);
       }
     };

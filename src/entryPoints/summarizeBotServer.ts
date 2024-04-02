@@ -14,7 +14,7 @@ import { catchError } from '../lib/async.ts';
 const summarizeBotServer: EntryPoint = async (services) => {
   await services.telegramBot.setMyCommands(getRealCommands());
 
-  services.telegramBot.onAddedToChat((chatId) => {
+  services.telegramBot.onAddedToGroupChat((chatId) => {
     catchError(sendHelpMessage(services.telegramBot, chatId));
   });
 
@@ -27,9 +27,7 @@ const summarizeBotServer: EntryPoint = async (services) => {
 
 export default summarizeBotServer;
 
-function createTgMessagesObservable(
-  telegramBotService: TelegramBotService
-): Observable<TelegramBot.Message> {
+function createTgMessagesObservable(telegramBotService: TelegramBotService): Observable<TelegramBot.Message> {
   return new Observable((subscriber) =>
     telegramBotService.onAnyMessage((msg) => {
       subscriber.next(msg);

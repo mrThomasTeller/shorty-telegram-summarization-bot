@@ -1,0 +1,32 @@
+import path from 'node:path';
+import summarizeCommand from '../../config/commands/summarize.ts';
+import type ChatController from '../ChatController.ts';
+import { dirname } from '@darkobits/fd-name';
+import fs from 'node:fs';
+import { required } from '../../lib/common.ts';
+import _ from 'lodash';
+import { escapeTelegramMarkdown } from '../../lib/tgUtils.ts';
+import type TelegramBotService from '../../services/TelegramBotService';
+
+const startMessageTpl = _.template(
+  fs.readFileSync(path.join(required(dirname()), '../../config/texts/start.tpl'), 'utf8')
+);
+
+export const renderStartMessage = (botName: string): string =>
+  startMessageTpl({
+    summarizeCommand: summarizeCommand.command,
+    botName: escapeTelegramMarkdown(botName),
+  });
+
+// todo make html template
+const startCommandController: ChatController = ({ chat$, chatId, services }) => {
+  chat$.subscribe(() => sendStartMessage(services.telegramBot, chatId));
+};
+
+export default startCommandController;
+
+export async function sendStartMessage(telegramBot: TelegramBotService, chatId: number): Promise<void> {
+  await telegramBot.sendMessage(chatId, renderStartMessage(required(await telegramBot.getUsername())), {
+    parse_mode: 'MarkdownV2',
+  });
+}
