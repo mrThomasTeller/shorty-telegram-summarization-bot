@@ -4,8 +4,8 @@ import { dirname } from '@darkobits/fd-name';
 import fs from 'node:fs';
 import { required } from '../../lib/common.ts';
 import _ from 'lodash';
-import { escapeTelegramMarkdown } from '../../lib/tgUtils.ts';
 import type TelegramBotService from '../../services/TelegramBotService';
+import { escapeTelegramMarkdown } from '../../data/telegramBotMessageUtils.ts';
 
 const helpMessageTpl = _.template(
   fs.readFileSync(path.join(required(dirname()), '../../config/texts/help.tpl'), 'utf8')
