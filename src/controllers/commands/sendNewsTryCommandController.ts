@@ -1,9 +1,9 @@
+import { getCommandParams } from '../../data/telegramBotMessageUtils.ts';
 import type ChatController from '../ChatController.ts';
-import { getTgCommandParams } from '../../lib/tgUtils.ts';
 
 const sendNewsTryCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$.subscribe(async (msg) => {
-    const news = msg.text === undefined ? '' : getTgCommandParams(msg.text);
+    const news = msg.text === undefined ? '' : getCommandParams(msg.text);
 
     if (news.trim() !== '') {
       try {
