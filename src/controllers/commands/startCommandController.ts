@@ -1,5 +1,4 @@
 import path from 'node:path';
-import summarizeCommand from '../../config/commands/summarize.ts';
 import type ChatController from '../ChatController.ts';
 import { dirname } from '@darkobits/fd-name';
 import fs from 'node:fs';
@@ -14,7 +13,6 @@ const startMessageTpl = _.template(
 
 export const renderStartMessage = (botName: string): string =>
   startMessageTpl({
-    summarizeCommand: summarizeCommand.command,
     botName: escapeTelegramMarkdown(botName),
   });
 
@@ -28,5 +26,8 @@ export default startCommandController;
 export async function sendStartMessage(telegramBot: TelegramBotService, chatId: number): Promise<void> {
   await telegramBot.sendMessage(chatId, renderStartMessage(required(await telegramBot.getUsername())), {
     parse_mode: 'MarkdownV2',
+    reply_markup: {
+      inline_keyboard: [[{ text: 'Добавить в групповой чат', url: 'https://t.me/SummarizeBot?startgroup=true' }]],
+    },
   });
 }

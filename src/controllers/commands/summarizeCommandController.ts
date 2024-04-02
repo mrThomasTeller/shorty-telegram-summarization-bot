@@ -245,8 +245,10 @@ const insertSummaryLayout = (): UnaryFunction<Observable<SummarizeResultCase>, O
       {
         type: 'endSummary',
       },
-      {
-        type: 'ads',
-      }
+      getEnv().SHOW_ADS
+        ? {
+            type: 'ads',
+          }
+        : undefined
     )
   );

@@ -15,6 +15,7 @@ type Env = {
   GRAM_ADS_TOKEN: string;
   DUMMY_GPT_RESPONSES: boolean;
   TIME_TO_SHOW_ADS: number;
+  SHOW_ADS: boolean;
 };
 
 export function getEnv(): Env {
@@ -32,6 +33,7 @@ export function getEnv(): Env {
     GRAM_ADS_TOKEN: required(process.env.GRAM_ADS_TOKEN),
     DUMMY_GPT_RESPONSES: process.env.DUMMY_GPT_RESPONSES === 'true',
     TIME_TO_SHOW_ADS: Number(required(process.env.TIME_TO_SHOW_ADS)),
+    SHOW_ADS: process.env.SHOW_ADS === 'true',
   };
 }
 

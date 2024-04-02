@@ -17,26 +17,20 @@ import {
   scan,
 } from 'rxjs';
 
-export const filterAsync = <T>(
-  predicate: (arg: T) => Promise<boolean>
-): UnaryFunction<Observable<T>, Observable<T>> =>
+export const filterAsync = <T>(predicate: (arg: T) => Promise<boolean>): UnaryFunction<Observable<T>, Observable<T>> =>
   pipe(
     mergeMap(async (arg: T) => ({ arg, result: await predicate(arg) })),
     filter(({ result }) => result),
     mergeMap(({ arg }) => [arg])
   );
 
-export const rejectAsync = <T>(
-  predicate: (arg: T) => Promise<boolean>
-): UnaryFunction<Observable<T>, Observable<T>> =>
+export const rejectAsync = <T>(predicate: (arg: T) => Promise<boolean>): UnaryFunction<Observable<T>, Observable<T>> =>
   pipe(filterAsync((arg) => predicate(arg).then((result) => !result)));
 
-export const repeat$ = <T>(value: T, times: number): Observable<T> =>
-  range(times).pipe(map(() => value));
+export const repeat$ = <T>(value: T, times: number): Observable<T> => range(times).pipe(map(() => value));
 
-export const stopWhen = <T>(
-  predicate: (value: T, index: number) => boolean
-): MonoTypeOperatorFunction<T> => takeWhile<T>((value, index) => !predicate(value, index), true);
+export const stopWhen = <T>(predicate: (value: T, index: number) => boolean): MonoTypeOperatorFunction<T> =>
+  takeWhile<T>((value, index) => !predicate(value, index), true);
 
 export const insertDelayBetweenValues = <T>(delayTime: number): OperatorFunction<T, T> =>
   concatMap((value: T) => of(value).pipe(delay(delayTime)));
@@ -46,10 +40,7 @@ export const repeatWithDelay = <T>(delay: number): MonoTypeOperatorFunction<T> =
     delay: () => timer(delay),
   });
 
-export const insertBefore = <T>(
-  insertion: T,
-  predicate: (value: T) => boolean
-): OperatorFunction<T, T> =>
+export const insertBefore = <T>(insertion: T, predicate: (value: T) => boolean): OperatorFunction<T, T> =>
   pipe(
     scan(
       (acc, value: T) =>
@@ -69,7 +60,7 @@ export const insertBefore = <T>(
 // }
 
 export const endWithAfter =
-  <T>(predicate: (value: T) => boolean, ...values: T[]): OperatorFunction<T, T> =>
+  <T>(predicate: (value: T) => boolean, ...values: (T | undefined)[]): OperatorFunction<T, T> =>
   (source: Observable<T>): Observable<T> => {
     return new Observable<T>((observer) => {
       const noValue = Symbol('noValue');
@@ -86,7 +77,9 @@ export const endWithAfter =
         complete() {
           if (lastValue !== noValue && predicate(lastValue)) {
             for (const value of values) {
-              observer.next(value);
+              if (value !== undefined) {
+                observer.next(value);
+              }
             }
           }
           observer.complete();

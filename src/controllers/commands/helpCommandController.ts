@@ -1,5 +1,4 @@
 import path from 'node:path';
-import summarizeCommand from '../../config/commands/summarize.ts';
 import type ChatController from '../ChatController.ts';
 import { dirname } from '@darkobits/fd-name';
 import fs from 'node:fs';
@@ -14,7 +13,6 @@ const helpMessageTpl = _.template(
 
 export const renderHelpMessage = (botName: string): string =>
   helpMessageTpl({
-    summarizeCommand: summarizeCommand.command,
     botName: escapeTelegramMarkdown(botName),
   });
 
@@ -25,15 +23,8 @@ const helpCommandController: ChatController = ({ chat$, chatId, services }) => {
 
 export default helpCommandController;
 
-export async function sendHelpMessage(
-  telegramBot: TelegramBotService,
-  chatId: number
-): Promise<void> {
-  await telegramBot.sendMessage(
-    chatId,
-    renderHelpMessage(required(await telegramBot.getUsername())),
-    {
-      parse_mode: 'MarkdownV2',
-    }
-  );
+export async function sendHelpMessage(telegramBot: TelegramBotService, chatId: number): Promise<void> {
+  await telegramBot.sendMessage(chatId, renderHelpMessage(required(await telegramBot.getUsername())), {
+    parse_mode: 'MarkdownV2',
+  });
 }

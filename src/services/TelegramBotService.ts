@@ -1,8 +1,6 @@
 import type TelegramBot from 'node-telegram-bot-api';
 
-export type TelegramBotSendMessageOptions = {
-  parse_mode?: 'MarkdownV2' | 'HTML';
-};
+export type TelegramBotSendMessageOptions = Pick<TelegramBot.SendMessageOptions, 'parse_mode' | 'reply_markup'>;
 
 type TelegramBotService = {
   getUsername: () => Promise<string | undefined>;
