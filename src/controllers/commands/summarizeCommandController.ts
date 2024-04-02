@@ -27,6 +27,7 @@ import { max as maxTime } from 'date-fns';
 import type TelegramBot from 'node-telegram-bot-api';
 import { formatSummaryFromGpt, getPartsAndPointsCountForText } from '../../data/summaryUtils.ts';
 import { setTimeout } from 'node:timers/promises';
+import { type TelegramBotSendMessageOptions } from '../../services/TelegramBotService.ts';
 
 type SummarizeResultCase =
   | GptResultCase
@@ -36,7 +37,8 @@ type SummarizeResultCase =
   | { type: 'tooManySummaries' }
   | { type: 'startSummary' }
   | { type: 'summaryHeader' }
-  | { type: 'endSummary' };
+  | { type: 'endSummary' }
+  | { type: 'ads' };
 
 const summarizeCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$.pipe(exhaustMap(handleSingleSummarizeRequest$(chatId, services))).subscribe(_.noop);
@@ -130,10 +132,19 @@ const handleSummaryResultCase = (services: Services, chatId: number) => async (r
     await services.db.createSummary(chatId, new Date());
   }
 
-  await services.telegramBot.sendMessage(chatId, getBotMessageForSummarizeResultCase(resultCase));
+  const botMessage = getBotMessageForSummarizeResultCase(resultCase);
+  const { text, parseMode } = typeof botMessage === 'string' ? { text: botMessage, parseMode: undefined } : botMessage;
 
-  if (resultCase.type === 'endSummary') {
-    await setTimeout(1000);
+  await services.telegramBot.sendMessage(
+    chatId,
+    text,
+    parseMode && {
+      parse_mode: parseMode,
+    }
+  );
+
+  if (resultCase.type === 'ads') {
+    await setTimeout(getEnv().TIME_TO_SHOW_ADS);
     await services.ads.showAds(chatId);
   }
 };
@@ -161,7 +172,9 @@ function getLogMessageForSummarizeResultCase(
   }
 }
 
-function getBotMessageForSummarizeResultCase(resultCase: SummarizeResultCase): string {
+function getBotMessageForSummarizeResultCase(
+  resultCase: SummarizeResultCase
+): string | { text: string; parseMode: TelegramBotSendMessageOptions['parse_mode'] } {
   switch (resultCase.type) {
     case 'startSummary': {
       return t('summarize.message.start');
@@ -200,6 +213,9 @@ function getBotMessageForSummarizeResultCase(resultCase: SummarizeResultCase): s
     case 'tooManySummaryParts': {
       return t('summarize.message.tooManyMessages');
     }
+    case 'ads': {
+      return { text: t('summarize.message.dontShowAds'), parseMode: 'HTML' };
+    }
   }
 }
 
@@ -224,7 +240,13 @@ const insertSummaryLayout = (): UnaryFunction<Observable<SummarizeResultCase>, O
   pipe(
     startWith<SummarizeResultCase>({ type: 'startSummary' }),
     insertBefore<SummarizeResultCase>({ type: 'summaryHeader' }, (c) => c.type === 'responseFromGPT'),
-    endWithAfter<SummarizeResultCase>((c) => c.type === 'responseFromGPT', {
-      type: 'endSummary',
-    })
+    endWithAfter<SummarizeResultCase>(
+      (c) => c.type === 'responseFromGPT',
+      {
+        type: 'endSummary',
+      },
+      {
+        type: 'ads',
+      }
+    )
   );

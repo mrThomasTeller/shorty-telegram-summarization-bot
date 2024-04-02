@@ -7,7 +7,10 @@ import { type Logger } from 'winston';
 
 beforeAll(() => {
   setWhiteChatsList([myTgUser.id, myTgGroupId, myTgGroup2Id]);
-  setEnv({ RETRY_GPT_QUERY_TIME: 10 });
+  setEnv({
+    RETRY_GPT_QUERY_TIME: 10,
+    TIME_TO_SHOW_ADS: 20,
+  });
 });
 
 beforeEach(() => {

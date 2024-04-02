@@ -1,9 +1,4 @@
-import {
-  myTgUser,
-  myTgGroupId,
-  createSummarizeCommandMessage,
-  createTgMessages,
-} from '../../lib/tgUtils.ts';
+import { myTgUser, myTgGroupId, createSummarizeCommandMessage, createTgMessages } from '../../lib/tgUtils.ts';
 import { ChatGPTError } from 'chatgpt';
 import { mapTgMessagesToDbMessages } from '../../lib/dbUtils.ts';
 import { expectBotSentExactMessagesToTg } from '../../lib/expectations.ts';
@@ -98,6 +93,7 @@ describe('summarizeBotServer summarize command errors', () => {
         t('summarize.message.header'),
         gptTestSummary(0, 5),
         t('summarize.message.end'),
+        { message: t('summarize.message.dontShowAds'), parseMode: 'HTML' },
       ],
       myTgGroupId
     );
@@ -160,6 +156,7 @@ describe('summarizeBotServer summarize command errors', () => {
         t('summarize.message.header'),
         gptTestSummary(0, 5),
         t('summarize.message.end'),
+        { message: t('summarize.message.dontShowAds'), parseMode: 'HTML' },
       ],
       myTgGroupId
     );
@@ -227,6 +224,7 @@ describe('summarizeBotServer summarize command errors', () => {
         t('summarize.message.header'),
         gptTestSummary(0, 5),
         t('summarize.message.end'),
+        { message: t('summarize.message.dontShowAds'), parseMode: 'HTML' },
       ],
       myTgGroupId
     );
@@ -244,6 +242,7 @@ describe('summarizeBotServer summarize command errors', () => {
     // story
     await simulateChatMessage(createSummarizeCommandMessage(myTgUser));
     await setTimeout(20);
+    await setTimeout(getEnv().TIME_TO_SHOW_ADS);
     await simulateChatMessage(createSummarizeCommandMessage(myTgUser));
     await setTimeout(20);
 
@@ -255,6 +254,7 @@ describe('summarizeBotServer summarize command errors', () => {
         t('summarize.message.header'),
         gptTestSummary(0, 5),
         t('summarize.message.end'),
+        { message: t('summarize.message.dontShowAds'), parseMode: 'HTML' },
         t('summarize.errors.noMessages'),
       ],
       myTgGroupId

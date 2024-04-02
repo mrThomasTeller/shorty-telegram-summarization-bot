@@ -1,4 +1,5 @@
 import { getEnv } from '../config/envVars.ts';
+import logger from '../config/logger.ts';
 import type AdsService from './AdsService.ts';
 
 export default class AdsServiceImpl implements AdsService {
@@ -19,5 +20,7 @@ export default class AdsServiceImpl implements AdsService {
     if (!response.ok) {
       throw new Error(`Failed to send ads to chat ${chatId}`);
     }
+
+    logger.info(`Ads sent to chat ${chatId}`);
   }
 }

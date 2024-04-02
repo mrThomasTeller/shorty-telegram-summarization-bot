@@ -13,6 +13,8 @@ type Env = {
   MAX_SUMMARY_PARTS: number;
   CRYPTO_KEY: string;
   GRAM_ADS_TOKEN: string;
+  DUMMY_GPT_RESPONSES: boolean;
+  TIME_TO_SHOW_ADS: number;
 };
 
 export function getEnv(): Env {
@@ -23,13 +25,13 @@ export function getEnv(): Env {
     TELEGRAM_BOT_TOKEN: required(process.env.TELEGRAM_BOT_TOKEN),
     WHITE_CHATS_LIST: process.env.WHITE_CHATS_LIST ?? '',
     RETRY_GPT_QUERY_TIME: Number(required(process.env.RETRY_GPT_QUERY_TIME)),
-    MIN_MESSAGES_COUNT_TO_SUMMARIZE: Number(
-      required(process.env.MIN_MESSAGES_COUNT_TO_SUMMARIZE)
-    ),
+    MIN_MESSAGES_COUNT_TO_SUMMARIZE: Number(required(process.env.MIN_MESSAGES_COUNT_TO_SUMMARIZE)),
     MAX_SUMMARIES_PER_DAY: Number(required(process.env.MAX_SUMMARIES_PER_DAY)),
     MAX_SUMMARY_PARTS: Number(required(process.env.MAX_SUMMARY_PARTS)),
     CRYPTO_KEY: required(process.env.CRYPTO_KEY),
     GRAM_ADS_TOKEN: required(process.env.GRAM_ADS_TOKEN),
+    DUMMY_GPT_RESPONSES: process.env.DUMMY_GPT_RESPONSES === 'true',
+    TIME_TO_SHOW_ADS: Number(required(process.env.TIME_TO_SHOW_ADS)),
   };
 }
 

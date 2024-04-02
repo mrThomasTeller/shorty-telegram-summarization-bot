@@ -7,6 +7,7 @@ import { t } from '../../../config/translations/index.ts';
 import { now } from 'lodash';
 import { myTgGroupId } from './tgUtils.ts';
 import { decryptIfExists } from '../../../data/encryption.ts';
+import { type TelegramBotSendMessageOptions } from '../../../services/TelegramBotService.ts';
 
 export function expectBotCreatedUsers(db: TestContext['db'], users: TelegramBot.User[]): void {
   for (const user of users) {
@@ -22,15 +23,11 @@ export function expectBotCreatedUsers(db: TestContext['db'], users: TelegramBot.
   }
 }
 
-export function expectBotCreatedDbChatMessages(
-  db: TestContext['db'],
-  messages: TelegramBot.Message[]
-): void {
+export function expectBotCreatedDbChatMessages(db: TestContext['db'], messages: TelegramBot.Message[]): void {
   for (const message of messages) {
     const messageFound = db.messages.some(
       (dbMessage) =>
-        decryptIfExists(dbMessage.text) === message.text &&
-        dbMessage.userId === BigInt(required(message.from?.id))
+        decryptIfExists(dbMessage.text) === message.text && dbMessage.userId === BigInt(required(message.from?.id))
     );
 
     expect(messageFound).toBe(true);
@@ -67,13 +64,27 @@ export function expectBotSentExactMessagesToTg(
   messages: (
     | string
     | jest.AsymmetricMatcher
-    | [message: string | jest.AsymmetricMatcher, userId: number]
+    | {
+        message: string | jest.AsymmetricMatcher;
+        userId?: number;
+        parseMode?: TelegramBotSendMessageOptions['parse_mode'];
+      }
   )[],
   userId: number = myTgGroupId
 ): void {
-  for (const [index, message] of messages.entries()) {
-    const [messageText, messageUserId] = Array.isArray(message) ? message : [message, userId];
-    expect(telegramBot.sendMessage).toHaveBeenNthCalledWith(index + 1, messageUserId, messageText);
+  for (const [index, messageObj] of messages.entries()) {
+    const {
+      message,
+      parseMode = undefined,
+      userId: messageReceiver = userId,
+    } = typeof messageObj === 'object' && 'message' in messageObj ? messageObj : { message: messageObj };
+
+    expect(telegramBot.sendMessage).toHaveBeenNthCalledWith(
+      index + 1,
+      messageReceiver,
+      message,
+      parseMode && { parse_mode: parseMode }
+    );
   }
   expect(telegramBot.sendMessage).toHaveBeenCalledTimes(messages.length);
 }
