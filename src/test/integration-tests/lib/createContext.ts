@@ -18,8 +18,7 @@ export type TestContext = ReturnType<typeof createContext>;
 // todo move all mocks factories to separate files
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default function createContext() {
-  const { telegramBot, simulateChatMessage, simulateAddedToChat } =
-    createTelegramBotServiceMock();
+  const { telegramBot, simulateChatMessage, simulateAddedToChat } = createTelegramBotServiceMock();
   const db = createDbServiceMock();
   const gpt = createGptServiceMock();
   const ads = mock<AdsService>();
@@ -81,48 +80,37 @@ function createDbServiceMock() {
   });
 
   service.hasMessage.mockImplementation(async (messageId, chatId) =>
-    service.messages.some(
-      (msg) =>
-        msg.messageId === BigInt(messageId) && msg.chatId === BigInt(chatId)
-    )
+    service.messages.some((msg) => msg.messageId === BigInt(messageId) && msg.chatId === BigInt(chatId))
   );
 
-  service.createChatMessageIfNotExists.mockImplementation(
-    async (messageInput: MessageCreateInput): Promise<void> => {
-      if (
-        await service.hasMessage(
-          Number(messageInput.messageId),
-          Number(messageInput.chatId)
-        )
-      ) {
-        return;
-      }
-
-      const user =
-        Number(messageInput.userId) === myTgUser.id
-          ? myTgUser
-          : Number(messageInput.userId) === otherTgUser.id
-          ? otherTgUser
-          : null;
-
-      const message: DbChatMessage = {
-        chatId: BigInt(messageInput.chatId),
-        messageId: BigInt(messageInput.messageId),
-        userId:
-          messageInput.userId == null ? null : BigInt(messageInput.userId),
-        date: new Date(messageInput.date),
-        text: messageInput.text ?? null,
-        from: user && {
-          firstName: encrypt(user.first_name),
-          lastName: encryptIfExists(user.last_name) ?? null,
-          username: encryptIfExists(user.username) ?? null,
-          id: BigInt(user.id),
-        },
-      };
-
-      service.messages.push(message);
+  service.createChatMessageIfNotExists.mockImplementation(async (messageInput: MessageCreateInput): Promise<void> => {
+    if (await service.hasMessage(Number(messageInput.messageId), Number(messageInput.chatId))) {
+      return;
     }
-  );
+
+    const user =
+      Number(messageInput.userId) === myTgUser.id
+        ? myTgUser
+        : Number(messageInput.userId) === otherTgUser.id
+        ? otherTgUser
+        : null;
+
+    const message: DbChatMessage = {
+      chatId: BigInt(messageInput.chatId),
+      messageId: BigInt(messageInput.messageId),
+      userId: messageInput.userId == null ? null : BigInt(messageInput.userId),
+      date: new Date(messageInput.date),
+      text: messageInput.text ?? null,
+      from: user && {
+        firstName: encrypt(user.first_name),
+        lastName: encryptIfExists(user.last_name) ?? null,
+        username: encryptIfExists(user.username) ?? null,
+        id: BigInt(user.id),
+      },
+    };
+
+    service.messages.push(message);
+  });
 
   service.createSummary.mockImplementation(async (chatId, date) => {
     const summary = {
@@ -146,20 +134,15 @@ function createDbServiceMock() {
   service.getChatMessages.mockImplementation(async (chatId, from) =>
     fp_.pipe(
       fp_.filter((msg: DbChatMessage) => msg.chatId === BigInt(chatId)),
-      from
-        ? fp_.filter((msg) => msg.date >= from)
-        : fp_.identity<DbChatMessage[]>
+      from ? fp_.filter((msg) => msg.date >= from) : fp_.identity<DbChatMessage[]>
     )(service.messages)
   );
 
   return service;
 }
 
-const initialSimulateChatMessage = (
-  msg: TelegramBot.Message
-): Promise<TelegramBot.Message> => Promise.resolve(msg);
-const initialSimulateAddedToChat = (_chatId: number): Promise<void> =>
-  Promise.resolve();
+const initialSimulateChatMessage = (msg: TelegramBot.Message): Promise<TelegramBot.Message> => Promise.resolve(msg);
+const initialSimulateAddedToChat = (_chatId: number): Promise<void> => Promise.resolve();
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 function createTelegramBotServiceMock() {
@@ -195,11 +178,8 @@ function createTelegramBotServiceMock() {
 
   return {
     telegramBot: service,
-    simulateChatMessage: (
-      msg: TelegramBot.Message
-    ): Promise<TelegramBot.Message> => simulateChatMessage(msg),
-    simulateAddedToChat: (chatId: number): Promise<void> =>
-      simulateAddedToChat(chatId),
+    simulateChatMessage: (msg: TelegramBot.Message): Promise<TelegramBot.Message> => simulateChatMessage(msg),
+    simulateAddedToChat: (chatId: number): Promise<void> => simulateAddedToChat(chatId),
   };
 }
 
@@ -207,9 +187,7 @@ function createTelegramBotServiceMock() {
 function createGptServiceMock() {
   const service = mock<GptService>();
 
-  service.sendMessage.mockRejectedValue(
-    new Error('gpt.sendMessage is not mocked')
-  );
+  service.sendMessage.mockRejectedValue(new Error('gpt.sendMessage is not mocked'));
 
   return service;
 }
