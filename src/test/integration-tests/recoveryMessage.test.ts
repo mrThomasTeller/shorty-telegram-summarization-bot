@@ -9,16 +9,17 @@ describe('recoveryMessage', () => {
     const context = createContext();
     const { db, telegramBot } = context;
 
-    const chats: Chat[] = [{ id: 1n }, { id: 2n }, { id: -1003n }];
+    const chats: Chat[] = [
+      { id: 1n, isMember: true, createdAt: new Date() },
+      { id: 2n, isMember: true, createdAt: new Date() },
+      { id: -1003n, isMember: true, createdAt: new Date() },
+    ];
     db.getAllChats.mockResolvedValue(chats);
 
     await recoveryMessage(context);
 
     for (const { id } of chats) {
-      expect(telegramBot.sendMessage).toHaveBeenCalledWith(
-        Number(id),
-        expect.stringContaining(t('recovery.message'))
-      );
+      expect(telegramBot.sendMessage).toHaveBeenCalledWith(Number(id), expect.stringContaining(t('recovery.message')));
     }
 
     expect(loggerMock.info).toHaveBeenCalledWith(t('recovery.debugInfo', { count: chats.length }));

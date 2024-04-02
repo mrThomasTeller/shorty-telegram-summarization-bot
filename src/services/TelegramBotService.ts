@@ -13,6 +13,11 @@ type TelegramBotService = {
   /**
    * @returns unsubscribe function
    */
+  onRemovedFromGroupChat: (callback: (chatId: number) => void) => VoidFunction;
+
+  /**
+   * @returns unsubscribe function
+   */
   onAnyMessage: (callback: (msg: TelegramBot.Message) => void) => VoidFunction;
 
   sendMessage: (chatId: number, text: string, options?: TelegramBotSendMessageOptions) => Promise<void>;

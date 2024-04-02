@@ -8,15 +8,13 @@ import type Services from '../services/Services.ts';
 import _ from 'lodash';
 import logger from '../config/logger.ts';
 import { sendHelpMessage } from '../controllers/commands/helpCommandController.ts';
-import { catchError } from '../lib/async.ts';
 
 // todo refactor this function
 const summarizeBotServer: EntryPoint = async (services) => {
   await services.telegramBot.setMyCommands(getRealCommands());
 
-  services.telegramBot.onAddedToGroupChat((chatId) => {
-    catchError(sendHelpMessage(services.telegramBot, chatId));
-  });
+  services.telegramBot.onAddedToGroupChat(addedToGroupChatHandler(services));
+  services.telegramBot.onRemovedFromGroupChat(removedFromGroupChatHandler(services));
 
   createTgMessagesObservable(services.telegramBot)
     .pipe(groupNonEmptyMessagesByChatId)
@@ -26,6 +24,20 @@ const summarizeBotServer: EntryPoint = async (services) => {
 };
 
 export default summarizeBotServer;
+
+const addedToGroupChatHandler = (services: Services) => async (chatId: number) => {
+  await sendHelpMessage(services.telegramBot, chatId);
+
+  // todo test
+  await services.db.statisticsAddedToChat();
+  await services.db.setGroupChatIsMember(chatId, true);
+};
+
+const removedFromGroupChatHandler = (services: Services) => async (chatId: number) => {
+  // todo test
+  await services.db.statisticsRemovedFromChat();
+  await services.db.setGroupChatIsMember(chatId, false);
+};
 
 function createTgMessagesObservable(telegramBotService: TelegramBotService): Observable<TelegramBot.Message> {
   return new Observable((subscriber) =>

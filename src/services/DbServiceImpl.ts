@@ -3,6 +3,7 @@ import type DbService from './DbService.ts';
 import { type Chat, PrismaClient, type User, type Summary } from '@prisma/client';
 import { type MessageCreateInput, type UserCreateInput } from './DbService.ts';
 import _ from 'lodash';
+import { todayMidday } from '../lib/date.ts';
 
 export default class DbServiceImpl implements DbService {
   private readonly prisma: PrismaClient;
@@ -66,15 +67,18 @@ export default class DbServiceImpl implements DbService {
   async getOrCreateChat(chatId: number): Promise<[chat: Chat, created: boolean]> {
     const chat = await this.prisma.chat.findUnique({ where: { id: chatId } });
     return chat === null
-      ? [await this.prisma.chat.create({ data: { id: chatId } }), true]
+      ? [
+          await this.prisma.chat.create({
+            data: { id: chatId, isMember: true },
+          }),
+          true,
+        ]
       : [chat, false];
   }
 
   async getOrCreateUser(userInput: UserCreateInput): Promise<[user: User, created: boolean]> {
     const user = await this.prisma.user.findUnique({ where: { id: userInput.id } });
-    return user === null
-      ? [await this.prisma.user.create({ data: userInput }), true]
-      : [user, false];
+    return user === null ? [await this.prisma.user.create({ data: userInput }), true] : [user, false];
   }
 
   async hasMessage(messageId: number, chatId: number): Promise<boolean> {
@@ -88,5 +92,29 @@ export default class DbServiceImpl implements DbService {
     });
 
     return message !== null;
+  }
+
+  async setGroupChatIsMember(chatId: number, isMember: boolean): Promise<void> {
+    await this.prisma.chat.upsert({
+      where: { id: chatId },
+      create: { id: chatId, isMember },
+      update: { isMember },
+    });
+  }
+
+  async statisticsAddedToChat(): Promise<void> {
+    await this.prisma.statistic.upsert({
+      where: { date: todayMidday() },
+      update: { addedToChats: { increment: 1 } },
+      create: { addedToChats: 1, date: todayMidday() },
+    });
+  }
+
+  async statisticsRemovedFromChat(): Promise<void> {
+    await this.prisma.statistic.upsert({
+      where: { date: todayMidday() },
+      update: { removedFromChats: { increment: 1 } },
+      create: { removedFromChats: 1, date: todayMidday() },
+    });
   }
 }

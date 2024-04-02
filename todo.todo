@@ -34,6 +34,7 @@ Release 1.0:
   - test start command
   - test ads
   - test info messages
+  - test all // todo test
   - just mention the bot to get a summary
   - healthcheck
   - use kubernetes or docker swarm

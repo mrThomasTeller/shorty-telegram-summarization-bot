@@ -15,6 +15,9 @@ type DbService = {
   getOrCreateChat: (chatId: number) => Promise<[chat: Chat, created: boolean]>;
   getOrCreateUser: (userInput: UserCreateInput) => Promise<[user: User, created: boolean]>;
   hasMessage: (messageId: number, chatId: number) => Promise<boolean>;
+  setGroupChatIsMember: (chatId: number, isMember: boolean) => Promise<void>;
+  statisticsAddedToChat: () => Promise<void>;
+  statisticsRemovedFromChat: () => Promise<void>;
 };
 
 export default DbService;

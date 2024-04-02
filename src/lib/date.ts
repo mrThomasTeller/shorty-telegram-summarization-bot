@@ -1,3 +1,9 @@
+export function todayMidday(): Date {
+  const date = new Date();
+  date.setHours(12, 0, 0, 0);
+  return date;
+}
+
 export function yesterday(): Date {
   const date = new Date();
   date.setDate(date.getDate() - 1);

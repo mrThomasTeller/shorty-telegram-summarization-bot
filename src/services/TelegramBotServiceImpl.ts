@@ -30,6 +30,20 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
     return () => this.bot.off('my_chat_member', listener);
   }
 
+  // todo test
+  onRemovedFromGroupChat(callback: (chatId: number) => void): VoidFunction {
+    const listener = async (msg: TelegramBot.ChatMemberUpdated): Promise<void> => {
+      const me = await this.bot.getMe();
+      const { status, user } = msg.new_chat_member;
+      if ((status === 'left' || status === 'kicked') && user.id === me.id && msg.chat.type !== 'private') {
+        callback(msg.chat.id);
+      }
+    };
+
+    this.bot.on('my_chat_member', listener);
+    return () => this.bot.off('my_chat_member', listener);
+  }
+
   onAnyMessage(callback: (msg: TelegramBot.Message) => void): VoidFunction {
     const regexp = /.*/;
     this.bot.onText(regexp, callback);

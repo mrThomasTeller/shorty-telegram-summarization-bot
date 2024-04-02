@@ -18,6 +18,8 @@ model User {
 
 model Chat {
   id        BigInt    @id
+  isMember  Boolean?
+  createdAt DateTime  @default(now())
   messages  Message[]
   summaries Summary[]
 }
@@ -39,4 +41,10 @@ model Summary {
   date   DateTime
   chat   Chat     @relation(fields: [chatId], references: [id])
   chatId BigInt
+}
+
+model Statistic {
+  date             DateTime @id
+  addedToChats     Int      @default(0)
+  removedFromChats Int      @default(0)
 }
