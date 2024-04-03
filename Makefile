@@ -10,7 +10,7 @@ start: check-env
 	docker compose up
 
 start-detached: check-env
-	docker compose up --detach
+	docker compose up --detach && docker system prune
 
 stop:
 	docker compose stop
