@@ -30,12 +30,12 @@ Release 0.7 (open beta):
   ✔ design a support bot profile @done(23-10-24 23:18)
   ✔ design a page on boosty @done(23-10-25 16:31)
 
-Release 1.0:
+Release 1.1:
   - test start command
   - test ads
   - test info messages
   - test all // todo test
-  - just mention the bot to get a summary
+  - robots.txt, firewall
   - healthcheck
   - use kubernetes or docker swarm
   - check that crypto key is right
@@ -47,6 +47,7 @@ Release 1.0:
   - delete deleted messages from the database, edit edited messages
   - newsletter
   - ssl access to dozzle
+  ✔ just mention the bot to get a summary @done(24-04-03 11:00)
 
 Release 1.1 (open beta of the second app):
   - make a second app with fun dialogue questions (maybe even multiple apps)

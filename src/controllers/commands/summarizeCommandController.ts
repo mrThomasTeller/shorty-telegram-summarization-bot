@@ -50,7 +50,7 @@ const handleSingleSummarizeRequest$ = _.curry(
   (chatId: number, services: Services, msg: TelegramBot.Message): Observable<void> =>
     of(msg).pipe(
       mergeMap(getChatMessagesForSummary(services, chatId)),
-      mergeMap(queryGptOrReturnError$(services)),
+      mergeMap(queryGptOrReturnError$(services, chatId)),
       // I moved it from subscribe to pipe, because there is a problem with telegram messages when
       // one sends them without delay. We need to wait for the previous message to be sent.
       // todo move it to subscribe and make Facade for TelegramBotService, which queue messages
@@ -59,7 +59,7 @@ const handleSingleSummarizeRequest$ = _.curry(
 );
 
 const queryGptOrReturnError$ =
-  (services: Services) =>
+  (services: Services, chatId: number) =>
   (messages: SummarizeResultCase | DbChatMessage[]): Observable<SummarizeResultCase> => {
     if (!Array.isArray(messages)) return of(messages);
 
@@ -73,7 +73,7 @@ const queryGptOrReturnError$ =
         map(formatChatMessages),
         map(getPartsAndPointsCountForText),
         concatMap(rejectOverflowedSummaryPartsAndMakeSummary$(services)),
-        insertSummaryLayout()
+        insertSummaryLayout(chatId)
       );
     }
   };
@@ -236,8 +236,18 @@ const mapSummaryPartsToGptQuery = (parts: { text: string; pointsCount: number }[
   }));
 
 // todo make this function more expressive
-const insertSummaryLayout = (): UnaryFunction<Observable<SummarizeResultCase>, Observable<SummarizeResultCase>> =>
-  pipe(
+const insertSummaryLayout = (
+  chatId: number
+): UnaryFunction<Observable<SummarizeResultCase>, Observable<SummarizeResultCase>> => {
+  const { SHOW_ADS } = getEnv();
+  const showAdsCase: SummarizeResultCase | undefined =
+    SHOW_ADS === true || (typeof SHOW_ADS === 'number' && SHOW_ADS === chatId)
+      ? {
+          type: 'ads',
+        }
+      : undefined;
+
+  return pipe(
     startWith<SummarizeResultCase>({ type: 'startSummary' }),
     insertBefore<SummarizeResultCase>({ type: 'summaryHeader' }, (c) => c.type === 'responseFromGPT'),
     endWithAfter<SummarizeResultCase>(
@@ -245,10 +255,7 @@ const insertSummaryLayout = (): UnaryFunction<Observable<SummarizeResultCase>, O
       {
         type: 'endSummary',
       },
-      getEnv().SHOW_ADS
-        ? {
-            type: 'ads',
-          }
-        : undefined
+      showAdsCase
     )
   );
+};
