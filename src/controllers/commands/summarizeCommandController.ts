@@ -39,7 +39,7 @@ type SummarizeResultCase =
   | { type: 'tooManySummaries' }
   | { type: 'startSummary' }
   | { type: 'summaryHeader' }
-  | { type: 'endSummary' }
+  | { type: 'endSummary'; summariesRest: number }
   | { type: 'ads' };
 
 const summarizeCommandController: ChatController = ({ chat$, chatId, services }) => {
@@ -55,27 +55,28 @@ const handleSingleSummarizeRequest$ = _.curry(
       mergeMap(queryGptOrReturnError$(services, chatId)),
       concatMap(handleSummaryResultCase(services, chatId)),
       last(),
-      // todo вынести в конфиг после каких команд могут показываться новости
       mergeMap(() => printNews(services.db, services.telegramBot, chatId))
     )
 );
 
 const queryGptOrReturnError$ =
   (services: Services, chatId: number) =>
-  (messages: SummarizeResultCase | DbChatMessage[]): Observable<SummarizeResultCase> => {
-    if (!Array.isArray(messages)) return of(messages);
+  (
+    messages: SummarizeResultCase | { messages: DbChatMessage[]; summariesRest: number }
+  ): Observable<SummarizeResultCase> => {
+    if (!('messages' in messages)) return of(messages);
 
     const minMessagesCount = getEnv().MIN_MESSAGES_COUNT_TO_SUMMARIZE;
-    if (messages.length === 0) {
+    if (messages.messages.length === 0) {
       return of({ type: 'noMessages' });
-    } else if (messages.length < minMessagesCount) {
+    } else if (messages.messages.length < minMessagesCount) {
       return of({ type: 'fewMessages' });
     } else {
-      return of(messages).pipe(
+      return of(messages.messages).pipe(
         map(formatChatMessages),
         map(getPartsAndPointsCountForText),
         concatMap(rejectOverflowedSummaryPartsAndMakeSummary$(services)),
-        insertSummaryLayout(chatId)
+        insertSummaryLayout(chatId, messages.summariesRest)
       );
     }
   };
@@ -83,17 +84,21 @@ const queryGptOrReturnError$ =
 // todo refactor: make it to return Either<SummarizeResultCase, DbChatMessage[]>
 const getChatMessagesForSummary =
   (services: Services, chatId: number) =>
-  async (): Promise<SummarizeResultCase | DbChatMessage[]> => {
+  async (): Promise<SummarizeResultCase | { messages: DbChatMessage[]; summariesRest: number }> => {
     // todo test
     const summaries = await services.db.getSummariesFrom(chatId, thisWeekStart());
+    const summariesRest = getEnv().MAX_SUMMARIES_PER_WEEK - summaries.length;
 
-    if (summaries.length >= getEnv().MAX_SUMMARIES_PER_WEEK) {
+    if (summariesRest <= 0) {
       return { type: 'tooManySummaries' };
     }
 
     const lastSummaryDate = summaries.at(-1)?.date ?? yesterday();
     const startSummaryFrom = maxTime([lastSummaryDate, yesterday()]);
-    return await services.db.getChatMessages(chatId, startSummaryFrom);
+    return {
+      messages: await services.db.getChatMessages(chatId, startSummaryFrom),
+      summariesRest: summariesRest - 1,
+    };
   };
 
 const formatChatMessages = (messages: DbChatMessage[]): string =>
@@ -194,7 +199,10 @@ function getBotMessageForSummarizeResultCase(
       return formatSummaryFromGpt(resultCase.text);
     }
     case 'endSummary': {
-      return t('summarize.message.end');
+      return t('summarize.message.end', {
+        rest: resultCase.summariesRest,
+        total: getEnv().MAX_SUMMARIES_PER_WEEK,
+      });
     }
     case 'maxTriesExceeded': {
       return t('summarize.errors.maxQueriesToGptExceeded');
@@ -250,7 +258,8 @@ const mapSummaryPartsToGptQuery = (
 
 // todo make this function more expressive
 const insertSummaryLayout = (
-  chatId: number
+  chatId: number,
+  summariesRest: number
 ): UnaryFunction<Observable<SummarizeResultCase>, Observable<SummarizeResultCase>> => {
   const { SHOW_ADS } = getEnv();
   const showAdsCase: SummarizeResultCase | undefined =
@@ -270,6 +279,7 @@ const insertSummaryLayout = (
       (c) => c.type === 'responseFromGPT',
       {
         type: 'endSummary',
+        summariesRest,
       },
       showAdsCase
     )
