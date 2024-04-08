@@ -1,7 +1,7 @@
 import { type GptResultCase, sendMessageToGptWithRetries$ } from '../../api/gpt.ts';
 import { reEnumerateText } from '../../lib/text.ts';
 import { getFormattedMessage } from '../../data/dbChatMessageUtils.ts';
-import { yesterday } from '../../lib/date.ts';
+import { yesterday, thisWeekStart } from '../../lib/date.ts';
 import {
   type Observable,
   type UnaryFunction,
@@ -84,9 +84,10 @@ const queryGptOrReturnError$ =
 const getChatMessagesForSummary =
   (services: Services, chatId: number) =>
   async (): Promise<SummarizeResultCase | DbChatMessage[]> => {
-    const summaries = await services.db.getSummariesFrom(chatId, yesterday());
+    // todo test
+    const summaries = await services.db.getSummariesFrom(chatId, thisWeekStart());
 
-    if (summaries.length > getEnv().MAX_SUMMARIES_PER_DAY - 1) {
+    if (summaries.length >= getEnv().MAX_SUMMARIES_PER_WEEK) {
       return { type: 'tooManySummaries' };
     }
 
@@ -213,9 +214,12 @@ function getBotMessageForSummarizeResultCase(
       return t('summarize.errors.noMessages');
     }
     case 'tooManySummaries': {
-      return t('summarize.errors.maxSummariesPerDayExceeded', {
-        count: getEnv().MAX_SUMMARIES_PER_DAY,
-      });
+      return {
+        text: t('summarize.errors.maxSummariesExceeded', {
+          count: getEnv().MAX_SUMMARIES_PER_WEEK,
+        }),
+        parseMode: 'HTML',
+      };
     }
     case 'tooManySummaryParts': {
       return t('summarize.message.tooManyMessages');

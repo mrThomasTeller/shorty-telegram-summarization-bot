@@ -10,6 +10,19 @@ export function yesterday(): Date {
   return date;
 }
 
+export function twelveHoursAgo(): Date {
+  const date = new Date();
+  date.setHours(date.getHours() - 12);
+  return date;
+}
+
+export function thisWeekStart(): Date {
+  const date = new Date();
+  date.setDate(date.getDate() - date.getDay() + 1);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
 export function daysAgo(days: number): Date {
   const date = new Date();
   date.setDate(date.getDate() - days);

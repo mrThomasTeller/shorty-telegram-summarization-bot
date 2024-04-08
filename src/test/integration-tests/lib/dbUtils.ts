@@ -2,6 +2,8 @@ import type TelegramBot from 'node-telegram-bot-api';
 import type DbChatMessage from '../../../data/DbChatMessage.ts';
 import { myTgGroupId, myTgUser, type TestTgMessage } from './tgUtils.ts';
 import { encrypt, encryptIfExists } from '../../../data/encryption.ts';
+import _ from 'lodash';
+import { daysAgo, hoursAgo } from '../../../lib/date.ts';
 
 export function createDbMessageInGroup({
   text,
@@ -53,3 +55,22 @@ export const mapTgMessagesToDbMessages = (
     actual: messagesData.filter((d) => !d.shouldBeSkipped).map((d) => d.message),
   };
 };
+
+export function createSummaries(
+  chatId: number,
+  actualCount: number,
+  outdatedCount: number = 0
+): { id: number; date: Date; chatId: bigint }[] {
+  return [
+    ..._.range(outdatedCount).map((index) => ({
+      id: index + 1,
+      date: daysAgo(2),
+      chatId: BigInt(chatId),
+    })),
+    ..._.range(actualCount).map((index) => ({
+      id: index + outdatedCount + 1,
+      date: hoursAgo(1),
+      chatId: BigInt(chatId),
+    })),
+  ];
+}

@@ -5,15 +5,13 @@ import {
   createTgMessages,
 } from '../../lib/tgUtils.ts';
 import { ChatGPTError } from 'chatgpt';
-import { mapTgMessagesToDbMessages } from '../../lib/dbUtils.ts';
+import { createSummaries, mapTgMessagesToDbMessages } from '../../lib/dbUtils.ts';
 import { expectBotSentExactMessagesToTg } from '../../lib/expectations.ts';
 import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils.ts';
 import createSummarizeBotServerContext from '../createSummarizeBotServerContext.ts';
 import { setTimeout } from 'node:timers/promises';
 import { t } from '../../../../config/translations/index.ts';
 import { getEnv } from '../../../../config/envVars.ts';
-import _ from 'lodash';
-import { daysAgo, hoursAgo } from '../../../../lib/date.ts';
 
 describe('summarizeBotServer summarize command errors', () => {
   it('no messages to summarize', async () => {
@@ -147,7 +145,7 @@ describe('summarizeBotServer summarize command errors', () => {
 
     // mocks
     db.messages = dbMessages.all;
-    db.summaries = createSummaries(myTgGroupId, getEnv().MAX_SUMMARIES_PER_DAY - 1, 3);
+    db.summaries = createSummaries(myTgGroupId, getEnv().MAX_SUMMARIES_PER_WEEK - 1, 3);
     gpt.sendMessage.mockResolvedValue(createGptChatMessage(gptTestSummary(0, 5)));
 
     // story
@@ -174,7 +172,7 @@ describe('summarizeBotServer summarize command errors', () => {
 
     // mocks
     db.messages = dbMessages.all;
-    db.summaries = createSummaries(myTgGroupId, getEnv().MAX_SUMMARIES_PER_DAY, 3);
+    db.summaries = createSummaries(myTgGroupId, getEnv().MAX_SUMMARIES_PER_WEEK, 3);
     gpt.sendMessage.mockResolvedValue(createGptChatMessage(gptTestSummary(0, 5)));
 
     // story
@@ -183,7 +181,14 @@ describe('summarizeBotServer summarize command errors', () => {
     // expectations
     expectBotSentExactMessagesToTg(
       telegramBot,
-      [t('summarize.errors.maxSummariesPerDayExceeded', { count: getEnv().MAX_SUMMARIES_PER_DAY })],
+      [
+        {
+          message: t('summarize.errors.maxSummariesExceeded', {
+            count: getEnv().MAX_SUMMARIES_PER_WEEK,
+          }),
+          parseMode: 'HTML',
+        },
+      ],
       myTgGroupId
     );
   });
@@ -192,7 +197,7 @@ describe('summarizeBotServer summarize command errors', () => {
     const { telegramBot, db, gpt, simulateChatMessage } = await createSummarizeBotServerContext();
 
     // mocks
-    db.summaries = createSummaries(myTgGroupId, getEnv().MAX_SUMMARIES_PER_DAY);
+    db.summaries = createSummaries(myTgGroupId, getEnv().MAX_SUMMARIES_PER_WEEK);
     gpt.sendMessage.mockResolvedValue(createGptChatMessage(gptTestSummary(0, 5)));
 
     // story
@@ -201,7 +206,14 @@ describe('summarizeBotServer summarize command errors', () => {
     // expectations
     expectBotSentExactMessagesToTg(
       telegramBot,
-      [t('summarize.errors.maxSummariesPerDayExceeded', { count: getEnv().MAX_SUMMARIES_PER_DAY })],
+      [
+        {
+          message: t('summarize.errors.maxSummariesExceeded', {
+            count: getEnv().MAX_SUMMARIES_PER_WEEK,
+          }),
+          parseMode: 'HTML',
+        },
+      ],
       myTgGroupId
     );
   });
@@ -268,22 +280,3 @@ describe('summarizeBotServer summarize command errors', () => {
 });
 
 const createGptSummaryError = (): ChatGPTError => new ChatGPTError('gpt summary error');
-
-function createSummaries(
-  chatId: number,
-  actualCount: number,
-  outdatedCount: number = 0
-): { id: number; date: Date; chatId: bigint }[] {
-  return [
-    ..._.range(outdatedCount).map((index) => ({
-      id: index + 1,
-      date: daysAgo(2),
-      chatId: BigInt(chatId),
-    })),
-    ..._.range(actualCount).map((index) => ({
-      id: index + outdatedCount + 1,
-      date: hoursAgo(1),
-      chatId: BigInt(chatId),
-    })),
-  ];
-}

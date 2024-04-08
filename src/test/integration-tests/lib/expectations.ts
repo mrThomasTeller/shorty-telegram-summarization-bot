@@ -23,11 +23,15 @@ export function expectBotCreatedUsers(db: TestContext['db'], users: TelegramBot.
   }
 }
 
-export function expectBotCreatedDbChatMessages(db: TestContext['db'], messages: TelegramBot.Message[]): void {
+export function expectBotCreatedDbChatMessages(
+  db: TestContext['db'],
+  messages: TelegramBot.Message[]
+): void {
   for (const message of messages) {
     const messageFound = db.messages.some(
       (dbMessage) =>
-        decryptIfExists(dbMessage.text) === message.text && dbMessage.userId === BigInt(required(message.from?.id))
+        decryptIfExists(dbMessage.text) === message.text &&
+        dbMessage.userId === BigInt(required(message.from?.id))
     );
 
     expect(messageFound).toBe(true);
@@ -40,16 +44,18 @@ export function expectBotQueriedSummaryFromGpt(
   messagesBunches: DbChatMessage[][]
 ): void {
   for (const [index, messages] of messagesBunches.entries()) {
-    const call = required(gpt.sendMessage.mock.calls[index]);
+    const call = gpt.sendMessage.mock.calls[index];
 
-    expect(call[0]).toBe(
+    expect(call).toBeTruthy();
+
+    expect(required(call)[0]).toBe(
       t(summaryPartPointsCount === 1 ? 'summarize.gptQuery' : 'summarize.gptQueryWithPoints', {
         pointsCount: summaryPartPointsCount,
         text: messages.map((message) => getFormattedMessage(message)).join('\n'),
       })
     );
 
-    expect(call[1]).toEqual(
+    expect(required(call)[1]).toEqual(
       expect.objectContaining({
         completionParams: { max_tokens: 2048 },
       })
@@ -77,7 +83,9 @@ export function expectBotSentExactMessagesToTg(
       message,
       parseMode = undefined,
       userId: messageReceiver = userId,
-    } = typeof messageObj === 'object' && 'message' in messageObj ? messageObj : { message: messageObj };
+    } = typeof messageObj === 'object' && 'message' in messageObj
+      ? messageObj
+      : { message: messageObj };
 
     expect(telegramBot.sendMessage).toHaveBeenNthCalledWith(
       index + 1,
