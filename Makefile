@@ -1,6 +1,6 @@
 all: deploy
 
-deploy:
+deploy: check-env
 	make build && make start-detached
 
 build:
