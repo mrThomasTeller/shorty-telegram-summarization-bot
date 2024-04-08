@@ -1,4 +1,6 @@
 message: 60 \* 2 = 120 symbols
+max symbols for one summary: 3400 \* 5 = 17000
+max messages for one summary: 17000 / 120 = 140
 
 Min: 10 messages.
 

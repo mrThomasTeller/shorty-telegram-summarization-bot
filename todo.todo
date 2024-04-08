@@ -31,6 +31,8 @@ Release 0.7 (open beta):
   ✔ design a page on boosty @done(23-10-25 16:31)
 
 Release 1.1:
+  - urgent!
+    - сервер крашится от каждой ошибки в observables
   - test start command
   - test ads
   - test info messages

@@ -1,14 +1,11 @@
+import config from '../config/config.ts';
 import { splitText } from '../lib/text.ts';
 import fp_ from 'lodash/fp.js';
-
-const maxPartLength = 3400;
-const maxPointsCount = 5;
-const symbolsForOnePoint = 150 * 3;
 
 export function getPartsAndPointsCountForText(
   fullText: string
 ): { pointsCount: number; text: string }[] {
-  const textParts = splitText(fullText, maxPartLength);
+  const textParts = splitText(fullText, config.summary.maxPartLength);
 
   const pointsCount = fp_.cond([
     [fp_.isEqual(1), () => getPointsCountForOnePart(fullText)],
@@ -24,6 +21,9 @@ export function getPartsAndPointsCountForText(
 }
 
 const getPointsCountForOnePart = (text: string): number =>
-  Math.min(Math.ceil(text.length / symbolsForOnePoint), maxPointsCount);
+  Math.min(
+    Math.ceil(text.length / config.summary.symbolsForOnePoint),
+    config.summary.maxPointsCount
+  );
 
 export const formatSummaryFromGpt = (summary: string): string => summary.replace(/\.$/, '');
