@@ -19,9 +19,9 @@
     "message": {
       "start": "⚙️ Собираю сообщения за последний день...",
       "header": "🔡 Краткая выжимка:",
-      "tooManyMessages": "Сообщений накопилось очень много 🤯 Я смогу сделать выжимку только из самых последних.",
-      "end": "😌 Это всё\n🔋 У вас осталось {{rest}} из {{total}} бесплатных выжимок на этой неделе",
-      "dontShowAds": "🚫 <a href=\"https://boosty.to/artyom.bakharev/posts/7ace6829-b612-448f-8b0e-583c8aad964e?share=success_publish_link\">Не хочу видеть рекламу!</a>"
+      "tooManyMessages": "Сообщений накопилось очень много 🤯 Я смогу сделать выжимку только из самых последних. <a href=\"https://boosty.to/artyom.bakharev/posts/7ace6829-b612-448f-8b0e-583c8aad964e?share=success_publish_link\">⚡️ Увеличить лимит</a>",
+      "end": "😌 Это всё\n🔋 У вас осталось {{rest}} из {{total}} бесплатных выжимок на этой неделе (<a href=\"https://boosty.to/artyom.bakharev/posts/7ace6829-b612-448f-8b0e-583c8aad964e?share=success_publish_link\">⚡️ увеличить лимит</a>)",
+      "dontShowAds": "🚫 <a href=\"https://boosty.to/artyom.bakharev/posts/7ace6829-b612-448f-8b0e-583c8aad964e?share=success_publish_link\">⚡️ Не хочу видеть рекламу!</a>"
     },
     "errors": {
       "queryProcess": "Произошла ошибка при обработке запроса. Пожалуйста, попробуйте еще раз.",
@@ -29,7 +29,7 @@
       "maxQueriesToGptExceeded": "💔 С ботом что-то случилось... Попробуйте позже. Мы починим его и сообщим вам как можно скорее.",
       "noMessages": "🙄 Нет сообщений для создания выжимки. Вы пообщайтесь, а потом позовите меня 😉",
       "fewMessages": "🙄 Слишком мало сообщений для создания выжимки. Нужно хотя бы {{count}}. Вы пообщайтесь, а потом позовите меня 😉",
-      "maxSummariesExceeded": "🤯 Вы можете делать не более {{count}} выжимок в неделю. Приходите на следующей неделе или <a href=\"https://boosty.to/artyom.bakharev/posts/7ace6829-b612-448f-8b0e-583c8aad964e?share=success_publish_link\">оформите подписку</a> 😉"
+      "maxSummariesExceeded": "🤯 Вы можете делать не более {{count}} выжимок в неделю. Приходите на следующей неделе или <a href=\"https://boosty.to/artyom.bakharev/posts/7ace6829-b612-448f-8b0e-583c8aad964e?share=success_publish_link\">⚡️ оформите подписку</a> 😉"
     },
     "debug": {
       "queryInfo": "Summarize request from chat {{chatId}}"

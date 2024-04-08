@@ -28,7 +28,6 @@ import { max as maxTime } from 'date-fns';
 import type TelegramBot from 'node-telegram-bot-api';
 import { formatSummaryFromGpt, getPartsAndPointsCountForText } from '../../data/summaryUtils.ts';
 import { setTimeout } from 'node:timers/promises';
-import { type TelegramBotSendMessageOptions } from '../../services/TelegramBotService.ts';
 import printNews from '../../useCases/printNews.ts';
 
 type SummarizeResultCase =
@@ -144,16 +143,16 @@ const handleSummaryResultCase =
       await services.db.createSummary(chatId, new Date());
     }
 
-    const botMessage = getBotMessageForSummarizeResultCase(resultCase);
-    const { text, parseMode } =
-      typeof botMessage === 'string' ? { text: botMessage, parseMode: undefined } : botMessage;
+    const text = getBotMessageForSummarizeResultCase(resultCase);
 
     await services.telegramBot.sendMessage(
       chatId,
       text,
-      parseMode && {
-        parse_mode: parseMode,
-      }
+      resultCase.type === 'responseFromGPT'
+        ? undefined
+        : {
+            parse_mode: 'HTML',
+          }
     );
 
     if (resultCase.type === 'ads') {
@@ -185,9 +184,7 @@ function getLogMessageForSummarizeResultCase(
   }
 }
 
-function getBotMessageForSummarizeResultCase(
-  resultCase: SummarizeResultCase
-): string | { text: string; parseMode: TelegramBotSendMessageOptions['parse_mode'] } {
+function getBotMessageForSummarizeResultCase(resultCase: SummarizeResultCase): string {
   switch (resultCase.type) {
     case 'startSummary': {
       return t('summarize.message.start');
@@ -222,18 +219,15 @@ function getBotMessageForSummarizeResultCase(
       return t('summarize.errors.noMessages');
     }
     case 'tooManySummaries': {
-      return {
-        text: t('summarize.errors.maxSummariesExceeded', {
-          count: getEnv().MAX_SUMMARIES_PER_WEEK,
-        }),
-        parseMode: 'HTML',
-      };
+      return t('summarize.errors.maxSummariesExceeded', {
+        count: getEnv().MAX_SUMMARIES_PER_WEEK,
+      });
     }
     case 'tooManySummaryParts': {
       return t('summarize.message.tooManyMessages');
     }
     case 'ads': {
-      return { text: t('summarize.message.dontShowAds'), parseMode: 'HTML' };
+      return t('summarize.message.dontShowAds');
     }
   }
 }
