@@ -10,10 +10,10 @@ import noneCommandController from './noneCommandController.ts';
 import pingCommandController from './pingCommandController.ts';
 import summarizeCommandController from './summarizeCommandController.ts';
 import startCommandController from './startCommandController.ts';
-import sendNewsTryCommand from '../../config/commands/sendNewsTry.ts';
-import sendNewsTryCommandController from './sendNewsTryCommandController.ts';
-import sendNewsCommand from '../../config/commands/sendNews.ts';
-import sendNewsCommandController from './sendNewsCommandController.ts';
+import tryMessageCommand from '../../config/commands/tryMessage.ts';
+import tryMessageCommandController from './tryMessageCommandController.ts';
+import scheduleNewsCommand from '../../config/commands/scheduleNews.ts';
+import scheduleNewsCommandController from './scheduleNewsCommandController.ts';
 
 export default function getCommandController(command: Command): ChatController {
   switch (command.command) {
@@ -32,11 +32,11 @@ export default function getCommandController(command: Command): ChatController {
     case startCommand.command: {
       return startCommandController;
     }
-    case sendNewsTryCommand.command: {
-      return sendNewsTryCommandController;
+    case tryMessageCommand.command: {
+      return tryMessageCommandController;
     }
-    case sendNewsCommand.command: {
-      return sendNewsCommandController;
+    case scheduleNewsCommand.command: {
+      return scheduleNewsCommandController;
     }
     default: {
       throw new Error(`Unknown command: ${command.command}`);

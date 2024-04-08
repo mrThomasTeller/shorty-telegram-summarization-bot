@@ -14,6 +14,7 @@ import {
   exhaustMap,
   concat,
   from,
+  last,
 } from 'rxjs';
 import type ChatController from '../ChatController.ts';
 import { t } from '../../config/translations/index.ts';
@@ -28,6 +29,7 @@ import type TelegramBot from 'node-telegram-bot-api';
 import { formatSummaryFromGpt, getPartsAndPointsCountForText } from '../../data/summaryUtils.ts';
 import { setTimeout } from 'node:timers/promises';
 import { type TelegramBotSendMessageOptions } from '../../services/TelegramBotService.ts';
+import printNews from '../../useCases/printNews.ts';
 
 type SummarizeResultCase =
   | GptResultCase
@@ -51,10 +53,10 @@ const handleSingleSummarizeRequest$ = _.curry(
     of(msg).pipe(
       mergeMap(getChatMessagesForSummary(services, chatId)),
       mergeMap(queryGptOrReturnError$(services, chatId)),
-      // I moved it from subscribe to pipe, because there is a problem with telegram messages when
-      // one sends them without delay. We need to wait for the previous message to be sent.
-      // todo move it to subscribe and make Facade for TelegramBotService, which queue messages
-      concatMap(handleSummaryResultCase(services, chatId))
+      concatMap(handleSummaryResultCase(services, chatId)),
+      last(),
+      // todo вынести в конфиг после каких команд могут показываться новости
+      mergeMap(() => printNews(services.db, services.telegramBot, chatId))
     )
 );
 
@@ -80,7 +82,8 @@ const queryGptOrReturnError$ =
 
 // todo refactor: make it to return Either<SummarizeResultCase, DbChatMessage[]>
 const getChatMessagesForSummary =
-  (services: Services, chatId: number) => async (): Promise<SummarizeResultCase | DbChatMessage[]> => {
+  (services: Services, chatId: number) =>
+  async (): Promise<SummarizeResultCase | DbChatMessage[]> => {
     const summaries = await services.db.getSummariesFrom(chatId, yesterday());
 
     if (summaries.length > getEnv().MAX_SUMMARIES_PER_DAY - 1) {
@@ -102,7 +105,9 @@ const rejectOverflowedSummaryPartsAndMakeSummary$ = _.curry(
     const gptQueryParts = mapSummaryPartsToGptQuery(allowedParts);
 
     return concat<SummarizeResultCase[]>(
-      parts.length > maxSummaryParts ? of({ type: 'tooManySummaryParts', count: parts.length }) : [],
+      parts.length > maxSummaryParts
+        ? of({ type: 'tooManySummaryParts', count: parts.length })
+        : [],
 
       from(gptQueryParts).pipe(concatMap(querySummaryPartFromGptAndReEnumerateResponse$(services)))
     );
@@ -124,30 +129,32 @@ const querySummaryPartFromGptAndReEnumerateResponse$ = _.curry(
     )
 );
 
-const handleSummaryResultCase = (services: Services, chatId: number) => async (resultCase: SummarizeResultCase) => {
-  const logArgs = getLogMessageForSummarizeResultCase(resultCase, chatId);
-  if (logArgs !== undefined) logger.log(...logArgs);
+const handleSummaryResultCase =
+  (services: Services, chatId: number) => async (resultCase: SummarizeResultCase) => {
+    const logArgs = getLogMessageForSummarizeResultCase(resultCase, chatId);
+    if (logArgs !== undefined) logger.log(...logArgs);
 
-  if (resultCase.type === 'summaryHeader') {
-    await services.db.createSummary(chatId, new Date());
-  }
-
-  const botMessage = getBotMessageForSummarizeResultCase(resultCase);
-  const { text, parseMode } = typeof botMessage === 'string' ? { text: botMessage, parseMode: undefined } : botMessage;
-
-  await services.telegramBot.sendMessage(
-    chatId,
-    text,
-    parseMode && {
-      parse_mode: parseMode,
+    if (resultCase.type === 'summaryHeader') {
+      await services.db.createSummary(chatId, new Date());
     }
-  );
 
-  if (resultCase.type === 'ads') {
-    await setTimeout(getEnv().TIME_TO_SHOW_ADS);
-    await services.ads.showAds(chatId);
-  }
-};
+    const botMessage = getBotMessageForSummarizeResultCase(resultCase);
+    const { text, parseMode } =
+      typeof botMessage === 'string' ? { text: botMessage, parseMode: undefined } : botMessage;
+
+    await services.telegramBot.sendMessage(
+      chatId,
+      text,
+      parseMode && {
+        parse_mode: parseMode,
+      }
+    );
+
+    if (resultCase.type === 'ads') {
+      await setTimeout(getEnv().TIME_TO_SHOW_ADS);
+      await services.ads.showAds(chatId);
+    }
+  };
 
 function getLogMessageForSummarizeResultCase(
   resultCase: SummarizeResultCase,
@@ -225,7 +232,9 @@ type GptQueryPart = {
   text: string;
 };
 
-const mapSummaryPartsToGptQuery = (parts: { text: string; pointsCount: number }[]): GptQueryPart[] =>
+const mapSummaryPartsToGptQuery = (
+  parts: { text: string; pointsCount: number }[]
+): GptQueryPart[] =>
   parts.map(({ text, pointsCount }, index) => ({
     pointsCount,
     index,
@@ -249,7 +258,10 @@ const insertSummaryLayout = (
 
   return pipe(
     startWith<SummarizeResultCase>({ type: 'startSummary' }),
-    insertBefore<SummarizeResultCase>({ type: 'summaryHeader' }, (c) => c.type === 'responseFromGPT'),
+    insertBefore<SummarizeResultCase>(
+      { type: 'summaryHeader' },
+      (c) => c.type === 'responseFromGPT'
+    ),
     endWithAfter<SummarizeResultCase>(
       (c) => c.type === 'responseFromGPT',
       {

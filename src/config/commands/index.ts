@@ -4,8 +4,8 @@ import summarizeCommand from './summarize.ts';
 import type Command from './Command.ts';
 import helpCommand from './help.ts';
 import startCommand from './start.ts';
-import sendNewsCommand from './sendNews.ts';
-import sendNewsTryCommand from './sendNewsTry.ts';
+import scheduleNewsCommand from './scheduleNews.ts';
+import tryMessageCommand from './tryMessage.ts';
 
 export const getVisibleCommands = (): Command[] =>
   Object.values(commands).filter((c) => c !== noneCommand && c.adminOnly !== true);
@@ -16,8 +16,8 @@ const commands = {
   [noneCommand.command]: noneCommand,
   [helpCommand.command]: helpCommand,
   [startCommand.command]: startCommand,
-  [sendNewsCommand.command]: sendNewsCommand,
-  [sendNewsTryCommand.command]: sendNewsTryCommand,
+  [scheduleNewsCommand.command]: scheduleNewsCommand,
+  [tryMessageCommand.command]: tryMessageCommand,
 };
 
 export default commands;

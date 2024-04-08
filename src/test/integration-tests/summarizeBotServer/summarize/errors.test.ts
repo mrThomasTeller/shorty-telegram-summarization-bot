@@ -1,4 +1,9 @@
-import { myTgUser, myTgGroupId, createSummarizeCommandMessage, createTgMessages } from '../../lib/tgUtils.ts';
+import {
+  myTgUser,
+  myTgGroupId,
+  createSummarizeCommandMessage,
+  createTgMessages,
+} from '../../lib/tgUtils.ts';
 import { ChatGPTError } from 'chatgpt';
 import { mapTgMessagesToDbMessages } from '../../lib/dbUtils.ts';
 import { expectBotSentExactMessagesToTg } from '../../lib/expectations.ts';

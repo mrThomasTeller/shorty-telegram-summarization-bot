@@ -58,6 +58,7 @@ function createDbServiceMock() {
       id: BigInt(chatId),
       isMember: true,
       createdAt: new Date(),
+      news: null,
     },
     false,
   ]);
@@ -82,37 +83,41 @@ function createDbServiceMock() {
   });
 
   service.hasMessage.mockImplementation(async (messageId, chatId) =>
-    service.messages.some((msg) => msg.messageId === BigInt(messageId) && msg.chatId === BigInt(chatId))
+    service.messages.some(
+      (msg) => msg.messageId === BigInt(messageId) && msg.chatId === BigInt(chatId)
+    )
   );
 
-  service.createChatMessageIfNotExists.mockImplementation(async (messageInput: MessageCreateInput): Promise<void> => {
-    if (await service.hasMessage(Number(messageInput.messageId), Number(messageInput.chatId))) {
-      return;
+  service.createChatMessageIfNotExists.mockImplementation(
+    async (messageInput: MessageCreateInput): Promise<void> => {
+      if (await service.hasMessage(Number(messageInput.messageId), Number(messageInput.chatId))) {
+        return;
+      }
+
+      const user =
+        Number(messageInput.userId) === myTgUser.id
+          ? myTgUser
+          : Number(messageInput.userId) === otherTgUser.id
+          ? otherTgUser
+          : null;
+
+      const message: DbChatMessage = {
+        chatId: BigInt(messageInput.chatId),
+        messageId: BigInt(messageInput.messageId),
+        userId: messageInput.userId == null ? null : BigInt(messageInput.userId),
+        date: new Date(messageInput.date),
+        text: messageInput.text ?? null,
+        from: user && {
+          firstName: encrypt(user.first_name),
+          lastName: encryptIfExists(user.last_name) ?? null,
+          username: encryptIfExists(user.username) ?? null,
+          id: BigInt(user.id),
+        },
+      };
+
+      service.messages.push(message);
     }
-
-    const user =
-      Number(messageInput.userId) === myTgUser.id
-        ? myTgUser
-        : Number(messageInput.userId) === otherTgUser.id
-        ? otherTgUser
-        : null;
-
-    const message: DbChatMessage = {
-      chatId: BigInt(messageInput.chatId),
-      messageId: BigInt(messageInput.messageId),
-      userId: messageInput.userId == null ? null : BigInt(messageInput.userId),
-      date: new Date(messageInput.date),
-      text: messageInput.text ?? null,
-      from: user && {
-        firstName: encrypt(user.first_name),
-        lastName: encryptIfExists(user.last_name) ?? null,
-        username: encryptIfExists(user.username) ?? null,
-        id: BigInt(user.id),
-      },
-    };
-
-    service.messages.push(message);
-  });
+  );
 
   service.createSummary.mockImplementation(async (chatId, date) => {
     const summary = {
@@ -143,7 +148,8 @@ function createDbServiceMock() {
   return service;
 }
 
-const initialSimulateChatMessage = (msg: TelegramBot.Message): Promise<TelegramBot.Message> => Promise.resolve(msg);
+const initialSimulateChatMessage = (msg: TelegramBot.Message): Promise<TelegramBot.Message> =>
+  Promise.resolve(msg);
 const initialSimulateAddedToChat = (_chatId: number): Promise<void> => Promise.resolve();
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -180,7 +186,8 @@ function createTelegramBotServiceMock() {
 
   return {
     telegramBot: service,
-    simulateChatMessage: (msg: TelegramBot.Message): Promise<TelegramBot.Message> => simulateChatMessage(msg),
+    simulateChatMessage: (msg: TelegramBot.Message): Promise<TelegramBot.Message> =>
+      simulateChatMessage(msg),
     simulateAddedToChat: (chatId: number): Promise<void> => simulateAddedToChat(chatId),
   };
 }

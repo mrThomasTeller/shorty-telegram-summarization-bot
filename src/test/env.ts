@@ -10,6 +10,7 @@ beforeAll(() => {
   setEnv({
     RETRY_GPT_QUERY_TIME: 10,
     TIME_TO_SHOW_ADS: 20,
+    SHOW_ADS: true,
   });
 });
 

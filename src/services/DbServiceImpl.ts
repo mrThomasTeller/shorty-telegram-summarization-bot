@@ -78,7 +78,9 @@ export default class DbServiceImpl implements DbService {
 
   async getOrCreateUser(userInput: UserCreateInput): Promise<[user: User, created: boolean]> {
     const user = await this.prisma.user.findUnique({ where: { id: userInput.id } });
-    return user === null ? [await this.prisma.user.create({ data: userInput }), true] : [user, false];
+    return user === null
+      ? [await this.prisma.user.create({ data: userInput }), true]
+      : [user, false];
   }
 
   async hasMessage(messageId: number, chatId: number): Promise<boolean> {
@@ -94,11 +96,24 @@ export default class DbServiceImpl implements DbService {
     return message !== null;
   }
 
+  async resetChatNews(chatId: number): Promise<void> {
+    await this.prisma.chat.update({
+      where: { id: chatId },
+      data: { news: null },
+    });
+  }
+
   async setGroupChatIsMember(chatId: number, isMember: boolean): Promise<void> {
     await this.prisma.chat.upsert({
       where: { id: chatId },
       create: { id: chatId, isMember },
       update: { isMember },
+    });
+  }
+
+  async setNewsForAllChats(news: string): Promise<void> {
+    await this.prisma.chat.updateMany({
+      data: { news },
     });
   }
 

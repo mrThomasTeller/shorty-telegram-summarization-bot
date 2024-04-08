@@ -66,7 +66,11 @@ Users requests:
   - summary to private messages
   - decode voice messages
   - summary for more than 24 hours
-  - 
+  - Нужно считать выжимки от полуночи до полуночи, а не за последние 24 часа (#2)
+
+Users issues:
+  - Бот делает ошибки в создании выжимки. Имена путает участников (#1)
+  - Бот не работает в чате где нельзя писать чаще чем раз в какое-то время (#3)
 
 Backlog:
   - BUG: fix test "will not change order of summaries if second summary came earlier than first".
