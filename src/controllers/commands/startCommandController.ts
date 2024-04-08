@@ -6,7 +6,6 @@ import { required } from '../../lib/common.ts';
 import _ from 'lodash';
 import type TelegramBotService from '../../services/TelegramBotService';
 import { escapeTelegramMarkdown } from '../../data/telegramBotMessageUtils.ts';
-import printNews from '../../useCases/printNews.ts';
 
 const startMessageTpl = _.template(
   fs.readFileSync(path.join(required(dirname()), '../../config/texts/start.tpl'), 'utf8')
@@ -18,11 +17,7 @@ export const renderStartMessage = (botName: string): string =>
   });
 
 const startCommandController: ChatController = ({ chat$, chatId, services }) => {
-  chat$.subscribe(async () => {
-    await sendStartMessage(services.telegramBot, chatId);
-    // todo вынести в конфиг после каких команд могут показываться новости
-    await printNews(services.db, services.telegramBot, chatId);
-  });
+  chat$.subscribe(() => sendStartMessage(services.telegramBot, chatId));
 };
 
 export default startCommandController;
