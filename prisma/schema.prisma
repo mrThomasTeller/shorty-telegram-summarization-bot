@@ -17,12 +17,13 @@ model User {
 }
 
 model Chat {
-  id        BigInt    @id
-  isMember  Boolean?
-  createdAt DateTime  @default(now())
-  news      String?
-  messages  Message[]
-  summaries Summary[]
+  id           BigInt        @id
+  isMember     Boolean?
+  createdAt    DateTime      @default(now())
+  news         String?
+  messages     Message[]
+  summaries    Summary[]
+  subscription Subscription?
 }
 
 model Message {
@@ -48,4 +49,22 @@ model Statistic {
   date             DateTime @id
   addedToChats     Int      @default(0)
   removedFromChats Int      @default(0)
+}
+
+model Tariff {
+  id                 BigInt         @id @default(autoincrement())
+  name               String
+  price              Int
+  summaries          Int            @default(0)
+  messagesMultiplier Int            @default(1)
+  Subscription       Subscription[]
+}
+
+model Subscription {
+  id       BigInt @id @default(autoincrement())
+  tariffId BigInt
+  chatId   BigInt @unique
+  email    String
+  tariff   Tariff @relation(fields: [tariffId], references: [id])
+  chat     Chat   @relation(fields: [chatId], references: [id])
 }

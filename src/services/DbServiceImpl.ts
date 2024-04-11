@@ -1,6 +1,6 @@
 import type DbChatMessage from '../data/DbChatMessage.ts';
 import type DbService from './DbService.ts';
-import { type Chat, PrismaClient, type User, type Summary } from '@prisma/client';
+import { type Chat, PrismaClient, type User, type Summary, type Tariff } from '@prisma/client';
 import { type MessageCreateInput, type UserCreateInput } from './DbService.ts';
 import _ from 'lodash';
 import { todayMidday } from '../lib/date.ts';
@@ -48,6 +48,15 @@ export default class DbServiceImpl implements DbService {
         from: true,
       },
     });
+  }
+
+  async getChatTariff(chatId: number): Promise<Tariff | undefined> {
+    const subscription = await this.prisma.subscription.findFirst({
+      where: { chatId },
+      include: { tariff: true },
+    });
+
+    return subscription?.tariff;
   }
 
   async getSummariesFrom(chatId: number, date: Date): Promise<Summary[]> {

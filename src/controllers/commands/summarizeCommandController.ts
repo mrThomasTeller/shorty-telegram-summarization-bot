@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { type GptResultCase, sendMessageToGptWithRetries$ } from '../../api/gpt.ts';
 import { reEnumerateText } from '../../lib/text.ts';
 import { getFormattedMessage } from '../../data/dbChatMessageUtils.ts';
@@ -29,6 +30,7 @@ import type TelegramBot from 'node-telegram-bot-api';
 import { formatSummaryFromGpt, getPartsAndPointsCountForText } from '../../data/summaryUtils.ts';
 import { setTimeout } from 'node:timers/promises';
 import printNews from '../../useCases/printNews.ts';
+import { type Tariff } from '@prisma/client';
 
 type SummarizeResultCase =
   | GptResultCase
@@ -38,9 +40,10 @@ type SummarizeResultCase =
   | { type: 'tooManySummaries' }
   | { type: 'startSummary' }
   | { type: 'summaryHeader' }
-  | { type: 'endSummary'; summariesRest: number }
+  | { type: 'endSummary'; summariesRest: number; premium: boolean }
   | { type: 'ads' };
 
+// todo этот файл пора рефакторить
 const summarizeCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$.pipe(exhaustMap(handleSingleSummarizeRequest$(chatId, services))).subscribe(_.noop);
 };
@@ -60,9 +63,7 @@ const handleSingleSummarizeRequest$ = _.curry(
 
 const queryGptOrReturnError$ =
   (services: Services, chatId: number) =>
-  (
-    messages: SummarizeResultCase | { messages: DbChatMessage[]; summariesRest: number }
-  ): Observable<SummarizeResultCase> => {
+  (messages: SummarizeResultCase | ChatMessagesForSummaryData): Observable<SummarizeResultCase> => {
     if (!('messages' in messages)) return of(messages);
 
     const minMessagesCount = getEnv().MIN_MESSAGES_COUNT_TO_SUMMARIZE;
@@ -74,19 +75,33 @@ const queryGptOrReturnError$ =
       return of(messages.messages).pipe(
         map(formatChatMessages),
         map(getPartsAndPointsCountForText),
-        concatMap(rejectOverflowedSummaryPartsAndMakeSummary$(services)),
+        concatMap(rejectOverflowedSummaryPartsAndMakeSummary$(chatId, services)),
         insertSummaryLayout(chatId, messages.summariesRest)
       );
     }
   };
 
+type ChatMessagesForSummaryData = {
+  messages: DbChatMessage[];
+  summariesRest: number;
+};
+
+// todo это большой некрасивый костыль
+const chatToTariffMap = new Map<number, Tariff | undefined>();
+
 // todo refactor: make it to return Either<SummarizeResultCase, DbChatMessage[]>
 const getChatMessagesForSummary =
   (services: Services, chatId: number) =>
-  async (): Promise<SummarizeResultCase | { messages: DbChatMessage[]; summariesRest: number }> => {
+  async (): Promise<SummarizeResultCase | ChatMessagesForSummaryData> => {
     // todo test
-    const summaries = await services.db.getSummariesFrom(chatId, thisWeekStart());
-    const summariesRest = getEnv().MAX_SUMMARIES_PER_WEEK - summaries.length;
+    const [summaries, tariff] = await Promise.all([
+      services.db.getSummariesFrom(chatId, thisWeekStart()),
+      services.db.getChatTariff(chatId),
+    ]);
+    chatToTariffMap.set(chatId, tariff);
+
+    const summariesRest =
+      getEnv().MAX_SUMMARIES_PER_WEEK + (tariff?.summaries ?? 0) - summaries.length;
 
     if (summariesRest <= 0) {
       return { type: 'tooManySummaries' };
@@ -104,8 +119,10 @@ const formatChatMessages = (messages: DbChatMessage[]): string =>
   messages.map((msg) => getFormattedMessage(msg)).join('\n');
 
 const rejectOverflowedSummaryPartsAndMakeSummary$ = _.curry(
-  (services: Services, parts: { text: string; pointsCount: number }[]) => {
-    const maxSummaryParts = getEnv().MAX_SUMMARY_PARTS;
+  (chatId: number, services: Services, parts: { text: string; pointsCount: number }[]) => {
+    const tariff = chatToTariffMap.get(chatId);
+    const maxSummaryParts = getEnv().MAX_SUMMARY_PARTS * (tariff?.messagesMultiplier ?? 1);
+
     const allowedParts = _.takeRight(parts, maxSummaryParts);
     const gptQueryParts = mapSummaryPartsToGptQuery(allowedParts);
 
@@ -196,10 +213,13 @@ function getBotMessageForSummarizeResultCase(resultCase: SummarizeResultCase): s
       return formatSummaryFromGpt(resultCase.text);
     }
     case 'endSummary': {
-      return t('summarize.message.end', {
-        rest: resultCase.summariesRest,
-        total: getEnv().MAX_SUMMARIES_PER_WEEK,
-      });
+      return t(
+        resultCase.premium ? 'summarize.message.end.premium' : 'summarize.message.end.free',
+        {
+          rest: resultCase.summariesRest,
+          total: getEnv().MAX_SUMMARIES_PER_WEEK,
+        }
+      );
     }
     case 'maxTriesExceeded': {
       return t('summarize.errors.maxQueriesToGptExceeded');
@@ -274,6 +294,7 @@ const insertSummaryLayout = (
       {
         type: 'endSummary',
         summariesRest,
+        premium: !!chatToTariffMap.get(chatId),
       },
       showAdsCase
     )

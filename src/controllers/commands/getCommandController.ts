@@ -14,6 +14,8 @@ import tryMessageCommand from '../../config/commands/tryMessage.ts';
 import tryMessageCommandController from './tryMessageCommandController.ts';
 import scheduleNewsCommand from '../../config/commands/scheduleNews.ts';
 import scheduleNewsCommandController from './scheduleNewsCommandController.ts';
+import tariffCommand from '../../config/commands/tariff.ts';
+import tariffCommandController from './tariffCommandController.ts';
 
 export default function getCommandController(command: Command): ChatController {
   switch (command.command) {
@@ -37,6 +39,9 @@ export default function getCommandController(command: Command): ChatController {
     }
     case scheduleNewsCommand.command: {
       return scheduleNewsCommandController;
+    }
+    case tariffCommand.command: {
+      return tariffCommandController;
     }
     default: {
       throw new Error(`Unknown command: ${command.command}`);

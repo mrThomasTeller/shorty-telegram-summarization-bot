@@ -181,7 +181,9 @@ function testCorrectSummary({
     }
 
     for (const page of _.range(gptTestSummariesCount)) {
-      gpt.sendMessage.mockResolvedValueOnce(createGptChatMessage(gptTestSummary(page, summaryPartPointsCount, 0)));
+      gpt.sendMessage.mockResolvedValueOnce(
+        createGptChatMessage(gptTestSummary(page, summaryPartPointsCount, 0))
+      );
     }
 
     // story
@@ -205,7 +207,7 @@ function testCorrectSummary({
         t('summarize.message.start'),
         t('summarize.message.header'),
         ...gptTestSummariesWithReEnumeratedPoints,
-        t('summarize.message.end'),
+        t('summarize.message.end.free'),
         { message: t('summarize.message.dontShowAds'), parseMode: 'HTML' },
       ],
       myTgGroupId

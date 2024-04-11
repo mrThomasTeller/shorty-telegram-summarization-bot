@@ -95,7 +95,7 @@ describe('summarizeBotServer summarize command errors', () => {
         t('summarize.errors.tooManyRequestsToGpt'),
         t('summarize.message.header'),
         gptTestSummary(0, 5),
-        t('summarize.message.end'),
+        t('summarize.message.end.free'),
         { message: t('summarize.message.dontShowAds'), parseMode: 'HTML' },
       ],
       myTgGroupId
@@ -158,7 +158,7 @@ describe('summarizeBotServer summarize command errors', () => {
         t('summarize.message.start'),
         t('summarize.message.header'),
         gptTestSummary(0, 5),
-        t('summarize.message.end'),
+        t('summarize.message.end.free'),
         { message: t('summarize.message.dontShowAds'), parseMode: 'HTML' },
       ],
       myTgGroupId
@@ -240,7 +240,7 @@ describe('summarizeBotServer summarize command errors', () => {
         t('summarize.message.start'),
         t('summarize.message.header'),
         gptTestSummary(0, 5),
-        t('summarize.message.end'),
+        t('summarize.message.end.free'),
         { message: t('summarize.message.dontShowAds'), parseMode: 'HTML' },
       ],
       myTgGroupId
@@ -270,7 +270,7 @@ describe('summarizeBotServer summarize command errors', () => {
         t('summarize.message.start'),
         t('summarize.message.header'),
         gptTestSummary(0, 5),
-        t('summarize.message.end'),
+        t('summarize.message.end.free'),
         { message: t('summarize.message.dontShowAds'), parseMode: 'HTML' },
         t('summarize.errors.noMessages'),
       ],

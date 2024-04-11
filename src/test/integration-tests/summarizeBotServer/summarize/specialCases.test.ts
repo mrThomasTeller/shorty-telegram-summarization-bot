@@ -40,8 +40,8 @@ describe('summarizeBotServer summarize command special cases', () => {
         { message: t('summarize.message.header'), userId: myTgGroup2Id },
         { message: gptTestSummary(0, 5), userId: myTgGroupId },
         { message: gptTestSummary(0, 5), userId: myTgGroup2Id },
-        { message: t('summarize.message.end'), userId: myTgGroupId },
-        { message: t('summarize.message.end'), userId: myTgGroup2Id },
+        { message: t('summarize.message.end.free'), userId: myTgGroupId },
+        { message: t('summarize.message.end.free'), userId: myTgGroup2Id },
         { message: t('summarize.message.dontShowAds'), userId: myTgGroupId, parseMode: 'HTML' },
         { message: t('summarize.message.dontShowAds'), userId: myTgGroup2Id, parseMode: 'HTML' },
       ],
@@ -61,7 +61,9 @@ describe('summarizeBotServer summarize command special cases', () => {
     // mocks
     db.messages = dbMessages.all;
     // delay first response from gpt
-    gpt.sendMessage.mockReturnValueOnce(setTimeout(20, createGptChatMessage(gptTestSummary(0, pointsCount, 0))));
+    gpt.sendMessage.mockReturnValueOnce(
+      setTimeout(20, createGptChatMessage(gptTestSummary(0, pointsCount, 0)))
+    );
     gpt.sendMessage.mockResolvedValueOnce(createGptChatMessage(gptTestSummary(1, pointsCount, 0)));
 
     // story
@@ -76,7 +78,7 @@ describe('summarizeBotServer summarize command special cases', () => {
         t('summarize.message.header'),
         gptTestSummary(0, pointsCount),
         gptTestSummary(1, pointsCount),
-        t('summarize.message.end'),
+        t('summarize.message.end.free'),
         { message: t('summarize.message.dontShowAds'), parseMode: 'HTML' },
       ],
       myTgGroupId
@@ -96,7 +98,11 @@ describe('summarizeBotServer summarize command special cases', () => {
     await simulateChatMessage(createSummarizeCommandMessage(myTgUser));
 
     // expectations
-    expect(telegramBot.sendMessage).toHaveBeenCalledWith(myTgGroupId, gptTestSummary(0, 5), undefined);
+    expect(telegramBot.sendMessage).toHaveBeenCalledWith(
+      myTgGroupId,
+      gptTestSummary(0, 5),
+      undefined
+    );
   });
 
   it("shouldn't generate more than 5 summary parts", async () => {
@@ -125,7 +131,7 @@ describe('summarizeBotServer summarize command special cases', () => {
         t('summarize.message.tooManyMessages'),
         t('summarize.message.header'),
         ...allowedPagesRange.map((page, index) => gptTestSummary(page, 2, index)),
-        t('summarize.message.end'),
+        t('summarize.message.end.free'),
         { message: t('summarize.message.dontShowAds'), parseMode: 'HTML' },
       ],
       myTgGroupId

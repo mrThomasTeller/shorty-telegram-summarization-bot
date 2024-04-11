@@ -1,6 +1,6 @@
 {
   "name": "shorty-chat-bot",
-  "version": "1.0.3",
+  "version": "1.0.4-0",
   "description": "",
   "main": "src/start.ts",
   "type": "module",
@@ -34,6 +34,7 @@
     "dev:watch": "nodemon -x 'pnpm ts src/start.ts summarizeBotServer' --ext ts,js,json,jsx,tpl",
     "dev:majestic": "npx majestic",
     "db:create-migration": "prisma migrate dev --name",
+    "db:create-empty-migration": "npx prisma migrate dev --create-only",
     "db:gen-types": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "server:start": "pm2 delete summarizeBotServer || true && pm2 start 'pnpm ts src/start.ts summarizeBotServer' --name summarizeBotServer --no-daemon",
