@@ -25,11 +25,12 @@ export default class DbServiceImpl implements DbService {
     });
   }
 
-  createSummary(chatId: number, date: Date): Promise<Summary> {
+  createSummary(chatId: number, date: Date, usedPremium: boolean): Promise<Summary> {
     return this.prisma.summary.create({
       data: {
         chatId,
         date,
+        usedPremium,
       },
     });
   }

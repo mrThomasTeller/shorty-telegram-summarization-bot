@@ -120,10 +120,11 @@ function createDbServiceMock() {
   );
 
   service.createSummary.mockImplementation(async (chatId, date) => {
-    const summary = {
+    const summary: Summary = {
       id: ++lastSummaryId,
       chatId: BigInt(chatId),
       date,
+      usedPremium: false,
     };
 
     service.summaries.push(summary);

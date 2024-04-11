@@ -4,6 +4,7 @@ import { myTgGroupId, myTgUser, type TestTgMessage } from './tgUtils.ts';
 import { encrypt, encryptIfExists } from '../../../data/encryption.ts';
 import _ from 'lodash';
 import { daysAgo, hoursAgo } from '../../../lib/date.ts';
+import { type Summary } from '@prisma/client';
 
 export function createDbMessageInGroup({
   text,
@@ -60,17 +61,23 @@ export function createSummaries(
   chatId: number,
   actualCount: number,
   outdatedCount: number = 0
-): { id: number; date: Date; chatId: bigint }[] {
+): Summary[] {
   return [
-    ..._.range(outdatedCount).map((index) => ({
-      id: index + 1,
-      date: daysAgo(2),
-      chatId: BigInt(chatId),
-    })),
-    ..._.range(actualCount).map((index) => ({
-      id: index + outdatedCount + 1,
-      date: hoursAgo(1),
-      chatId: BigInt(chatId),
-    })),
+    ..._.range(outdatedCount).map(
+      (index): Summary => ({
+        id: index + 1,
+        date: daysAgo(2),
+        chatId: BigInt(chatId),
+        usedPremium: false,
+      })
+    ),
+    ..._.range(actualCount).map(
+      (index): Summary => ({
+        id: index + outdatedCount + 1,
+        date: hoursAgo(1),
+        chatId: BigInt(chatId),
+        usedPremium: false,
+      })
+    ),
   ];
 }

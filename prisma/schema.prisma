@@ -39,10 +39,11 @@ model Message {
 }
 
 model Summary {
-  id     Int      @id @default(autoincrement())
-  date   DateTime
-  chat   Chat     @relation(fields: [chatId], references: [id])
-  chatId BigInt
+  id          Int      @id @default(autoincrement())
+  date        DateTime
+  chatId      BigInt
+  usedPremium Boolean  @default(false)
+  chat        Chat     @relation(fields: [chatId], references: [id])
 }
 
 model Statistic {

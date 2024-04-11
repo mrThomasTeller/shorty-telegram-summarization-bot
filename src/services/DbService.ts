@@ -9,7 +9,7 @@ export type MessageCreateInput = Parameters<PrismaClient['message']['upsert']>[0
 // todo разделить на несколько сервисов
 type DbService = {
   createChatMessageIfNotExists: (message: MessageCreateInput) => Promise<void>;
-  createSummary: (chatId: number, date: Date) => Promise<Summary>;
+  createSummary: (chatId: number, date: Date, usedPremium: boolean) => Promise<Summary>;
   getAllChats: () => Promise<Chat[]>;
   getChatMessages: (chatId: number, fromDate?: Date) => Promise<DbChatMessage[]>;
   getChatTariff: (chatId: number) => Promise<Tariff | undefined>;

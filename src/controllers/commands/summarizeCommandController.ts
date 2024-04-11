@@ -39,7 +39,7 @@ type SummarizeResultCase =
   | { type: 'tooManySummaryParts'; count: number }
   | { type: 'tooManySummaries' }
   | { type: 'startSummary' }
-  | { type: 'summaryHeader' }
+  | { type: 'summaryHeader'; usedPremium: boolean }
   | { type: 'endSummary'; summariesRest: number; premium: boolean }
   | { type: 'ads' };
 
@@ -76,7 +76,7 @@ const queryGptOrReturnError$ =
         map(formatChatMessages),
         map(getPartsAndPointsCountForText),
         concatMap(rejectOverflowedSummaryPartsAndMakeSummary$(chatId, services)),
-        insertSummaryLayout(chatId, messages.summariesRest)
+        insertSummaryLayout(chatId, messages.summariesRest, messages.usedPremium)
       );
     }
   };
@@ -84,6 +84,7 @@ const queryGptOrReturnError$ =
 type ChatMessagesForSummaryData = {
   messages: DbChatMessage[];
   summariesRest: number;
+  usedPremium: boolean;
 };
 
 // todo это большой некрасивый костыль
@@ -100,8 +101,8 @@ const getChatMessagesForSummary =
     ]);
     chatToTariffMap.set(chatId, tariff);
 
-    const summariesRest =
-      getEnv().MAX_SUMMARIES_PER_WEEK + (tariff?.summaries ?? 0) - summaries.length;
+    const freeSummariesRest = getEnv().MAX_SUMMARIES_PER_WEEK - summaries.length;
+    const summariesRest = freeSummariesRest + (tariff?.summaries ?? 0);
 
     if (summariesRest <= 0) {
       return { type: 'tooManySummaries' };
@@ -112,6 +113,7 @@ const getChatMessagesForSummary =
     return {
       messages: await services.db.getChatMessages(chatId, startSummaryFrom),
       summariesRest: summariesRest - 1,
+      usedPremium: freeSummariesRest <= 0,
     };
   };
 
@@ -157,7 +159,7 @@ const handleSummaryResultCase =
     if (logArgs !== undefined) logger.log(...logArgs);
 
     if (resultCase.type === 'summaryHeader') {
-      await services.db.createSummary(chatId, new Date());
+      await services.db.createSummary(chatId, new Date(), resultCase.usedPremium);
     }
 
     const text = getBotMessageForSummarizeResultCase(resultCase);
@@ -273,7 +275,8 @@ const mapSummaryPartsToGptQuery = (
 // todo make this function more expressive
 const insertSummaryLayout = (
   chatId: number,
-  summariesRest: number
+  summariesRest: number,
+  usedPremium: boolean
 ): UnaryFunction<Observable<SummarizeResultCase>, Observable<SummarizeResultCase>> => {
   const { SHOW_ADS } = getEnv();
   const showAdsCase: SummarizeResultCase | undefined =
@@ -286,7 +289,7 @@ const insertSummaryLayout = (
   return pipe(
     startWith<SummarizeResultCase>({ type: 'startSummary' }),
     insertBefore<SummarizeResultCase>(
-      { type: 'summaryHeader' },
+      { type: 'summaryHeader', usedPremium },
       (c) => c.type === 'responseFromGPT'
     ),
     endWithAfter<SummarizeResultCase>(
