@@ -40,7 +40,7 @@ type SummarizeResultCase =
   | { type: 'tooManySummaries' }
   | { type: 'startSummary' }
   | { type: 'summaryHeader'; usedPremium: boolean }
-  | { type: 'endSummary'; summariesRest: number; premium: boolean }
+  | { type: 'endSummary'; summariesRest: number }
   | { type: 'ads' };
 
 // todo этот файл пора рефакторить
@@ -55,7 +55,7 @@ const handleSingleSummarizeRequest$ = _.curry(
     of(msg).pipe(
       mergeMap(getChatMessagesForSummary(services, chatId)),
       mergeMap(queryGptOrReturnError$(services, chatId)),
-      concatMap(handleSummaryResultCase(services, chatId)),
+      concatMap(handleSummaryResultCase(services, chatId, msg)),
       last(),
       mergeMap(() => printNews(services.db, services.telegramBot, chatId))
     )
@@ -88,18 +88,18 @@ type ChatMessagesForSummaryData = {
 };
 
 // todo это большой некрасивый костыль
-const chatToTariffMap = new Map<number, Tariff | undefined>();
+const msgToTariffMap = new Map<number, Tariff | undefined>();
 
 // todo refactor: make it to return Either<SummarizeResultCase, DbChatMessage[]>
 const getChatMessagesForSummary =
   (services: Services, chatId: number) =>
-  async (): Promise<SummarizeResultCase | ChatMessagesForSummaryData> => {
+  async (msg: TelegramBot.Message): Promise<SummarizeResultCase | ChatMessagesForSummaryData> => {
     // todo test
     const [summaries, tariff] = await Promise.all([
       services.db.getSummariesFrom(chatId, thisWeekStart()),
-      services.db.getChatTariff(chatId),
+      services.db.getTariff(chatId, msg.from?.username),
     ]);
-    chatToTariffMap.set(chatId, tariff);
+    msgToTariffMap.set(msg.message_id, tariff);
 
     const freeSummariesRest = getEnv().MAX_SUMMARIES_PER_WEEK - summaries.length;
     const summariesRest = freeSummariesRest + (tariff?.summaries ?? 0);
@@ -122,7 +122,7 @@ const formatChatMessages = (messages: DbChatMessage[]): string =>
 
 const rejectOverflowedSummaryPartsAndMakeSummary$ = _.curry(
   (chatId: number, services: Services, parts: { text: string; pointsCount: number }[]) => {
-    const tariff = chatToTariffMap.get(chatId);
+    const tariff = msgToTariffMap.get(chatId);
     const maxSummaryParts = getEnv().MAX_SUMMARY_PARTS * (tariff?.messagesMultiplier ?? 1);
 
     const allowedParts = _.takeRight(parts, maxSummaryParts);
@@ -154,7 +154,8 @@ const querySummaryPartFromGptAndReEnumerateResponse$ = _.curry(
 );
 
 const handleSummaryResultCase =
-  (services: Services, chatId: number) => async (resultCase: SummarizeResultCase) => {
+  (services: Services, chatId: number, msg: TelegramBot.Message) =>
+  async (resultCase: SummarizeResultCase) => {
     const logArgs = getLogMessageForSummarizeResultCase(resultCase, chatId);
     if (logArgs !== undefined) logger.log(...logArgs);
 
@@ -162,7 +163,7 @@ const handleSummaryResultCase =
       await services.db.createSummary(chatId, new Date(), resultCase.usedPremium);
     }
 
-    const text = getBotMessageForSummarizeResultCase(resultCase);
+    const text = getBotMessageForSummarizeResultCase(resultCase, msg);
 
     await services.telegramBot.sendMessage(
       chatId,
@@ -203,7 +204,10 @@ function getLogMessageForSummarizeResultCase(
   }
 }
 
-function getBotMessageForSummarizeResultCase(resultCase: SummarizeResultCase): string {
+function getBotMessageForSummarizeResultCase(
+  resultCase: SummarizeResultCase,
+  msg: TelegramBot.Message
+): string {
   switch (resultCase.type) {
     case 'startSummary': {
       return t('summarize.message.start');
@@ -216,7 +220,9 @@ function getBotMessageForSummarizeResultCase(resultCase: SummarizeResultCase): s
     }
     case 'endSummary': {
       return t(
-        resultCase.premium ? 'summarize.message.end.premium' : 'summarize.message.end.free',
+        msgToTariffMap.get(msg.message_id) == null
+          ? 'summarize.message.end.free'
+          : 'summarize.message.end.premium',
         {
           rest: resultCase.summariesRest,
           total: getEnv().MAX_SUMMARIES_PER_WEEK,
@@ -297,7 +303,6 @@ const insertSummaryLayout = (
       {
         type: 'endSummary',
         summariesRest,
-        premium: !!chatToTariffMap.get(chatId),
       },
       showAdsCase
     )

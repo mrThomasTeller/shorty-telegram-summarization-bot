@@ -62,10 +62,11 @@ model Tariff {
 }
 
 model Subscription {
-  id       BigInt @id @default(autoincrement())
+  id       BigInt  @id @default(autoincrement())
   tariffId BigInt
-  chatId   BigInt @unique
+  chatId   BigInt? @unique
+  username String? @unique
   email    String
-  tariff   Tariff @relation(fields: [tariffId], references: [id])
-  chat     Chat   @relation(fields: [chatId], references: [id])
+  tariff   Tariff  @relation(fields: [tariffId], references: [id])
+  chat     Chat?   @relation(fields: [chatId], references: [id])
 }

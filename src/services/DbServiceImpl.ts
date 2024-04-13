@@ -51,9 +51,11 @@ export default class DbServiceImpl implements DbService {
     });
   }
 
-  async getChatTariff(chatId: number): Promise<Tariff | undefined> {
+  async getTariff(chatId: number, username: string | undefined): Promise<Tariff | undefined> {
     const subscription = await this.prisma.subscription.findFirst({
-      where: { chatId },
+      where: {
+        OR: _.compact([{ chatId }, username == null ? undefined : { username }]),
+      },
       include: { tariff: true },
     });
 
