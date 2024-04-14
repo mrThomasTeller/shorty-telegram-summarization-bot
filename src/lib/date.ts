@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 export function todayMidday(): Date {
   const date = new Date();
   date.setHours(12, 0, 0, 0);
@@ -17,8 +19,14 @@ export function twelveHoursAgo(): Date {
 }
 
 export function thisWeekStart(): Date {
+  const dayOfWeek = _.flow(
+    () => new Date().getDay(),
+    // Sunday is 7
+    (day) => (day === 0 ? 7 : day)
+  )();
+
   const date = new Date();
-  date.setDate(date.getDate() - date.getDay() + 1);
+  date.setDate(date.getDate() - dayOfWeek + 1);
   date.setHours(0, 0, 0, 0);
   return date;
 }
