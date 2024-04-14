@@ -1,6 +1,6 @@
 {
   "name": "shorty-chat-bot",
-  "version": "1.0.4-beta.3",
+  "version": "1.0.4-beta.5",
   "description": "",
   "main": "src/start.ts",
   "type": "module",
@@ -50,6 +50,7 @@
     "git:commit-keep-version": "git add -A && git commit && git push",
     "git:fcommit": "npm --no-git-tag-version version prerelease && git add -A && git commit --no-verify && git push",
     "git:fcommit-keep-version": "git add -A && git commit --no-verify && git push",
+    "git:fcommit-staged": "npm --no-git-tag-version version prerelease && git commit --no-verify && git push",
     "git:acommit": "git add -A && git commit --amend --no-edit && git push --force",
     "git:facommit": "git add -A && git commit --amend --no-edit --no-verify && git push --force"
   },
@@ -76,6 +77,7 @@
     "prisma": "^5.3.1",
     "rxjs": "^7.8.1",
     "ts-node": "^10.9.1",
+    "ts-pattern": "^5.1.1",
     "typescript": "^5.2.2",
     "utility-types": "^3.10.0",
     "winston": "^3.11.0"

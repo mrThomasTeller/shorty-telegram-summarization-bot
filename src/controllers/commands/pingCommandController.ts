@@ -13,16 +13,24 @@ const packageJson = JSON.parse(
 
 const pingCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$.subscribe((msg) =>
-    services.telegramBot.sendMessage(chatId, getPingResponseMessage(chatId, msg.from?.id))
+    services.telegramBot.sendMessage(
+      chatId,
+      getPingResponseMessage(chatId, msg.from?.id, msg.from?.username)
+    )
   );
 };
 
 export default pingCommandController;
 
-export const getPingResponseMessage = (chatId: number, userId?: number): string =>
+export const getPingResponseMessage = (
+  chatId: number,
+  userId?: number,
+  username?: string
+): string =>
   t('ping.response', {
     nodeEnv: getEnv().NODE_ENV,
     version: packageJson.version,
     chatId,
     userId,
+    username,
   });

@@ -1,4 +1,4 @@
-import i18next from 'i18next';
+import i18next, { type ParseKeys } from 'i18next';
 import { dirname } from '@darkobits/fd-name';
 import type RuTranslations from './ru.json';
 import path from 'node:path';
@@ -20,3 +20,5 @@ void i18next.init({
 });
 
 export const t = i18next.t.bind(i18next);
+
+export type TranslationKey = ParseKeys<'translations', typeof RuTranslations>;

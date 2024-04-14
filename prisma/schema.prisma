@@ -9,11 +9,13 @@ generator client {
 }
 
 model User {
-  id        BigInt    @id
-  firstName Bytes?
-  lastName  Bytes?
-  username  Bytes?
-  messages  Message[]
+  id           BigInt        @id
+  firstName    Bytes?
+  lastName     Bytes?
+  username     Bytes?
+  messages     Message[]
+  summaries    Summary[]
+  subscription Subscription?
 }
 
 model Chat {
@@ -42,8 +44,10 @@ model Summary {
   id          Int      @id @default(autoincrement())
   date        DateTime
   chatId      BigInt
+  userId      BigInt?
   usedPremium Boolean  @default(false)
   chat        Chat     @relation(fields: [chatId], references: [id])
+  user        User?    @relation(fields: [userId], references: [id])
 }
 
 model Statistic {
@@ -53,7 +57,7 @@ model Statistic {
 }
 
 model Tariff {
-  id                 BigInt         @id @default(autoincrement())
+  id                 String         @id
   name               String
   price              Int
   summaries          Int            @default(0)
@@ -63,10 +67,11 @@ model Tariff {
 
 model Subscription {
   id       BigInt  @id @default(autoincrement())
-  tariffId BigInt
+  tariffId String
   chatId   BigInt? @unique
-  username String? @unique
+  userId   BigInt? @unique
   email    String
-  tariff   Tariff  @relation(fields: [tariffId], references: [id])
+  tariff   Tariff  @relation(fields: [tariffId], references: [id], onUpdate: Cascade)
   chat     Chat?   @relation(fields: [chatId], references: [id])
+  user     User?   @relation(fields: [userId], references: [id])
 }

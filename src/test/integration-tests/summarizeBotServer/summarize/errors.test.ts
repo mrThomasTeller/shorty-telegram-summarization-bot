@@ -183,7 +183,7 @@ describe('summarizeBotServer summarize command errors', () => {
       telegramBot,
       [
         {
-          message: t('summarize.errors.maxSummariesExceeded', {
+          message: t('summarize.errors.maxSummariesExceeded.free', {
             count: getEnv().MAX_SUMMARIES_PER_WEEK,
           }),
           parseMode: 'HTML',
@@ -208,7 +208,7 @@ describe('summarizeBotServer summarize command errors', () => {
       telegramBot,
       [
         {
-          message: t('summarize.errors.maxSummariesExceeded', {
+          message: t('summarize.errors.maxSummariesExceeded.free', {
             count: getEnv().MAX_SUMMARIES_PER_WEEK,
           }),
           parseMode: 'HTML',

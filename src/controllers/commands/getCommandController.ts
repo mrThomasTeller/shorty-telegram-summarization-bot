@@ -8,7 +8,7 @@ import type ChatController from '../ChatController.ts';
 import helpCommandController from './helpCommandController.ts';
 import noneCommandController from './noneCommandController.ts';
 import pingCommandController from './pingCommandController.ts';
-import summarizeCommandController from './summarizeCommandController.ts';
+import summarizeCommandController from './summarize/summarizeCommandController.ts';
 import startCommandController from './startCommandController.ts';
 import tryMessageCommand from '../../config/commands/tryMessage.ts';
 import tryMessageCommandController from './tryMessageCommandController.ts';

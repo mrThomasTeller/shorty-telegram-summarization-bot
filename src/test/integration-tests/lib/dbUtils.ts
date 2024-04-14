@@ -69,6 +69,7 @@ export function createSummaries(
         date: daysAgo(2),
         chatId: BigInt(chatId),
         usedPremium: false,
+        userId: BigInt(myTgUser.id),
       })
     ),
     ..._.range(actualCount).map(
@@ -77,6 +78,7 @@ export function createSummaries(
         date: hoursAgo(1),
         chatId: BigInt(chatId),
         usedPremium: false,
+        userId: BigInt(myTgUser.id),
       })
     ),
   ];

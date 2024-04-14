@@ -31,6 +31,13 @@ export function thisWeekStart(): Date {
   return date;
 }
 
+export function thisMonthStart(): Date {
+  const date = new Date();
+  date.setDate(1);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
 export function daysAgo(days: number): Date {
   const date = new Date();
   date.setDate(date.getDate() - days);

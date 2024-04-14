@@ -1,7 +1,11 @@
 import type DbChatMessage from '../data/DbChatMessage.ts';
 import type DbService from './DbService.ts';
-import { type Chat, PrismaClient, type User, type Summary, type Tariff } from '@prisma/client';
-import { type MessageCreateInput, type UserCreateInput } from './DbService.ts';
+import { type Chat, PrismaClient, type User, type Summary } from '@prisma/client';
+import {
+  type SubscriptionWithTariff,
+  type MessageCreateInput,
+  type UserCreateInput,
+} from './DbService.ts';
 import _ from 'lodash';
 import { todayMidday } from '../lib/date.ts';
 
@@ -10,6 +14,27 @@ export default class DbServiceImpl implements DbService {
 
   constructor() {
     this.prisma = new PrismaClient();
+  }
+
+  countSummariesFrom({
+    chatId,
+    userId,
+    from,
+    usedPremium,
+  }: {
+    chatId?: number;
+    userId?: number;
+    from: Date;
+    usedPremium?: boolean;
+  }): Promise<number> {
+    return this.prisma.summary.count({
+      where: {
+        chatId,
+        userId,
+        date: { gte: from },
+        usedPremium,
+      },
+    });
   }
 
   async createChatMessageIfNotExists(msg: MessageCreateInput): Promise<void> {
@@ -25,10 +50,21 @@ export default class DbServiceImpl implements DbService {
     });
   }
 
-  createSummary(chatId: number, date: Date, usedPremium: boolean): Promise<Summary> {
+  createSummary({
+    chatId,
+    userId,
+    date,
+    usedPremium,
+  }: {
+    chatId: number;
+    userId?: number;
+    date: Date;
+    usedPremium: boolean;
+  }): Promise<Summary> {
     return this.prisma.summary.create({
       data: {
         chatId,
+        userId,
         date,
         usedPremium,
       },
@@ -51,15 +87,18 @@ export default class DbServiceImpl implements DbService {
     });
   }
 
-  async getTariff(chatId: number, username: string | undefined): Promise<Tariff | undefined> {
-    const subscription = await this.prisma.subscription.findFirst({
-      where: {
-        OR: _.compact([{ chatId }, username == null ? undefined : { username }]),
-      },
-      include: { tariff: true },
-    });
-
-    return subscription?.tariff;
+  async getSubscription(
+    chatId: number,
+    userId?: number
+  ): Promise<SubscriptionWithTariff | undefined> {
+    return (
+      (await this.prisma.subscription.findFirst({
+        where: {
+          OR: _.compact([{ chatId }, userId == null ? undefined : { userId }]),
+        },
+        include: { tariff: true },
+      })) ?? undefined
+    );
   }
 
   async getSummariesFrom(chatId: number, date: Date): Promise<Summary[]> {

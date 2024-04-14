@@ -119,12 +119,13 @@ function createDbServiceMock() {
     }
   );
 
-  service.createSummary.mockImplementation(async (chatId, date) => {
+  service.createSummary.mockImplementation(async (data) => {
     const summary: Summary = {
       id: ++lastSummaryId,
-      chatId: BigInt(chatId),
-      date,
+      chatId: BigInt(data.chatId),
+      date: data.date,
       usedPremium: false,
+      userId: BigInt(myTgUser.id),
     };
 
     service.summaries.push(summary);

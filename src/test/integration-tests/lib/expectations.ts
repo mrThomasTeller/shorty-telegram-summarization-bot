@@ -103,8 +103,8 @@ export function expectBotAddedSummariesToDb(
   gptTestSummariesCount: number
 ): void {
   expect(db.createSummary).toHaveBeenCalledTimes(gptTestSummariesCount);
-  for (const call of db.createSummary.mock.calls) {
-    expect(call[0]).toBe(chatId);
-    expect(call[1].getTime()).toBeCloseTo(now(), -4); // 10 seconds
+  for (const [{ date, chatId }] of db.createSummary.mock.calls) {
+    expect(chatId).toBe(chatId);
+    expect(date.getTime()).toBeCloseTo(now(), -4); // 10 seconds
   }
 }

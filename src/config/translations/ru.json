@@ -20,12 +20,14 @@
     "message": {
       "start": "⚙️ Собираю сообщения за последний день...",
       "header": "🔡 Краткая выжимка:",
-      "tooManyMessages": "Сообщений накопилось очень много 🤯 Я смогу сделать выжимку только из самых последних. <a href=\"https://boosty.to/artyom.bakharev/posts/7ace6829-b612-448f-8b0e-583c8aad964e?share=success_publish_link\">⚡️ Увеличить лимит</a>",
+      "tooManyMessages": "Сообщений накопилось очень много 🤯 Я смогу сделать выжимку только из самых последних. <a href=\"https://boosty.to/artyom.bakharev/posts/7ace6829-b612-448f-8b0e-583c8aad964e\">⚡️ Увеличить лимит</a>",
       "end": {
-        "free": "😌 Это всё\n🔋 У вас осталось {{rest}} из {{total}} бесплатных выжимок на этой неделе (<a href=\"https://boosty.to/artyom.bakharev/posts/7ace6829-b612-448f-8b0e-583c8aad964e?share=success_publish_link\">⚡️ увеличить лимит</a>)",
-        "premium": "😌 Это всё\n🔋 У вас осталось {{rest}} выжимок"
+        "free": "😌 Это всё\n🔋 У вас осталось {{free}} из {{freeTotal}} бесплатных выжимок на этой неделе (<a href=\"https://boosty.to/artyom.bakharev/posts/7ace6829-b612-448f-8b0e-583c8aad964e\">⚡️ увеличить лимит</a>)",
+        "premiumWithFree": "😌 Это всё\n🔋 У вас осталось {{free}} бесплатных выжимок на неделю и {{premium}} премиум выжимок на месяц",
+        "premiumNoFree": "😌 Это всё\n🔋 У вас осталось {{premium}} премиум выжимок на месяц",
+        "premiumEnded": "😌 Это всё\n🔋 У вас закончились премиум выжимки на месяц. Подождите следующей недели или <a href=\"https://boosty.to/artyom.bakharev/posts/293f0cc3-51b4-4df6-a98c-52d98f9b6ea2\">⚡️ переходите на более высокий тариф</a>"
       },
-      "dontShowAds": "🚫 <a href=\"https://boosty.to/artyom.bakharev/posts/7ace6829-b612-448f-8b0e-583c8aad964e?share=success_publish_link\">⚡️ Не хочу видеть рекламу!</a>"
+      "dontShowAds": "🚫 <a href=\"https://boosty.to/artyom.bakharev/posts/7ace6829-b612-448f-8b0e-583c8aad964e\">⚡️ Не хочу видеть рекламу!</a>"
     },
     "errors": {
       "queryProcess": "Произошла ошибка при обработке запроса. Пожалуйста, попробуйте еще раз.",
@@ -33,14 +35,17 @@
       "maxQueriesToGptExceeded": "💔 С ботом что-то случилось... Попробуйте позже. Мы починим его и сообщим вам как можно скорее.",
       "noMessages": "🙄 Нет сообщений для создания выжимки. Вы пообщайтесь, а потом позовите меня 😉",
       "fewMessages": "🙄 Слишком мало сообщений для создания выжимки. Нужно хотя бы {{count}}. Вы пообщайтесь, а потом позовите меня 😉",
-      "maxSummariesExceeded": "🤯 Вы можете делать не более {{count}} выжимок в неделю. Приходите на следующей неделе или <a href=\"https://boosty.to/artyom.bakharev/posts/7ace6829-b612-448f-8b0e-583c8aad964e?share=success_publish_link\">⚡️ оформите подписку</a> 😉"
+      "maxSummariesExceeded": {
+        "free": "🤯 Вы можете делать не более {{count}} выжимок в неделю. Приходите на следующей неделе или <a href=\"https://boosty.to/artyom.bakharev/posts/7ace6829-b612-448f-8b0e-583c8aad964e\">⚡️ оформите подписку</a> 😉",
+        "premium": "🤯 Бесплатные и премиум выжимки кончились. Приходите на следующей неделе или <a href=\"https://boosty.to/artyom.bakharev/posts/293f0cc3-51b4-4df6-a98c-52d98f9b6ea2\">⚡️ оформите более высокий тариф</a> 😉"
+      }
     },
     "debug": {
       "queryInfo": "Summarize request from chat {{chatId}}"
     }
   },
   "ping": {
-    "response": "💻 Бот тут\nEnvironment: {{nodeEnv}}\nVersion: {{version}}\nChat ID: {{chatId}}\nUser ID: {{userId}}"
+    "response": "💻 Бот тут\nEnvironment: {{nodeEnv}}\nVersion: {{version}}\nChat ID: {{chatId}}\nUser ID: {{userId}}\nUsername: {{username}}"
   },
   "tariff": {
     "free": "🆓 Сейчас вы на бесплатном тарифе. У вас есть {{count}} бесплатных выжимок в неделю.",

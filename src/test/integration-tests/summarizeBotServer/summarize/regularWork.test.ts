@@ -177,6 +177,7 @@ function testCorrectSummary({
           date: lastSummaryDate,
           chatId: BigInt(myTgGroupId),
           usedPremium: false,
+          userId: BigInt(myTgUser.id),
         },
       ];
     }

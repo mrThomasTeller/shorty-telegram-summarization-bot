@@ -33,6 +33,7 @@ Release 0.7 (open beta):
 Release 1.1:
   - urgent!
     - сервер крашится от каждой ошибки в observables
+  - запретить краткие выжимки в личных сообщениях
   - test start command
   - test ads
   - test info messages
@@ -74,6 +75,9 @@ Users issues:
   - Бот делает ошибки в создании выжимки. Имена путает участников (#1)
   - Бот не работает в чате где нельзя писать чаще чем раз в какое-то время (#3)
 
+Important:
+  - если подписка одновременно у чата и пользователя?
+  
 Backlog:
   - BUG: fix test "will not change order of summaries if second summary came earlier than first".
   - write how many recent messages the bot can make a summarisation from, if the number of messages for summarisation is exceeded.
