@@ -9,7 +9,7 @@ export function isPromiseLike<T>(value: unknown): value is PromiseLike<T> {
   );
 }
 
-export function required<T>(x: T | undefined | null): T {
-  assert(x);
+export function required<T>(x: T | undefined | null, message?: string): T {
+  assert(x, message);
   return x;
 }

@@ -35,6 +35,8 @@ type DbService = {
 
   getAllChats: () => Promise<Chat[]>;
 
+  getAllUsers: () => Promise<User[]>;
+
   getChatMessages: (chatId: number, fromDate?: Date) => Promise<DbChatMessage[]>;
 
   getSubscription: (chatId: number, userId?: number) => Promise<SubscriptionWithTariff | undefined>;

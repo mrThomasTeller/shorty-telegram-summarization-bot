@@ -16,6 +16,10 @@ export default class DbServiceImpl implements DbService {
     this.prisma = new PrismaClient();
   }
 
+  getAllUsers(): Promise<User[]> {
+    return this.prisma.user.findMany();
+  }
+
   countSummariesFrom({
     chatId,
     userId,
