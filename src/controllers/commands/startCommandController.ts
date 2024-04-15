@@ -33,7 +33,12 @@ export async function sendStartMessage(
       parse_mode: 'MarkdownV2',
       reply_markup: {
         inline_keyboard: [
-          [{ text: 'Добавить в групповой чат', url: 'https://t.me/SummarizeBot?startgroup=true' }],
+          [
+            {
+              text: 'Добавить в групповой чат',
+              url: 'https://t.me/shorty_chat_bot?startgroup=true',
+            },
+          ],
         ],
       },
     }
