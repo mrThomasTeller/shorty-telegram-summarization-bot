@@ -1,4 +1,4 @@
-import { yesterday, thisWeekStart, thisMonthStart } from '../../../../lib/date.ts';
+import { yesterday, thisWeekStart, monthFromPeriodStart } from '../../../../lib/date.ts';
 import type Services from '../../../../services/Services.ts';
 import { getEnv } from '../../../../config/envVars.ts';
 import { max as maxTime } from 'date-fns';
@@ -21,8 +21,7 @@ export const getLimitsData = _.curry(
 
     const monthPremiumSummariesCount = subscription
       ? await services.db.countSummariesFrom({
-          // todo брать не начало месяца, а начало оплаченного периода
-          from: thisMonthStart(),
+          from: monthFromPeriodStart(subscription.createdAt),
           usedPremium: true,
           ...(subscription.userId == null
             ? { chatId: msg.chat.id }

@@ -1,20 +1,33 @@
 import _ from 'lodash';
 
-export function todayMidday(): Date {
+export function daysAgo(days: number): Date {
   const date = new Date();
-  date.setHours(12, 0, 0, 0);
+  date.setDate(date.getDate() - days);
   return date;
 }
 
-export function yesterday(): Date {
+export function hoursAgo(hours: number): Date {
   const date = new Date();
-  date.setDate(date.getDate() - 1);
+  date.setHours(date.getHours() - hours);
   return date;
 }
 
-export function twelveHoursAgo(): Date {
+/**
+ * Возвращает дату начала текущего месячного периода подписки,
+ * которая была оформлена в указанную дату.
+ */
+export function monthFromPeriodStart(periodStart: Date): Date {
+  const period = new Date(periodStart);
+  const now = new Date();
+  period.setFullYear(now.getFullYear());
+  period.setMonth(now.getMonth());
+  return period;
+}
+
+export function thisMonthStart(): Date {
   const date = new Date();
-  date.setHours(date.getHours() - 12);
+  date.setDate(1);
+  date.setHours(0, 0, 0, 0);
   return date;
 }
 
@@ -31,21 +44,20 @@ export function thisWeekStart(): Date {
   return date;
 }
 
-export function thisMonthStart(): Date {
+export function todayMidday(): Date {
   const date = new Date();
-  date.setDate(1);
-  date.setHours(0, 0, 0, 0);
+  date.setHours(12, 0, 0, 0);
   return date;
 }
 
-export function daysAgo(days: number): Date {
+export function twelveHoursAgo(): Date {
   const date = new Date();
-  date.setDate(date.getDate() - days);
+  date.setHours(date.getHours() - 12);
   return date;
 }
 
-export function hoursAgo(hours: number): Date {
+export function yesterday(): Date {
   const date = new Date();
-  date.setHours(date.getHours() - hours);
+  date.setDate(date.getDate() - 1);
   return date;
 }
