@@ -1,16 +1,13 @@
-import recoveryMessage from './entryPoints/recoveryMessage.ts';
-import summarizeBotServer from './entryPoints/summarizeBotServer.ts';
-import getUserId from './entryPoints/getUserId.ts';
+import type EntryPoint from './entryPoints/EntryPoint.ts';
+import type AdsService from './services/AdsService.ts';
 import AdsServiceImpl from './services/AdsServiceImpl.ts';
+import type DbService from './services/DbService.ts';
 import DbServiceImpl from './services/DbServiceImpl.ts';
+import type GptService from './services/GptService.ts';
 import GptServiceImpl from './services/GptServiceImpl.ts';
 import type Services from './services/Services.ts';
-import TelegramBotServiceImpl from './services/TelegramBotServiceImpl.ts';
-import { match } from 'ts-pattern';
-import type AdsService from './services/AdsService.ts';
-import type DbService from './services/DbService.ts';
-import type GptService from './services/GptService.ts';
 import type TelegramBotService from './services/TelegramBotService.ts';
+import TelegramBotServiceImpl from './services/TelegramBotServiceImpl.ts';
 
 const entryPointName = process.argv[2];
 
@@ -38,12 +35,8 @@ class ServicesImpl implements Services {
 
 const services = new ServicesImpl();
 
-const entryPoint = match(entryPointName)
-  .with('getUserId', () => getUserId)
-  .with('summarizeBotServer', () => summarizeBotServer)
-  .with('recoveryMessage', () => recoveryMessage)
-  .otherwise(() => {
-    throw new Error(`Unknown entry point: ${entryPointName ?? 'undefined'}`);
-  });
+const entryPoint = (await import(`./entryPoints/${entryPointName}.ts`)) as {
+  default: EntryPoint;
+};
 
-void entryPoint(services, ...process.argv.slice(3));
+void entryPoint.default(services, ...process.argv.slice(3));

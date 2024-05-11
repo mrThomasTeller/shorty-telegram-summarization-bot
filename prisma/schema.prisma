@@ -66,13 +66,14 @@ model Tariff {
 }
 
 model Subscription {
-  id        BigInt   @id @default(autoincrement())
-  tariffId  String
-  chatId    BigInt?  @unique
-  userId    BigInt?  @unique
-  email     String
-  createdAt DateTime @default(now())
-  tariff    Tariff   @relation(fields: [tariffId], references: [id], onUpdate: Cascade)
-  chat      Chat?    @relation(fields: [chatId], references: [id])
-  user      User?    @relation(fields: [userId], references: [id])
+  id         BigInt   @id @default(autoincrement())
+  tariffId   String
+  chatId     BigInt?  @unique
+  userId     BigInt?  @unique
+  email      String
+  createdAt  DateTime @default(now())
+  notifiedAt DateTime @default(now())
+  tariff     Tariff   @relation(fields: [tariffId], references: [id], onUpdate: Cascade)
+  chat       Chat?    @relation(fields: [chatId], references: [id])
+  user       User?    @relation(fields: [userId], references: [id])
 }

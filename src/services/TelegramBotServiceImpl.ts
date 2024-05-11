@@ -10,7 +10,11 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
     this.bot = new TelegramBot(getEnv().TELEGRAM_BOT_TOKEN, { polling: true });
   }
 
-  async sendMessage(chatId: number, text: string, options?: TelegramBotSendMessageOptions): Promise<void> {
+  async sendMessage(
+    chatId: number,
+    text: string,
+    options?: TelegramBotSendMessageOptions
+  ): Promise<void> {
     await this.bot.sendMessage(chatId, text, { ...options, disable_web_page_preview: true });
   }
 
@@ -35,7 +39,11 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
     const listener = async (msg: TelegramBot.ChatMemberUpdated): Promise<void> => {
       const me = await this.bot.getMe();
       const { status, user } = msg.new_chat_member;
-      if ((status === 'left' || status === 'kicked') && user.id === me.id && msg.chat.type !== 'private') {
+      if (
+        (status === 'left' || status === 'kicked') &&
+        user.id === me.id &&
+        msg.chat.type !== 'private'
+      ) {
         callback(msg.chat.id);
       }
     };

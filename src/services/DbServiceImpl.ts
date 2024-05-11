@@ -1,19 +1,29 @@
-import type DbChatMessage from '../data/DbChatMessage.ts';
-import type DbService from './DbService.ts';
-import { type Chat, PrismaClient, type User, type Summary } from '@prisma/client';
 import {
-  type SubscriptionWithTariff,
+  PrismaClient,
+  type Subscription,
+  type Chat,
+  type Summary,
+  type User,
+} from '@prisma/client';
+import _ from 'lodash';
+import type DbChatMessage from '../data/DbChatMessage.ts';
+import { todayMidday } from '../lib/date.ts';
+import type DbService from './DbService.ts';
+import {
   type MessageCreateInput,
+  type SubscriptionWithTariff,
   type UserCreateInput,
 } from './DbService.ts';
-import _ from 'lodash';
-import { todayMidday } from '../lib/date.ts';
 
 export default class DbServiceImpl implements DbService {
   private readonly prisma: PrismaClient;
 
   constructor() {
     this.prisma = new PrismaClient();
+  }
+
+  getAllSubscriptions(): Promise<Subscription[]> {
+    return this.prisma.subscription.findMany();
   }
 
   getAllUsers(): Promise<User[]> {
@@ -169,6 +179,13 @@ export default class DbServiceImpl implements DbService {
   async setNewsForAllChats(news: string): Promise<void> {
     await this.prisma.chat.updateMany({
       data: { news },
+    });
+  }
+
+  async setSubscriptionNotifiedAt(id: bigint, date: Date): Promise<void> {
+    await this.prisma.subscription.update({
+      where: { id },
+      data: { notifiedAt: date },
     });
   }
 

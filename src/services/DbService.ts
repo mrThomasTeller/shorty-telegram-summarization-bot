@@ -35,6 +35,8 @@ type DbService = {
 
   getAllChats: () => Promise<Chat[]>;
 
+  getAllSubscriptions: () => Promise<Subscription[]>;
+
   getAllUsers: () => Promise<User[]>;
 
   getChatMessages: (chatId: number, fromDate?: Date) => Promise<DbChatMessage[]>;
@@ -54,6 +56,8 @@ type DbService = {
   setGroupChatIsMember: (chatId: number, isMember: boolean) => Promise<void>;
 
   setNewsForAllChats: (news: string) => Promise<void>;
+
+  setSubscriptionNotifiedAt: (id: bigint, date: Date) => Promise<void>;
 
   statisticsAddedToChat: () => Promise<void>;
 

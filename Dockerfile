@@ -10,7 +10,6 @@ RUN apt-get update -y && apt-get install -y openssl
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
-RUN npm install -g pm2@^5.3.0
 
 WORKDIR /root/app
 
@@ -23,4 +22,4 @@ COPY . .
 
 RUN pnpm db:gen-types
 
-CMD pnpm db:migrate && pnpm server:start
+CMD pnpm db:migrate && pnpm start

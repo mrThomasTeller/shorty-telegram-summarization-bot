@@ -8,6 +8,7 @@ import type Services from '../services/Services.ts';
 import _ from 'lodash';
 import logger from '../config/logger.ts';
 import { sendHelpMessage } from '../controllers/commands/helpCommandController.ts';
+import subscriptionsExpirationNotifier from './summarizeBotServer/subscriptionsExpirationNotifier.ts';
 
 // todo refactor this function
 const summarizeBotServer: EntryPoint = async (services) => {
@@ -21,6 +22,8 @@ const summarizeBotServer: EntryPoint = async (services) => {
     .subscribe(observeChatWithMainController(services));
 
   logger.info('Summarize telegram bot started');
+
+  void subscriptionsExpirationNotifier(services);
 };
 
 export default summarizeBotServer;
@@ -39,7 +42,9 @@ const removedFromGroupChatHandler = (services: Services) => async (chatId: numbe
   await services.db.setGroupChatIsMember(chatId, false);
 };
 
-function createTgMessagesObservable(telegramBotService: TelegramBotService): Observable<TelegramBot.Message> {
+function createTgMessagesObservable(
+  telegramBotService: TelegramBotService
+): Observable<TelegramBot.Message> {
   return new Observable((subscriber) =>
     telegramBotService.onAnyMessage((msg) => {
       subscriber.next(msg);
