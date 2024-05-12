@@ -1,5 +1,5 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import { required } from '../../../lib/common.ts';
+import { required } from '../../../lib/lang.ts';
 import _ from 'lodash';
 import formatDate from 'date-fns/format';
 import { botName, tgMessageLength } from './constants.ts';
@@ -63,8 +63,7 @@ export function createTgMessageInGroup({
 export const createSummarizeCommandMessage = (
   user: TelegramBot.User,
   chatId: number = myTgGroupId
-): TelegramBot.Message =>
-  createTgMessageInGroup({ text: `/summarize@${botName}`, user, chatId });
+): TelegramBot.Message => createTgMessageInGroup({ text: `/summarize@${botName}`, user, chatId });
 
 export type TgMessagesBunchDesc = {
   date: Date;

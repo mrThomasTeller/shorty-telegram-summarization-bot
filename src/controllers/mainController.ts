@@ -6,7 +6,7 @@ import {
   isCommandForBot,
   parseCommand,
 } from '../data/telegramBotMessageUtils.ts';
-import { required } from '../lib/common.ts';
+import { required } from '../lib/lang.ts';
 import commands from '../config/commands/index.ts';
 import getCommandController from './commands/getCommandController.ts';
 import type Command from '../config/commands/Command.ts';

@@ -1,13 +1,16 @@
 import { ChatGPTAPI, type ChatMessage, type SendMessageOptions } from 'chatgpt';
 import type GptService from './GptService.ts';
-import { required } from '../lib/common.ts';
+import { required } from '../lib/lang.ts';
 import { getEnv } from '../config/envVars.ts';
 import _ from 'lodash';
 
 export default class GptServiceImpl implements GptService {
   private api?: ChatGPTAPI;
 
-  async sendMessage(message: string, options?: Pick<SendMessageOptions, 'completionParams'>): Promise<ChatMessage> {
+  async sendMessage(
+    message: string,
+    options?: Pick<SendMessageOptions, 'completionParams'>
+  ): Promise<ChatMessage> {
     if (getEnv().DUMMY_GPT_RESPONSES) {
       return {
         id: _.uniqueId(),

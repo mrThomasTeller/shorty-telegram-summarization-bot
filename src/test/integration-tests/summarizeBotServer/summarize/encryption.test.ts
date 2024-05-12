@@ -1,7 +1,7 @@
 import { getEnv, setEnv } from '../../../../config/envVars.ts';
 import { t } from '../../../../config/translations/index.ts';
 import { decrypt } from '../../../../data/encryption.ts';
-import { required } from '../../../../lib/common.ts';
+import { required } from '../../../../lib/lang.ts';
 import { createGptChatMessage } from '../../lib/gptUtils.ts';
 import {
   createSummarizeCommandMessage,

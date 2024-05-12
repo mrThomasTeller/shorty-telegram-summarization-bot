@@ -4,6 +4,7 @@ type Command = TelegramBot.BotCommand & {
   whiteListOnly: boolean;
   allowInMaintenance: boolean;
   adminOnly?: boolean;
+  hide?: boolean;
 };
 
 export default Command;

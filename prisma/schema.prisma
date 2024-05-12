@@ -9,20 +9,22 @@ generator client {
 }
 
 model User {
-  id           BigInt        @id
-  firstName    Bytes?
-  lastName     Bytes?
-  username     Bytes?
+  id        BigInt @id
+  firstName Bytes?
+  lastName  Bytes?
+  username  Bytes?
+
   messages     Message[]
   summaries    Summary[]
   subscription Subscription?
 }
 
 model Chat {
-  id           BigInt        @id
-  isMember     Boolean?
-  createdAt    DateTime      @default(now())
-  news         String?
+  id        BigInt   @id
+  isMember  Boolean?
+  createdAt DateTime @default(now())
+  news      String?
+
   messages     Message[]
   summaries    Summary[]
   subscription Subscription?
@@ -46,8 +48,9 @@ model Summary {
   chatId      BigInt
   userId      BigInt?
   usedPremium Boolean  @default(false)
-  chat        Chat     @relation(fields: [chatId], references: [id])
-  user        User?    @relation(fields: [userId], references: [id])
+
+  chat Chat  @relation(fields: [chatId], references: [id])
+  user User? @relation(fields: [userId], references: [id])
 }
 
 model Statistic {
@@ -57,12 +60,14 @@ model Statistic {
 }
 
 model Tariff {
-  id                 String         @id
+  id                 String @id
   name               String
   price              Int
-  summaries          Int            @default(0)
-  messagesMultiplier Int            @default(1)
-  Subscription       Subscription[]
+  summaries          Int    @default(0)
+  messagesMultiplier Int    @default(1)
+
+  subscriptions  Subscription[]
+  activationKeys ActivationKey[]
 }
 
 model Subscription {
@@ -73,7 +78,18 @@ model Subscription {
   email      String
   createdAt  DateTime @default(now())
   notifiedAt DateTime @default(now())
-  tariff     Tariff   @relation(fields: [tariffId], references: [id], onUpdate: Cascade)
-  chat       Chat?    @relation(fields: [chatId], references: [id])
-  user       User?    @relation(fields: [userId], references: [id])
+
+  tariff         Tariff          @relation(fields: [tariffId], references: [id], onUpdate: Cascade)
+  chat           Chat?           @relation(fields: [chatId], references: [id])
+  user           User?           @relation(fields: [userId], references: [id])
+  activationKeys ActivationKey[]
+}
+
+model ActivationKey {
+  id                    String  @id @default(uuid())
+  tariffId              String
+  usedForSubscriptionId BigInt? @map("subscriptionId")
+
+  tariff              Tariff        @relation(fields: [tariffId], references: [id])
+  usedForsubscription Subscription? @relation(fields: [usedForSubscriptionId], references: [id], onDelete: Cascade)
 }

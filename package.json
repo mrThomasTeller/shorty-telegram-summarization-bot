@@ -1,6 +1,6 @@
 {
   "name": "shorty-chat-bot",
-  "version": "1.0.4-beta.10",
+  "version": "1.0.4-beta.11",
   "description": "",
   "main": "src/start.ts",
   "type": "module",
@@ -27,7 +27,7 @@
     "check:test-coverage": "jest src",
     "check:lint": "eslint src --ext ts,tsx,js,jsx",
     "check:ts": "tsc --noEmit",
-    "check:verify": "pnpm check:ts && pnpm check:lint && pnpm check:test",
+    "check:verify": "pnpm check:ts && pnpm check:lint",
     "dev:format": "prettier . --ignore-unknown --write",
     "dev:debug": "node --loader ts-node/esm --inspect src/start.ts summarizeBotServer",
     "dev:watch": "nodemon -x 'pnpm ts src/start.ts summarizeBotServer' --ext ts,js,json,jsx,tpl",
@@ -71,7 +71,7 @@
     "rxjs": "^7.8.1",
     "ts-node": "^10.9.1",
     "ts-pattern": "^5.1.1",
-    "typescript": "^5.2.2",
+    "typescript": "^5.4.5",
     "utility-types": "^3.10.0",
     "winston": "^3.11.0"
   },

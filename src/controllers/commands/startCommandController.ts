@@ -2,7 +2,7 @@ import path from 'node:path';
 import type ChatController from '../ChatController.ts';
 import { dirname } from '@darkobits/fd-name';
 import fs from 'node:fs';
-import { required } from '../../lib/common.ts';
+import { required } from '../../lib/lang.ts';
 import _ from 'lodash';
 import type TelegramBotService from '../../services/TelegramBotService';
 import { escapeTelegramMarkdown } from '../../data/telegramBotMessageUtils.ts';

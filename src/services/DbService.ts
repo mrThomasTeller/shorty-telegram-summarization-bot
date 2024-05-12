@@ -1,10 +1,11 @@
 import {
-  type User,
+  type ActivationKey,
   type Chat,
-  type Summary,
   type PrismaClient,
-  type Tariff,
   type Subscription,
+  type Summary,
+  type Tariff,
+  type User,
 } from '@prisma/client';
 import type DbChatMessage from '../data/DbChatMessage.ts';
 
@@ -24,6 +25,8 @@ type DbService = {
     usedPremium?: boolean;
   }) => Promise<number>;
 
+  createActivationKey: (tariffId: string) => Promise<ActivationKey>;
+
   createChatMessageIfNotExists: (message: MessageCreateInput) => Promise<void>;
 
   createSummary: (data: {
@@ -33,6 +36,8 @@ type DbService = {
     usedPremium: boolean;
   }) => Promise<Summary>;
 
+  getActivationKey: (id: string) => Promise<ActivationKey | undefined>;
+
   getAllChats: () => Promise<Chat[]>;
 
   getAllSubscriptions: () => Promise<Subscription[]>;
@@ -41,21 +46,28 @@ type DbService = {
 
   getChatMessages: (chatId: number, fromDate?: Date) => Promise<DbChatMessage[]>;
 
-  getSubscription: (chatId: number, userId?: number) => Promise<SubscriptionWithTariff | undefined>;
-
-  getSummariesFrom: (chatId: number, from: Date) => Promise<Summary[]>;
-
   getOrCreateChat: (chatId: number) => Promise<[chat: Chat, created: boolean]>;
 
   getOrCreateUser: (userInput: UserCreateInput) => Promise<[user: User, created: boolean]>;
+
+  getSubscription: (chatId: number, userId?: number) => Promise<SubscriptionWithTariff | undefined>;
+
+  getSummariesFrom: (chatId: number, from: Date) => Promise<Summary[]>;
 
   hasMessage: (messageId: number, chatId: number) => Promise<boolean>;
 
   resetChatNews: (chatId: number) => Promise<void>;
 
+  setActivationKeyUsedForSubscription: (id: string, subscriptionId: bigint) => Promise<void>;
+
   setGroupChatIsMember: (chatId: number, isMember: boolean) => Promise<void>;
 
   setNewsForAllChats: (news: string) => Promise<void>;
+
+  setSubscription: (
+    object: { chatId: number } | { userId: number },
+    tariffId: string
+  ) => Promise<{ id: bigint }>;
 
   setSubscriptionNotifiedAt: (id: bigint, date: Date) => Promise<void>;
 

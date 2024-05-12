@@ -1,4 +1,4 @@
-import { isPromiseLike } from './common.ts';
+import { isPromiseLike } from './lang.ts';
 
 // eslint-disable-next-line no-restricted-syntax
 export function logValue<T>(value: T, label?: string): T {

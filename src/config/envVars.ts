@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { required } from '../lib/common.ts';
+import { required } from '../lib/lang.ts';
 
 type Env = {
   TELEGRAM_BOT_TOKEN: string;

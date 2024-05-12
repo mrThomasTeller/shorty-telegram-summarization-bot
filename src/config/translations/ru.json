@@ -9,7 +9,15 @@
     "ping.description": "Проверить, что бот живой",
     "help.description": "Получить помощь по работе бота",
     "start.description": "Начать работу с ботом",
-    "tariff.description": "Узнать текущий тариф"
+    "tariff.description": "Узнать текущий тариф",
+    "activate": {
+      "description": "Активировать премиум тариф",
+      "adminNotification": "🙌 У нас новый подписчик! Новый ключ для тарифа \"{{tariff}}\": `{{key}}`",
+      "errors": {
+        "badKey": "🔑 Неправильный ключ активации. Обратитесь в <a href='https://boosty.to/artyom.bakharev'>личные сообщения на boosty</a> или в поддержку в телеграмме: @shorty_support_bot.",
+        "useChat": "🔑 Отправьте эту команду в групповой чат, для которого вы хотите активировать премиум: `/activate@{{botName}} chat {{key}}`\n\nЕсли же вы хотите активировать премиум для себя то напишите мне в ответ команду: `/activate@{{botName}} user {{key}}`"
+      }
+    }
   },
   "server": {
     "maintenanceMessage": "😴 Бот временно отключен для технического обслуживания. Пожалуйста, попробуйте позже."

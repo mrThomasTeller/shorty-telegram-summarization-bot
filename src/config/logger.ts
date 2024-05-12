@@ -1,7 +1,7 @@
 import { dirname } from '@darkobits/fd-name';
 import path from 'node:path';
 import winston, { format } from 'winston';
-import { required } from '../lib/common.ts';
+import { required } from '../lib/lang.ts';
 const { combine, timestamp, printf, colorize } = format;
 
 export type LogLevel = 'error' | 'warn' | 'info';
