@@ -1,25 +1,24 @@
 # Preparation: Remove package.json version for efficient caching
-FROM node:20-slim AS deps
+# todo fix it
+# FROM oven/bun:slim AS deps
 
-COPY package.json pnpm-lock.yaml ./
-RUN npm version --allow-same-version 1.0.0
+# COPY package.json bun.lockb ./
+# RUN bun version --allow-same-version 1.0.0
 
 # Building
-FROM node:20-slim
+FROM oven/bun:slim
 RUN apt-get update -y && apt-get install -y openssl
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
 
 WORKDIR /root/app
 
 COPY .husky .
-COPY --from=deps package.json pnpm-lock.yaml ./
+# COPY --from=deps package.json bun.lockb ./
+COPY package.json bun.lockb ./
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm prod:install
+RUN bun prod:install
 
 COPY . .
 
-RUN pnpm db:gen-types
+RUN bun db:gen-types
 
-CMD pnpm db:migrate && pnpm start
+CMD bun db:migrate && bun start
