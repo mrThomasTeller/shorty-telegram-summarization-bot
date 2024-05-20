@@ -61,8 +61,6 @@ model Statistic {
 
 model Tariff {
   id                 String @id
-  name               String
-  price              Int
   summaries          Int    @default(0)
   messagesMultiplier Int    @default(1)
 
@@ -90,6 +88,6 @@ model ActivationKey {
   tariffId              String
   usedForSubscriptionId BigInt? @map("subscriptionId")
 
-  tariff              Tariff        @relation(fields: [tariffId], references: [id])
+  tariff              Tariff        @relation(fields: [tariffId], references: [id], onDelete: Cascade)
   usedForsubscription Subscription? @relation(fields: [usedForSubscriptionId], references: [id], onDelete: Cascade)
 }

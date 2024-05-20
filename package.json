@@ -1,6 +1,6 @@
 {
   "name": "shorty-chat-bot",
-  "version": "1.0.4-beta.14",
+  "version": "1.0.4-beta.15",
   "description": "",
   "main": "src/start.ts",
   "type": "module",
@@ -36,6 +36,7 @@
     "db:create-empty-migration": "npx prisma migrate dev --create-only",
     "db:gen-types": "prisma generate",
     "db:migrate": "prisma migrate deploy",
+    "db:rs": "prisma migrate reset",
     "prod:install": "pnpm install --prod --frozen-lockfile",
     "git:minor-commit": "pnpm check:verify && npm --no-git-tag-version version minor && git add -A && git commit --no-verify && git push",
     "git:patch-commit": "pnpm check:verify && npm --no-git-tag-version version patch && git add -A && git commit --no-verify && git push",
