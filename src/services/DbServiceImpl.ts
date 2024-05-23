@@ -225,6 +225,7 @@ export default class DbServiceImpl implements DbService {
 
   async setSubscription(
     object: { chatId: number } | { userId: number },
+    subscriber: { id: number; username?: string },
     tariffId: string
   ): Promise<{ id: bigint }> {
     const subscription = await this.prisma.subscription.upsert({
@@ -232,6 +233,8 @@ export default class DbServiceImpl implements DbService {
       create: {
         ...object,
         email: '?',
+        subscriberUserId: subscriber.id,
+        subscriberUserName: subscriber.username,
         tariffId,
       },
       update: {

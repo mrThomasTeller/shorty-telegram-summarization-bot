@@ -61,6 +61,7 @@ model Statistic {
 
 model Tariff {
   id                 String @id
+  name               String @default("")
   summaries          Int    @default(0)
   messagesMultiplier Int    @default(1)
 
@@ -69,13 +70,15 @@ model Tariff {
 }
 
 model Subscription {
-  id         BigInt   @id @default(autoincrement())
-  tariffId   String
-  chatId     BigInt?  @unique
-  userId     BigInt?  @unique
-  email      String
-  createdAt  DateTime @default(now())
-  notifiedAt DateTime @default(now())
+  id                 BigInt   @id @default(autoincrement())
+  tariffId           String
+  chatId             BigInt?  @unique
+  userId             BigInt?  @unique
+  email              String
+  subscriberUserId   BigInt   @default(0)
+  subscriberUserName String?
+  createdAt          DateTime @default(now())
+  notifiedAt         DateTime @default(now())
 
   tariff         Tariff          @relation(fields: [tariffId], references: [id], onUpdate: Cascade)
   chat           Chat?           @relation(fields: [chatId], references: [id])

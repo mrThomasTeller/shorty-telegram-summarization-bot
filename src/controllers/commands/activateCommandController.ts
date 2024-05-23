@@ -8,7 +8,9 @@ import { getEnv } from '../../config/envVars.ts';
 
 const activateCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$.subscribe(async (msg) => {
-    const [context, key] = getCommandParams(msg.text ?? '').split(' ');
+    const [context, key] = getCommandParams(msg.text ?? '')
+      .split(' ')
+      .map((s) => s.trim());
 
     const activationKey = isTruthy(key) ? await services.db.getActivationKey(key) : undefined;
 
@@ -33,8 +35,10 @@ const activateCommandController: ChatController = ({ chat$, chatId, services }) 
       return;
     }
 
+    const user = required(msg.from);
     const { id: subscriptionId } = await services.db.setSubscription(
-      context === 'chat' ? { chatId } : { userId: required(msg.from).id },
+      context === 'chat' ? { chatId } : { userId: user.id },
+      user,
       activationKey.tariffId
     );
 

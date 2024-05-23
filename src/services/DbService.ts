@@ -66,6 +66,7 @@ type DbService = {
 
   setSubscription: (
     object: { chatId: number } | { userId: number },
+    subscriber: { id: number; username?: string },
     tariffId: string
   ) => Promise<{ id: bigint }>;
 
