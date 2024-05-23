@@ -5,6 +5,7 @@ import { isTruthy, oneOf, required } from '../../lib/lang.ts';
 import type ChatController from '../ChatController.ts';
 import tariffCommandController from './tariffCommandController.ts';
 import { getEnv } from '../../config/envVars.ts';
+import logger from '../../config/logger.ts';
 
 const activateCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$.subscribe(async (msg) => {
@@ -22,6 +23,9 @@ const activateCommandController: ChatController = ({ chat$, chatId, services }) 
       await services.telegramBot.sendMessage(chatId, t('commands.activate.errors.badKey'), {
         parse_mode: 'HTML',
       });
+
+      logger.warn('Bad activation key: ' + JSON.stringify({ context, key, activationKey }));
+
       return;
     }
 
