@@ -6,11 +6,12 @@ import type ChatController from '../ChatController.ts';
 import tariffCommandController from './tariffCommandController.ts';
 import { getEnv } from '../../config/envVars.ts';
 import logger from '../../config/logger.ts';
+import { convertTgUserToDbUserInput } from '../../data/convertors.ts';
 
 const activateCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$.subscribe(async (msg) => {
     const [context, key] = getCommandParams(msg.text ?? '')
-      .split(' ')
+      .split(/\s+/g)
       .map((s) => s.trim());
 
     const activationKey = isTruthy(key) ? await services.db.getActivationKey(key) : undefined;
@@ -40,6 +41,9 @@ const activateCommandController: ChatController = ({ chat$, chatId, services }) 
     }
 
     const user = required(msg.from);
+
+    await services.db.getOrCreateUser(convertTgUserToDbUserInput(user));
+
     const { id: subscriptionId } = await services.db.setSubscription(
       context === 'chat' ? { chatId } : { userId: user.id },
       user,
