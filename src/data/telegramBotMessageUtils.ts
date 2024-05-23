@@ -18,7 +18,10 @@ export function parseCommand(message: TelegramBot.Message): ParsedCommand | unde
 }
 
 export const getCommandParams = (text: string): string => {
-  const [_command, params] = text.trim().split(/[\n ](.*)/s);
+  const [_command, params] = text
+    .trim()
+    .split(/[\n ](.*)/s)
+    .map((s) => s.trim());
   return params ?? '';
 };
 
