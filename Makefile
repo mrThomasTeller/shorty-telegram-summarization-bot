@@ -25,8 +25,7 @@ all-logs:
 	docker compose logs -f
 
 prepare:
-	echo 'unset HISTFILE' >> /etc/profile.d/disable.history.sh
-	docker || (curl -fsSL https://get.docker.com | sh)
+	bash ./disable_history.sh
 
 check-env:
 	@if [ -z "$$CRYPTO_KEY" ]; then \
