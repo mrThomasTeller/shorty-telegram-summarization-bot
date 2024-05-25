@@ -6,6 +6,7 @@ import { required } from '../../lib/lang.ts';
 import _ from 'lodash';
 import type TelegramBotService from '../../services/TelegramBotService';
 import { escapeTelegramMarkdown } from '../../data/telegramBotMessageUtils.ts';
+import logger from '../../config/logger.ts';
 
 const helpMessageTpl = _.template(
   fs.readFileSync(path.join(required(dirname()), '../../config/texts/help.tpl'), 'utf8')
@@ -17,7 +18,13 @@ export const renderHelpMessage = (botName: string): string =>
   });
 
 const helpCommandController: ChatController = ({ chat$, chatId, services }) => {
-  chat$.subscribe(() => sendHelpMessage(services.telegramBot, chatId));
+  chat$.subscribe(async () => {
+    try {
+      await sendHelpMessage(services.telegramBot, chatId);
+    } catch (error) {
+      logger.error('Error in helpCommandController', error);
+    }
+  });
 };
 
 export default helpCommandController;

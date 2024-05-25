@@ -9,10 +9,14 @@ import _ from 'lodash';
 import logger from '../config/logger.ts';
 import { sendHelpMessage } from '../controllers/commands/helpCommandController.ts';
 import subscriptionsExpirationNotifier from './summarizeBotServer/subscriptionsExpirationNotifier.ts';
+import { getEnv } from '../config/envVars.ts';
 
 // todo refactor this function
 const summarizeBotServer: EntryPoint = async (services) => {
   await services.telegramBot.setMyCommands(getVisibleCommands());
+  if (getEnv().NODE_ENV === 'production') {
+    await services.telegramBot.sendMessage(getEnv().ADMIN_ID, 'Я родился! 🍼');
+  }
 
   services.telegramBot.onAddedToGroupChat(addedToGroupChatHandler(services));
   services.telegramBot.onRemovedFromGroupChat(removedFromGroupChatHandler(services));

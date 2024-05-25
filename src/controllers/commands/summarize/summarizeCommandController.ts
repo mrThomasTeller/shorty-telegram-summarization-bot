@@ -1,14 +1,15 @@
-import { type Observable, concatMap, mergeMap, of, exhaustMap, last } from 'rxjs';
-import type ChatController from '../../ChatController.ts';
-import type Services from '../../../services/Services.ts';
 import _ from 'lodash';
 import type TelegramBot from 'node-telegram-bot-api';
-import printNews from '../../../useCases/printNews.ts';
-import { getChatMessagesForSummary } from './stages/getChatMessagesForSummary.ts';
-import queryGptOrReturnError$ from './stages/queryGptOrReturnError$.ts';
-import handleSummarizeResultCase from './stages/handleSummarizeResultCase.ts';
+import { concatMap, exhaustMap, last, mergeMap, of, type Observable } from 'rxjs';
 import { matchEither } from '../../../lib/fp.ts';
+import { catchAndLogError } from '../../../lib/rxOperators.ts';
+import type Services from '../../../services/Services.ts';
+import printNews from '../../../useCases/printNews.ts';
+import type ChatController from '../../ChatController.ts';
+import { getChatMessagesForSummary } from './stages/getChatMessagesForSummary.ts';
 import { getLimitsData } from './stages/getLimitsData.ts';
+import handleSummarizeResultCase from './stages/handleSummarizeResultCase.ts';
+import queryGptOrReturnError$ from './stages/queryGptOrReturnError$.ts';
 
 const summarizeCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$.pipe(exhaustMap(handleSingleSummarizeRequest$(chatId, services))).subscribe(_.noop);
@@ -25,6 +26,8 @@ const handleSingleSummarizeRequest$ = _.curry(
       concatMap(handleSummarizeResultCase(services, msg)),
 
       last(),
-      mergeMap(() => printNews(services.db, services.telegramBot, chatId))
+      mergeMap(() => printNews(services.db, services.telegramBot, chatId)),
+      // todo ошибки нужно ловить на глобальном уровне для каждого сообщения
+      catchAndLogError('Error in summarizeCommandController')
     )
 );

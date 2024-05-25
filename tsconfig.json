@@ -19,5 +19,5 @@
     "noEmit": true,
     "allowImportingTsExtensions": true
   },
-  "include": ["jest.config.ts", "src"]
+  "include": ["jest.config.ts", "src", "prisma"]
 }

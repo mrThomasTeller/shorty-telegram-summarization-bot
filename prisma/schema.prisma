@@ -34,12 +34,14 @@ model Message {
   messageId BigInt
   text      Bytes?
   date      DateTime
-  from      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    BigInt?
-  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
   chatId    BigInt
 
+  from User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chat Chat  @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
   @@id([messageId, chatId])
+  @@index([date])
 }
 
 model Summary {

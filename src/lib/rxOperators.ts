@@ -15,7 +15,9 @@ import {
   repeat,
   timer,
   scan,
+  catchError,
 } from 'rxjs';
+import logger from '../config/logger.ts';
 
 export const filterAsync = <T>(
   predicate: (arg: T) => Promise<boolean>
@@ -92,3 +94,9 @@ export const endWithAfter =
       });
     });
   };
+
+export const catchAndLogError = <T>(message: string): OperatorFunction<T, T | undefined> =>
+  catchError((error) => {
+    logger.error(message, error);
+    return of(undefined);
+  });

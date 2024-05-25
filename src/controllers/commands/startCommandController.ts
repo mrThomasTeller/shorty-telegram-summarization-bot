@@ -6,6 +6,7 @@ import { required } from '../../lib/lang.ts';
 import _ from 'lodash';
 import type TelegramBotService from '../../services/TelegramBotService';
 import { escapeTelegramMarkdown } from '../../data/telegramBotMessageUtils.ts';
+import logger from '../../config/logger.ts';
 
 const startMessageTpl = _.template(
   fs.readFileSync(path.join(required(dirname()), '../../config/texts/start.tpl'), 'utf8')
@@ -17,7 +18,13 @@ export const renderStartMessage = (botName: string): string =>
   });
 
 const startCommandController: ChatController = ({ chat$, chatId, services }) => {
-  chat$.subscribe(() => sendStartMessage(services.telegramBot, chatId));
+  chat$.subscribe(async () => {
+    try {
+      await sendStartMessage(services.telegramBot, chatId);
+    } catch (error) {
+      logger.error('Error in startCommandController', error);
+    }
+  });
 };
 
 export default startCommandController;

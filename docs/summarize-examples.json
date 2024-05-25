@@ -1,0 +1,18 @@
+{
+  "symbols_per_message": 120,
+  "max_symbols_for_one_summary": 17000,
+  "max_messages_for_one_summary": 140,
+  "min_messages": 10,
+  "messages": [
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. In. lorem lectus, ullamcorper non magna non, vulputate malesuada",
+    "lacus. Quisque justo libero, pharetra vitae justo at, facil isis finibus diam. Aliquam dignissim pellentesque vestibulum",
+    ". Duis ex sem, mattis sed varius in, iaculis id neque. In nu nc dolor, pellentesque in ante ut, cursus maximus orci. Susp",
+    "endisse vel lobortis sapien. Quisque sit amet tempus lorem.. Pellentesque quis nisl consequat, tempus ipsum a, placerat a",
+    "rcu. Aenean vulputate accumsan orci vel blandit............. Lorem ipsum dolor sit amet, consectetur adipiscing elit. In.",
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. In. lorem lectus, ullamcorper non magna non, vulputate malesuada",
+    "lacus. Quisque justo libero, pharetra vitae justo at, facil isis finibus diam. Aliquam dignissim pellentesque vestibulum",
+    ". Duis ex sem, mattis sed varius in, iaculis id neque. In nu nc dolor, pellentesque in ante ut, cursus maximus orci. Susp",
+    "endisse vel lobortis sapien. Quisque sit amet tempus lorem.. Pellentesque quis nisl consequat, tempus ipsum a, placerat a",
+    "rcu. Aenean vulputate accumsan orci vel blandit............. Lorem ipsum dolor sit amet, consectetur adipiscing elit. In."
+  ]
+}

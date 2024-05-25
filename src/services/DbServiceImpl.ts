@@ -17,7 +17,7 @@ import {
 } from './DbService.ts';
 
 export default class DbServiceImpl implements DbService {
-  private readonly prisma: PrismaClient;
+  readonly prisma: PrismaClient;
 
   constructor() {
     this.prisma = new PrismaClient();

@@ -4,7 +4,7 @@ import { required } from '../lib/lang.ts';
 type Env = {
   TELEGRAM_BOT_TOKEN: string;
   GPT_API_KEY: string;
-  NODE_ENV: string;
+  NODE_ENV: 'development' | 'production';
   MODE: 'WORK' | 'MAINTENANCE';
   WHITE_CHATS_LIST: string;
   ADMIN_ID: number;
@@ -24,7 +24,7 @@ export function getEnv(): Env {
   return {
     GPT_API_KEY: required(process.env.GPT_API_KEY),
     MODE: parseMode(process.env.MODE),
-    NODE_ENV: required(process.env.NODE_ENV),
+    NODE_ENV: required(process.env.NODE_ENV) as 'development' | 'production',
     TELEGRAM_BOT_TOKEN: required(process.env.TELEGRAM_BOT_TOKEN),
     WHITE_CHATS_LIST: process.env.WHITE_CHATS_LIST ?? '',
     ADMIN_ID: Number(required(process.env.ADMIN_ID)),
