@@ -25,7 +25,7 @@ async function main({ db }: ServicesImpl): Promise<void> {
         chatId: chat.id,
         userId: user.id,
         date: hoursAgo(6),
-        text: encrypt(required(examples.messages[id % examples.messages.length])),
+        text: encrypt(required(examples.messages[Math.abs(id) % examples.messages.length])),
       })
     )
   );
