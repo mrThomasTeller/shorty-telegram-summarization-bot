@@ -1,13 +1,14 @@
+import { max as maxTime } from 'date-fns';
+import { either } from 'fp-ts';
+import { type Either } from 'fp-ts/lib/Either';
+import _ from 'lodash';
+import type TelegramBot from 'node-telegram-bot-api';
+import type DbChatMessage from '../../../../data/DbChatMessage.ts';
 import { yesterday } from '../../../../lib/date.ts';
 import type Services from '../../../../services/Services.ts';
-import { max as maxTime } from 'date-fns';
-import type TelegramBot from 'node-telegram-bot-api';
-import { type SummarizeResultCase } from '../types/SummarizeResultCase.ts';
 import { type ChatMessagesForSummaryData } from '../types/ChatMessagesForSummaryData.ts';
-import _ from 'lodash';
-import { type Either } from 'fp-ts/lib/Either';
-import { either } from 'fp-ts';
 import { type LimitsData } from '../types/LimitsData.ts';
+import { type SummarizeResultCase } from '../types/SummarizeResultCase.ts';
 
 export const getChatMessagesForSummary = _.curry(
   async (
@@ -23,9 +24,15 @@ export const getChatMessagesForSummary = _.curry(
 
     const startSummaryFrom = maxTime([limits.lastSummaryDate ?? yesterday(), yesterday()]);
 
+    const allMessages = await services.db.getChatMessages(msg.chat.id, startSummaryFrom);
+    const messages = dropOverflowedMessages(
+      allMessages,
+      limits.maxApproximateTextToSummarizeLength
+    );
+
     return either.right({
       ...limits,
-      messages: await services.db.getChatMessages(msg.chat.id, startSummaryFrom),
+      messages,
       freeSummariesRest: Math.max(limits.freeSummariesRest - 1, 0),
       premiumSummariesRest:
         limits.freeSummariesRest > 0
@@ -35,3 +42,19 @@ export const getChatMessagesForSummary = _.curry(
     });
   }
 );
+
+const dropOverflowedMessages = (messages: DbChatMessage[], maxLength: number): DbChatMessage[] =>
+  [...messages].reverse().reduce(
+    (acc, msg) => {
+      // зашифрованное сообщение больше исходного примерно на 20-30 символов
+      const msgTextLength = Math.max(msg.text?.length ?? 0 - 30, 0);
+
+      return acc.length + msgTextLength > maxLength
+        ? acc
+        : {
+            length: acc.length + msgTextLength,
+            messages: [msg, ...acc.messages],
+          };
+    },
+    { length: 0, messages: [] as DbChatMessage[] }
+  ).messages;

@@ -19,15 +19,16 @@ async function main({ db }: ServicesImpl): Promise<void> {
 
   const [chat] = await db.getOrCreateChat(myId);
   await Promise.all(
-    _.range(-1, -2000).map((id) =>
-      db.createChatMessageIfNotExists({
+    _.range(-1, -2000).map((id) => {
+      const text = required(examples.messages[Math.abs(id) % examples.messages.length]);
+      return db.createChatMessageIfNotExists({
         messageId: id,
         chatId: chat.id,
         userId: user.id,
         date: hoursAgo(6),
-        text: encrypt(required(examples.messages[Math.abs(id) % examples.messages.length])),
-      })
-    )
+        text: encrypt(text),
+      });
+    })
   );
 
   await db.setSubscription(

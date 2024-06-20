@@ -49,7 +49,7 @@
       }
     },
     "debug": {
-      "queryInfo": "Summarize request from chat {{chatId}}"
+      "queryInfo": "Summarize request from chat {{chatId}}, user: {{userId}}"
     }
   },
   "ping": {

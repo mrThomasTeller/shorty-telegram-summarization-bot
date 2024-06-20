@@ -1,6 +1,6 @@
 {
   "name": "shorty-chat-bot",
-  "version": "1.0.4-beta.25",
+  "version": "1.0.4-beta.26",
   "description": "",
   "main": "src/start.ts",
   "type": "module",
@@ -69,6 +69,7 @@
     "fp-ts": "^2.16.1",
     "i18next": "^23.5.1",
     "lodash": "^4.17.21",
+    "mockdate": "^3.0.5",
     "node-telegram-bot-api": "^0.63.0",
     "only-allow": "^1.2.0",
     "prisma": "^5.3.1",

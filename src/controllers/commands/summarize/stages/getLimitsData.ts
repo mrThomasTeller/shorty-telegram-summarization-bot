@@ -5,6 +5,7 @@ import { max as maxTime } from 'date-fns';
 import type TelegramBot from 'node-telegram-bot-api';
 import _ from 'lodash';
 import { type LimitsData } from '../types/LimitsData.ts';
+import config from '../../../../config/config.ts';
 
 export const getLimitsData = _.curry(
   async (services: Services, msg: TelegramBot.Message): Promise<LimitsData> => {
@@ -39,11 +40,16 @@ export const getLimitsData = _.curry(
 
     const lastSummaryDate = summariesFor24Hours.at(-1)?.date ?? yesterday();
 
+    const maxSummaryParts =
+      getEnv().MAX_SUMMARY_PARTS * (subscription?.tariff.messagesMultiplier ?? 1);
+
     return {
       freeSummariesRest,
       premiumSummariesRest,
       subscription,
       lastSummaryDate: maxTime([lastSummaryDate, yesterday()]),
+      maxSummaryParts,
+      maxApproximateTextToSummarizeLength: maxSummaryParts * config.summary.maxPartLength,
     };
   }
 );

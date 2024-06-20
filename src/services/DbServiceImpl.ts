@@ -213,6 +213,9 @@ export default class DbServiceImpl implements DbService {
       include: {
         from: true,
       },
+      orderBy: {
+        date: 'asc',
+      },
     });
   }
 

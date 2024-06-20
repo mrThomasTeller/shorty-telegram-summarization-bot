@@ -13,7 +13,7 @@ import type TelegramBot from 'node-telegram-bot-api';
 
 const handleSummarizeResultCase =
   (services: Services, msg: TelegramBot.Message) => async (resultCase: SummarizeResultCase) => {
-    const logArgs = getLogMessageForSummarizeResultCase(resultCase, msg.chat.id);
+    const logArgs = getLogMessageForSummarizeResultCase(resultCase, msg.chat.id, msg.from?.id);
     if (logArgs !== undefined) logger.log(...logArgs);
 
     if (resultCase.type === 'summaryHeader') {
@@ -47,7 +47,8 @@ export default handleSummarizeResultCase;
 
 function getLogMessageForSummarizeResultCase(
   resultCase: SummarizeResultCase,
-  chatId: number
+  chatId: number,
+  userId: number | undefined
 ): [level: LogLevel, message: string] | undefined {
   switch (resultCase.type) {
     case 'unknownError': {
@@ -57,7 +58,7 @@ function getLogMessageForSummarizeResultCase(
       return ['error', `Too many requests to GPT for chat ${chatId}`];
     }
     case 'startSummary': {
-      return ['info', t('summarize.debug.queryInfo', { chatId })];
+      return ['info', t('summarize.debug.queryInfo', { chatId, userId })];
     }
     case 'responseFromGPT': {
       return ['info', `Summarize part result for chat ${chatId} generated`];

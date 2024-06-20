@@ -1,27 +1,26 @@
-import { sendMessageToGptWithRetries$ } from '../../../../api/gpt.ts';
-import { reEnumerateText } from '../../../../lib/text.ts';
-import { getFormattedMessage } from '../../../../data/dbChatMessageUtils.ts';
+import _ from 'lodash';
 import {
-  type Observable,
-  type UnaryFunction,
+  concat,
   concatMap,
+  from,
   map,
   of,
   pipe,
   startWith,
-  concat,
-  from,
+  type Observable,
+  type UnaryFunction,
 } from 'rxjs';
-import { t } from '../../../../config/translations/index.ts';
-import { endWithAfter, insertBefore } from '../../../../lib/rxOperators.ts';
-import type Services from '../../../../services/Services.ts';
-import _ from 'lodash';
-import type DbChatMessage from '../../../../data/DbChatMessage.ts';
+import { sendMessageToGptWithRetries$ } from '../../../../api/gpt.ts';
 import { getEnv } from '../../../../config/envVars.ts';
+import { t } from '../../../../config/translations/index.ts';
+import type DbChatMessage from '../../../../data/DbChatMessage.ts';
+import { getFormattedMessage } from '../../../../data/dbChatMessageUtils.ts';
 import { getPartsAndPointsCountForText } from '../../../../data/summaryUtils.ts';
-import { type Tariff } from '@prisma/client';
-import { type SummarizeResultCase } from '../types/SummarizeResultCase.ts';
+import { endWithAfter, insertBefore } from '../../../../lib/rxOperators.ts';
+import { reEnumerateText } from '../../../../lib/text.ts';
+import type Services from '../../../../services/Services.ts';
 import { type ChatMessagesForSummaryData } from '../types/ChatMessagesForSummaryData.ts';
+import { type SummarizeResultCase } from '../types/SummarizeResultCase.ts';
 
 const queryGptOrReturnError$ = _.curry(
   (
@@ -41,7 +40,7 @@ const queryGptOrReturnError$ = _.curry(
     return of(data.messages).pipe(
       map(formatChatMessages),
       map(getPartsAndPointsCountForText),
-      concatMap(rejectOverflowedSummaryPartsAndMakeSummary$(services, data.subscription?.tariff)),
+      concatMap(rejectOverflowedSummaryPartsAndMakeSummary$(services, data.maxSummaryParts)),
       insertSummaryLayout(chatId, data)
     );
   }
@@ -53,13 +52,7 @@ const formatChatMessages = (messages: DbChatMessage[]): string =>
   messages.map((msg) => getFormattedMessage(msg)).join('\n');
 
 const rejectOverflowedSummaryPartsAndMakeSummary$ = _.curry(
-  (
-    services: Services,
-    tariff: Tariff | undefined,
-    parts: { text: string; pointsCount: number }[]
-  ) => {
-    const maxSummaryParts = getEnv().MAX_SUMMARY_PARTS * (tariff?.messagesMultiplier ?? 1);
-
+  (services: Services, maxSummaryParts: number, parts: { text: string; pointsCount: number }[]) => {
     const allowedParts = _.takeRight(parts, maxSummaryParts);
     const gptQueryParts = mapSummaryPartsToGptQuery(allowedParts);
 
