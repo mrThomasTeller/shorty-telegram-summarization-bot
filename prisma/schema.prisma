@@ -20,10 +20,11 @@ model User {
 }
 
 model Chat {
-  id        BigInt   @id
-  isMember  Boolean?
-  createdAt DateTime @default(now())
-  news      String?
+  id                  BigInt   @id
+  isMember            Boolean?
+  createdAt           DateTime @default(now())
+  news                String?
+  unsummarizedSymbols Int      @default(0)
 
   messages     Message[]
   summaries    Summary[]

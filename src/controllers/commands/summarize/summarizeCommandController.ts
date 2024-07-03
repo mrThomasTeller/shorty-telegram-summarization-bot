@@ -11,6 +11,7 @@ import { getLimitsData } from './stages/getLimitsData.ts';
 import handleSummarizeResultCase from './stages/handleSummarizeResultCase.ts';
 import queryGptOrReturnError$ from './stages/queryGptOrReturnError$.ts';
 
+// fixme платные выжимки не должны обновляться каждую неделю
 const summarizeCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$.pipe(exhaustMap(handleSingleSummarizeRequest$(chatId, services))).subscribe(_.noop);
 };

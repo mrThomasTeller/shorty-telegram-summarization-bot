@@ -53,15 +53,16 @@ function createDbServiceMock() {
     false,
   ]);
 
-  service.getOrCreateChat.mockImplementation(async (chatId) => [
-    {
+  service.getOrCreateChat.mockImplementation(async (chatId) => ({
+    chat: {
       id: BigInt(chatId),
       isMember: true,
       createdAt: new Date(),
       news: null,
+      unsummarizedSymbols: 0,
     },
-    false,
-  ]);
+    created: false,
+  }));
 
   service.getOrCreateUser.mockImplementation(async (userInput) => {
     const user = service.users.find((u) => u.id === BigInt(userInput.id));
@@ -89,9 +90,16 @@ function createDbServiceMock() {
   );
 
   service.createChatMessageIfNotExists.mockImplementation(
-    async (messageInput: MessageCreateInput): Promise<void> => {
-      if (await service.hasMessage(Number(messageInput.messageId), Number(messageInput.chatId))) {
-        return;
+    async (messageInput: MessageCreateInput) => {
+      const existingMessage = service.messages.find(
+        (msg) => msg.messageId === BigInt(messageInput.messageId)
+      );
+
+      if (existingMessage) {
+        return {
+          created: false,
+          message: existingMessage,
+        };
       }
 
       const user =
@@ -116,6 +124,11 @@ function createDbServiceMock() {
       };
 
       service.messages.push(message);
+
+      return {
+        created: true,
+        message,
+      };
     }
   );
 

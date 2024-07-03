@@ -29,33 +29,41 @@ export default class DbServiceImpl implements DbService {
     });
   }
 
-  async createChatMessageIfNotExists(msg: MessageCreateInput): Promise<void> {
-    await this.prisma.message.upsert({
+  async createChatMessageIfNotExists(
+    msg: MessageCreateInput
+  ): Promise<{ message: DbChatMessage; created: boolean }> {
+    const message = await this.prisma.message.findUnique({
       where: {
         messageId_chatId: {
           messageId: msg.messageId,
           chatId: msg.chatId,
         },
       },
-      update: {},
-      create: msg,
+      include: { from: true },
     });
+
+    return message === null
+      ? {
+          message: await this.prisma.message.create({ data: msg, include: { from: true } }),
+          created: true,
+        }
+      : { message, created: false };
   }
 
   async getActivationKey(id: string): Promise<ActivationKey | undefined> {
     return (await this.prisma.activationKey.findUnique({ where: { id } })) ?? undefined;
   }
 
-  async getOrCreateChat(chatId: number): Promise<[chat: Chat, created: boolean]> {
+  async getOrCreateChat(chatId: number): Promise<{ chat: Chat; created: boolean }> {
     const chat = await this.prisma.chat.findUnique({ where: { id: chatId } });
     return chat === null
-      ? [
-          await this.prisma.chat.create({
+      ? {
+          chat: await this.prisma.chat.create({
             data: { id: chatId, isMember: true },
           }),
-          true,
-        ]
-      : [chat, false];
+          created: true,
+        }
+      : { chat, created: false };
   }
 
   async getOrCreateUser(userInput: UserCreateInput): Promise<[user: User, created: boolean]> {
@@ -223,6 +231,13 @@ export default class DbServiceImpl implements DbService {
     await this.prisma.activationKey.update({
       where: { id },
       data: { usedForSubscriptionId: subscriptionId },
+    });
+  }
+
+  async setChatUnsummarizedSymbols(chatId: number, symbols: number): Promise<void> {
+    await this.prisma.chat.update({
+      where: { id: chatId },
+      data: { unsummarizedSymbols: symbols },
     });
   }
 

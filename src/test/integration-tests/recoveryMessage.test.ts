@@ -10,9 +10,9 @@ describe('recoveryMessage', () => {
     const { db, telegramBot } = context;
 
     const chats: Chat[] = [
-      { id: 1n, isMember: true, createdAt: new Date(), news: null },
-      { id: 2n, isMember: true, createdAt: new Date(), news: null },
-      { id: -1003n, isMember: true, createdAt: new Date(), news: null },
+      { id: 1n, isMember: true, createdAt: new Date(), unsummarizedSymbols: 0, news: null },
+      { id: 2n, isMember: true, createdAt: new Date(), unsummarizedSymbols: 0, news: null },
+      { id: -1003n, isMember: true, createdAt: new Date(), unsummarizedSymbols: 0, news: null },
     ];
     db.getAllChats.mockResolvedValue(chats);
 

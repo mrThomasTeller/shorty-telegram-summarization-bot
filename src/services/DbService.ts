@@ -27,7 +27,9 @@ type DbService = {
 
   createActivationKey: (tariffId: string) => Promise<ActivationKey>;
 
-  createChatMessageIfNotExists: (message: MessageCreateInput) => Promise<void>;
+  createChatMessageIfNotExists: (
+    message: MessageCreateInput
+  ) => Promise<{ message: DbChatMessage; created: boolean }>;
 
   createSummary: (data: {
     chatId: number;
@@ -46,7 +48,7 @@ type DbService = {
 
   getChatMessages: (chatId: number, fromDate?: Date) => Promise<DbChatMessage[]>;
 
-  getOrCreateChat: (chatId: number) => Promise<[chat: Chat, created: boolean]>;
+  getOrCreateChat: (chatId: number) => Promise<{ chat: Chat; created: boolean }>;
 
   getOrCreateUser: (userInput: UserCreateInput) => Promise<[user: User, created: boolean]>;
 
@@ -59,6 +61,8 @@ type DbService = {
   resetChatNews: (chatId: number) => Promise<void>;
 
   setActivationKeyUsedForSubscription: (id: string, subscriptionId: bigint) => Promise<void>;
+
+  setChatUnsummarizedSymbols: (chatId: number, symbols: number) => Promise<void>;
 
   setGroupChatIsMember: (chatId: number, isMember: boolean) => Promise<void>;
 

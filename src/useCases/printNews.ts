@@ -7,7 +7,7 @@ export default async function printNews(
   telegramBot: TelegramBotService,
   chatId: number
 ): Promise<void> {
-  const [chat] = await db.getOrCreateChat(chatId);
+  const { chat } = await db.getOrCreateChat(chatId);
   if ((chat.news ?? '').trim() !== '') {
     await telegramBot.sendMessage(chatId, chat.news ?? '', { parse_mode: 'MarkdownV2' });
   }

@@ -24,6 +24,7 @@ export const getChatMessagesForSummary = _.curry(
 
     const startSummaryFrom = maxTime([limits.lastSummaryDate ?? yesterday(), yesterday()]);
 
+    // fixme если сообщения были отброшены нужно уведомить пользователя
     const allMessages = await services.db.getChatMessages(msg.chat.id, startSummaryFrom);
     const messages = dropOverflowedMessages(
       allMessages,
