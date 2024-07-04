@@ -25,6 +25,11 @@ export const getCommandParams = (text: string): string => {
   return params ?? '';
 };
 
+export const getSpaceSeparatedCommandParams = (text: string): string[] =>
+  getCommandParams(text)
+    .split(/\s+/g)
+    .map((s) => s.trim());
+
 // the message is in private chat with the bot or in a group chat addressed to the bot
 export function isCommandForBot(
   parsedCommand: ParsedCommand,

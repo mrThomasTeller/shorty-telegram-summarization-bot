@@ -3,7 +3,7 @@ import { either } from 'fp-ts';
 import { type Either } from 'fp-ts/lib/Either';
 import _ from 'lodash';
 import type TelegramBot from 'node-telegram-bot-api';
-import type DbChatMessage from '../../../../data/DbChatMessage.ts';
+import type DbChatMessage from '../../../../data/types/DbChatMessage.ts';
 import { yesterday } from '../../../../lib/date.ts';
 import type Services from '../../../../services/Services.ts';
 import { type ChatMessagesForSummaryData } from '../types/ChatMessagesForSummaryData.ts';
@@ -28,7 +28,7 @@ export const getChatMessagesForSummary = _.curry(
     const allMessages = await services.db.getChatMessages(msg.chat.id, startSummaryFrom);
     const messages = dropOverflowedMessages(
       allMessages,
-      limits.maxApproximateTextToSummarizeLength
+      limits.maxTextToSummarizeApproximateLength
     );
 
     return either.right({

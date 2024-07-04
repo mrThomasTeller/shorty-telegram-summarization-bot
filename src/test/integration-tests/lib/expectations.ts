@@ -1,6 +1,6 @@
 import type TelegramBot from 'node-telegram-bot-api';
 import { getFormattedMessage } from '../../../data/dbChatMessageUtils.ts';
-import type DbChatMessage from '../../../data/DbChatMessage.ts';
+import type DbChatMessage from '../../../data/types/DbChatMessage.ts';
 import { required } from '../../../lib/lang.ts';
 import { type TestContext } from './createContext.ts';
 import { t } from '../../../config/translations/index.ts';

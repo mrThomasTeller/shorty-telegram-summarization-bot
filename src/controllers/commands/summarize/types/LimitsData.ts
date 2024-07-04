@@ -5,6 +5,6 @@ export type LimitsData = {
   freeSummariesRest: number;
   premiumSummariesRest: number;
   subscription: SubscriptionWithTariff | undefined;
-  maxApproximateTextToSummarizeLength: number;
+  maxTextToSummarizeApproximateLength: number;
   maxSummaryParts: number;
 };

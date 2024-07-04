@@ -13,7 +13,7 @@ import {
 import { sendMessageToGptWithRetries$ } from '../../../../api/gpt.ts';
 import { getEnv } from '../../../../config/envVars.ts';
 import { t } from '../../../../config/translations/index.ts';
-import type DbChatMessage from '../../../../data/DbChatMessage.ts';
+import type DbChatMessage from '../../../../data/types/DbChatMessage.ts';
 import { getFormattedMessage } from '../../../../data/dbChatMessageUtils.ts';
 import { getPartsAndPointsCountForText } from '../../../../data/summaryUtils.ts';
 import { endWithAfter, insertBefore } from '../../../../lib/rxOperators.ts';

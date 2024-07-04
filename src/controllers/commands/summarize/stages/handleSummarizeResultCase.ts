@@ -23,6 +23,11 @@ const handleSummarizeResultCase =
         date: new Date(),
         usedPremium: resultCase.usedPremium,
       });
+
+      await services.db.updateChat(msg.chat.id, {
+        unsummarizedSymbols: 0,
+        notifiedItsTimeToSummarize: false,
+      });
     }
 
     const text = getBotMessageForSummarizeResultCase(resultCase);

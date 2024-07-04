@@ -1,5 +1,5 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import type DbChatMessage from '../../../data/DbChatMessage.ts';
+import type DbChatMessage from '../../../data/types/DbChatMessage.ts';
 import { myTgGroupId, myTgUser, type TestTgMessage } from './tgUtils.ts';
 import { encrypt, encryptIfExists } from '../../../data/encryption.ts';
 import _ from 'lodash';

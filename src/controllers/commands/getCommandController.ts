@@ -18,6 +18,8 @@ import tariffCommand from '../../config/commands/tariff.ts';
 import tariffCommandController from './tariffCommandController.ts';
 import activateCommand from '../../config/commands/activate.ts';
 import activateCommandController from './activateCommandController.ts';
+import settingsCommand from '../../config/commands/settings.ts';
+import settingsCommandController from './settingsCommandController.ts';
 
 export default function getCommandController(command: Command): ChatController {
   switch (command.command) {
@@ -47,6 +49,9 @@ export default function getCommandController(command: Command): ChatController {
     }
     case activateCommand.command: {
       return activateCommandController;
+    }
+    case settingsCommand.command: {
+      return settingsCommandController;
     }
     default: {
       throw new Error(`Unknown command: ${command.command}`);

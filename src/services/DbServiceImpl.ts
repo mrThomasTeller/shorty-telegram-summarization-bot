@@ -7,8 +7,9 @@ import {
   type User,
 } from '@prisma/client';
 import _ from 'lodash';
-import type DbChatMessage from '../data/DbChatMessage.ts';
+import type DbChatMessage from '../data/types/DbChatMessage.ts';
 import { todayMidday } from '../lib/date.ts';
+import { type TOmit } from '../lib/typeUtils.ts';
 import type DbService from './DbService.ts';
 import {
   type MessageCreateInput,
@@ -29,25 +30,11 @@ export default class DbServiceImpl implements DbService {
     });
   }
 
-  async createChatMessageIfNotExists(
-    msg: MessageCreateInput
-  ): Promise<{ message: DbChatMessage; created: boolean }> {
-    const message = await this.prisma.message.findUnique({
-      where: {
-        messageId_chatId: {
-          messageId: msg.messageId,
-          chatId: msg.chatId,
-        },
-      },
+  async createChatMessage(msg: MessageCreateInput): Promise<DbChatMessage> {
+    return await this.prisma.message.create({
+      data: msg,
       include: { from: true },
     });
-
-    return message === null
-      ? {
-          message: await this.prisma.message.create({ data: msg, include: { from: true } }),
-          created: true,
-        }
-      : { message, created: false };
   }
 
   async getActivationKey(id: string): Promise<ActivationKey | undefined> {
@@ -112,13 +99,6 @@ export default class DbServiceImpl implements DbService {
     });
 
     return message !== null;
-  }
-
-  async resetChatNews(chatId: number): Promise<void> {
-    await this.prisma.chat.update({
-      where: { id: chatId },
-      data: { news: null },
-    });
   }
 
   async setGroupChatIsMember(chatId: number, isMember: boolean): Promise<void> {
@@ -234,13 +214,6 @@ export default class DbServiceImpl implements DbService {
     });
   }
 
-  async setChatUnsummarizedSymbols(chatId: number, symbols: number): Promise<void> {
-    await this.prisma.chat.update({
-      where: { id: chatId },
-      data: { unsummarizedSymbols: symbols },
-    });
-  }
-
   async setSubscription(
     object: { chatId: number } | { userId: number },
     subscriber: { id: number; username?: string },
@@ -261,5 +234,18 @@ export default class DbServiceImpl implements DbService {
     });
 
     return { id: subscription.id };
+  }
+
+  async updateChat(
+    chatId: number,
+    { settings, ...data }: Partial<TOmit<Chat, 'id'>>
+  ): Promise<void> {
+    await this.prisma.chat.update({
+      where: { id: chatId },
+      data: {
+        ...data,
+        settings: settings ?? undefined,
+      },
+    });
   }
 }

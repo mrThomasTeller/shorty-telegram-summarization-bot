@@ -1,6 +1,6 @@
 {
   "name": "shorty-chat-bot",
-  "version": "1.0.4-beta.28",
+  "version": "1.0.4-beta.29",
   "description": "",
   "main": "src/start.ts",
   "type": "module",
@@ -79,7 +79,8 @@
     "ts-pattern": "^5.1.1",
     "typescript": "^5.4.5",
     "utility-types": "^3.10.0",
-    "winston": "^3.11.0"
+    "winston": "^3.11.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.7.1",

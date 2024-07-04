@@ -21,7 +21,7 @@ async function main({ db }: ServicesImpl): Promise<void> {
   await Promise.all(
     _.range(-1, -2000).map((id) => {
       const text = required(examples.messages[Math.abs(id) % examples.messages.length]);
-      return db.createChatMessageIfNotExists({
+      return db.createChatMessage({
         messageId: id,
         chatId: chat.id,
         userId: user.id,

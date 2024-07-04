@@ -37,13 +37,13 @@ const addedToGroupChatHandler = (services: Services) => async (chatId: number) =
 
   // todo test
   await services.db.statisticsAddedToChat();
-  await services.db.setGroupChatIsMember(chatId, true);
+  await services.db.updateChat(chatId, { isMember: true });
 };
 
 const removedFromGroupChatHandler = (services: Services) => async (chatId: number) => {
   // todo test
   await services.db.statisticsRemovedFromChat();
-  await services.db.setGroupChatIsMember(chatId, false);
+  await services.db.updateChat(chatId, { isMember: false });
 };
 
 function createTgMessagesObservable(

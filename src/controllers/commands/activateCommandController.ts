@@ -1,19 +1,17 @@
 import { of } from 'rxjs';
+import { getEnv } from '../../config/envVars.ts';
+import logger from '../../config/logger.ts';
 import { t } from '../../config/translations/index.ts';
-import { getCommandParams } from '../../data/telegramBotMessageUtils.ts';
+import { convertTgUserToDbUserInput } from '../../data/convertors.ts';
+import { getSpaceSeparatedCommandParams } from '../../data/telegramBotMessageUtils.ts';
 import { isTruthy, oneOf, required } from '../../lib/lang.ts';
 import type ChatController from '../ChatController.ts';
 import tariffCommandController from './tariffCommandController.ts';
-import { getEnv } from '../../config/envVars.ts';
-import logger from '../../config/logger.ts';
-import { convertTgUserToDbUserInput } from '../../data/convertors.ts';
 
 const activateCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$.subscribe(async (msg) => {
     try {
-      const [context, key] = getCommandParams(msg.text ?? '')
-        .split(/\s+/g)
-        .map((s) => s.trim());
+      const [context, key] = getSpaceSeparatedCommandParams(msg.text ?? '');
 
       const activationKey = isTruthy(key) ? await services.db.getActivationKey(key) : undefined;
 

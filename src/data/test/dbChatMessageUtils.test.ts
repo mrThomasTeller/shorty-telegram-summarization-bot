@@ -1,5 +1,5 @@
 import { getAuthorName, getFormattedMessage } from '../dbChatMessageUtils.ts';
-import type DbChatMessage from '../DbChatMessage.ts';
+import type DbChatMessage from '../types/DbChatMessage.ts';
 import { encrypt } from '../encryption.ts';
 
 describe('getAuthorName', () => {

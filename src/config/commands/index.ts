@@ -8,6 +8,7 @@ import scheduleNewsCommand from './scheduleNews.ts';
 import tryMessageCommand from './tryMessage.ts';
 import tariffCommand from './tariff.ts';
 import activateCommand from './activate.ts';
+import settingsCommand from './settings.ts';
 
 export const getVisibleCommands = (): Command[] =>
   Object.values(commands).filter(
@@ -24,6 +25,7 @@ const commands = {
   [tryMessageCommand.command]: tryMessageCommand,
   [tariffCommand.command]: tariffCommand,
   [activateCommand.command]: activateCommand,
+  [settingsCommand.command]: settingsCommand,
 };
 
 export default commands;

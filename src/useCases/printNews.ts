@@ -11,5 +11,5 @@ export default async function printNews(
   if ((chat.news ?? '').trim() !== '') {
     await telegramBot.sendMessage(chatId, chat.news ?? '', { parse_mode: 'MarkdownV2' });
   }
-  await db.resetChatNews(chatId);
+  await db.updateChat(chatId, { news: null });
 }

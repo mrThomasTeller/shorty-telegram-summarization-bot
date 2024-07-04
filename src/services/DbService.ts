@@ -7,7 +7,9 @@ import {
   type Tariff,
   type User,
 } from '@prisma/client';
-import type DbChatMessage from '../data/DbChatMessage.ts';
+import { type ChatSettings } from '../data/types/ChatSettings.ts';
+import type DbChatMessage from '../data/types/DbChatMessage.ts';
+import { TOmit } from '../lib/typeUtils.ts';
 
 export type UserCreateInput = Parameters<PrismaClient['user']['upsert']>[0]['create'];
 export type MessageCreateInput = Parameters<PrismaClient['message']['upsert']>[0]['create'] & {
@@ -27,9 +29,7 @@ type DbService = {
 
   createActivationKey: (tariffId: string) => Promise<ActivationKey>;
 
-  createChatMessageIfNotExists: (
-    message: MessageCreateInput
-  ) => Promise<{ message: DbChatMessage; created: boolean }>;
+  createChatMessage: (message: MessageCreateInput) => Promise<DbChatMessage>;
 
   createSummary: (data: {
     chatId: number;
@@ -58,13 +58,7 @@ type DbService = {
 
   hasMessage: (messageId: number, chatId: number) => Promise<boolean>;
 
-  resetChatNews: (chatId: number) => Promise<void>;
-
   setActivationKeyUsedForSubscription: (id: string, subscriptionId: bigint) => Promise<void>;
-
-  setChatUnsummarizedSymbols: (chatId: number, symbols: number) => Promise<void>;
-
-  setGroupChatIsMember: (chatId: number, isMember: boolean) => Promise<void>;
 
   setNewsForAllChats: (news: string) => Promise<void>;
 
@@ -79,6 +73,8 @@ type DbService = {
   statisticsAddedToChat: () => Promise<void>;
 
   statisticsRemovedFromChat: () => Promise<void>;
+
+  updateChat: (chatId: number, data: Partial<TOmit<Chat, 'id'>>) => Promise<void>;
 };
 
 export default DbService;
