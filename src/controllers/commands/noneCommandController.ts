@@ -27,7 +27,7 @@ const noneCommandController: ChatController = ({ chat$, chatId, services }) => {
             subscription?.tariff
           );
 
-          if (chat.unsummarizedSymbols >= maxTextToSummarizeApproximateLength * 0.9) {
+          if (chat.unsummarizedSymbols >= maxTextToSummarizeApproximateLength * 0.95) {
             await services.telegramBot.sendMessage(
               msg.chat.id,
               `⚠️ В вашем чате накопилось уже много сообщений, пора делать выжимку! 😉 Нажмите сюда: /summarize@${await services.telegramBot.getUsername()}`
