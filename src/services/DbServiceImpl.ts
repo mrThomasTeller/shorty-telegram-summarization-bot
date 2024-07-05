@@ -240,6 +240,7 @@ export default class DbServiceImpl implements DbService {
     chatId: number,
     { settings, ...data }: Partial<TOmit<Chat, 'id'>>
   ): Promise<void> {
+    await this.getOrCreateChat(chatId);
     await this.prisma.chat.update({
       where: { id: chatId },
       data: {

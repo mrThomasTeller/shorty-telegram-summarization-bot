@@ -7,9 +7,8 @@ import {
   type Tariff,
   type User,
 } from '@prisma/client';
-import { type ChatSettings } from '../data/types/ChatSettings.ts';
 import type DbChatMessage from '../data/types/DbChatMessage.ts';
-import { TOmit } from '../lib/typeUtils.ts';
+import { type TOmit } from '../lib/typeUtils.ts';
 
 export type UserCreateInput = Parameters<PrismaClient['user']['upsert']>[0]['create'];
 export type MessageCreateInput = Parameters<PrismaClient['message']['upsert']>[0]['create'] & {
