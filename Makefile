@@ -19,10 +19,10 @@ bash:
 	docker exec -it summarize-tg-bot-app bash
 
 app-log:
-	docker compose logs app -f
+	docker compose logs app -f --timestamps
 
 all-logs:
-	docker compose logs -f
+	docker compose logs -f --timestamps
 
 prepare:
 	bash ./disable_history.sh
