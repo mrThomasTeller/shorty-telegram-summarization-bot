@@ -34,3 +34,8 @@ check-env:
 			exit 1; \
 		fi \
 	fi
+
+upgrade-ubuntu:
+	sudo apt update
+	sudo apt upgrade
+	sudo reboot
