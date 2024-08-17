@@ -17,21 +17,12 @@ const subscriptionsExpirationNotifier: EntryPoint = ({ db, telegramBot }) => {
     for (const subscription of subscriptions) {
       const subscriptionPeriodStart = monthFromPeriodStart(subscription.createdAt);
 
-      const notificationSent = await notifyIfNecessary({
-        notificationTime: dateFns.addDays(subscriptionPeriodStart, 1),
+      await notifyIfNecessary({
+        notificationTime: dateFns.addDays(dateFns.addMonths(subscriptionPeriodStart, 1), 1),
         subscription,
         db,
         telegramBot,
       });
-
-      if (!notificationSent) {
-        await notifyIfNecessary({
-          notificationTime: subscriptionPeriodStart,
-          subscription,
-          db,
-          telegramBot,
-        });
-      }
     }
   }, config.notifier.checkInterval);
 };
