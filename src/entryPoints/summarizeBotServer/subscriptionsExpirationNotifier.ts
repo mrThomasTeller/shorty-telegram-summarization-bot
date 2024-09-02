@@ -8,17 +8,21 @@ import type DbService from '../../services/DbService.ts';
 import type TelegramBotService from '../../services/TelegramBotService.ts';
 import type EntryPoint from '../EntryPoint.ts';
 
-const subscriptionsExpirationNotifier: EntryPoint = ({ db, telegramBot }) => {
+const subscriptionsExpirationNotifier: EntryPoint = async ({ db, telegramBot }) => {
   logger.info('Notifier started');
 
   setInterval(async () => {
     const subscriptions = await db.getAllSubscriptions();
 
     for (const subscription of subscriptions) {
+      const monthAfterSubscription = dateFns.addMonths(subscription.createdAt, 1);
       const subscriptionPeriodStart = monthFromPeriodStart(subscription.createdAt);
 
       await notifyIfNecessary({
-        notificationTime: dateFns.addDays(dateFns.addMonths(subscriptionPeriodStart, 1), 1),
+        notificationTime: dateFns.max([
+          dateFns.addDays(subscriptionPeriodStart, 1),
+          monthAfterSubscription,
+        ]),
         subscription,
         db,
         telegramBot,

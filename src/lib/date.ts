@@ -21,6 +21,9 @@ export function monthFromPeriodStart(periodStart: Date): Date {
   const now = new Date();
   period.setFullYear(now.getFullYear());
   period.setMonth(now.getMonth());
+  if (period > now) {
+    period.setMonth(period.getMonth() - 1);
+  }
   return period;
 }
 
