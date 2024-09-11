@@ -17,6 +17,7 @@ type Env = {
   DUMMY_GPT_RESPONSES: boolean;
   TIME_TO_SHOW_ADS: number;
   SHOW_ADS: boolean | number;
+  MAINTENANCE_MESSAGE: string | undefined;
 };
 
 export function getEnv(): Env {
@@ -37,6 +38,7 @@ export function getEnv(): Env {
     DUMMY_GPT_RESPONSES: process.env.DUMMY_GPT_RESPONSES === 'true',
     TIME_TO_SHOW_ADS: Number(required(process.env.TIME_TO_SHOW_ADS)),
     SHOW_ADS: showAds === 'true' ? true : showAds === 'false' ? false : Number(showAds),
+    MAINTENANCE_MESSAGE: process.env.MAINTENANCE_MESSAGE,
   };
 }
 

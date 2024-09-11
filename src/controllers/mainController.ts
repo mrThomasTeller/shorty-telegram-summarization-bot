@@ -71,7 +71,12 @@ const getObserveCaseForMessage =
 const sendMaintenanceMessageFn =
   (chatId: number, telegramBot: TelegramBotService) => (msg: TelegramBot.Message) => {
     logger.info(`Maintenance message sent to chat ${msg.chat.id}. Message: "${msg.text}".`);
-    catchError(telegramBot.sendMessage(chatId, t('server.maintenanceMessage')));
+    catchError(
+      telegramBot.sendMessage(
+        chatId,
+        getEnv().MAINTENANCE_MESSAGE ?? t('server.maintenanceMessage')
+      )
+    );
   };
 
 const observeCommandsOrSendMaintenanceMessages =

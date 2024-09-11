@@ -1,4 +1,4 @@
-import { getWhiteChatsList, setWhiteChatsList } from '../../../config/envVars.ts';
+import { getEnv, getWhiteChatsList, setWhiteChatsList } from '../../../config/envVars.ts';
 import { t } from '../../../config/translations/index.ts';
 import { createTgMessageInGroup, otherTgUser, myTgGroupId } from '../lib/tgUtils.ts';
 import createSummarizeBotServerContext from './createSummarizeBotServerContext.ts';
@@ -15,7 +15,7 @@ describe('summarizeBotServer common', () => {
 
     expect(telegramBot.sendMessage).toHaveBeenCalledWith(
       otherTgUser.id,
-      t('server.maintenanceMessage')
+      getEnv().MAINTENANCE_MESSAGE ?? t('server.maintenanceMessage')
     );
   });
 

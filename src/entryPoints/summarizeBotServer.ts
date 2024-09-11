@@ -13,10 +13,11 @@ import { getEnv } from '../config/envVars.ts';
 
 // todo refactor this function
 const summarizeBotServer: EntryPoint = async (services) => {
-  await services.telegramBot.setMyCommands(getVisibleCommands());
   if (getEnv().NODE_ENV === 'production') {
     await services.telegramBot.sendMessage(getEnv().ADMIN_ID, 'Я родился! 🍼');
   }
+
+  await services.telegramBot.setMyCommands(getVisibleCommands());
 
   services.telegramBot.onAddedToGroupChat(addedToGroupChatHandler(services));
   services.telegramBot.onRemovedFromGroupChat(removedFromGroupChatHandler(services));
