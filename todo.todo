@@ -31,13 +31,11 @@ Release 0.7 (open beta):
   ✔ design a page on boosty @done(23-10-25 16:31)
 
 Release 1.1:
-  - urgent!
-    - сервер крашится от каждой ошибки в observables
+  ✔ сервер крашится от каждой ошибки в observables @done(24-09-15 13:13)
   - показывать когда кончится оплаченный период (начнётся новый)
   - запретить краткие выжимки в личных сообщениях
   - сделать напоминание пользователю о продлении подписки
   - сделать напоминание мне проверить подписку пользователя
-  - уведомлять меня о максимальном и минимальном пороге использования gpt-api
   - test start command
   - test ads
   - test info messages
@@ -79,14 +77,17 @@ Users issues:
   - Бот делает ошибки в создании выжимки. Имена путает участников (#1)
   - Бот не работает в чате где нельзя писать чаще чем раз в какое-то время (#3)
 
+UX:
+  - показывать оставшиеся премиум-выжимки по команде /tariff
+
 Important:
   - если подписка одновременно у чата и пользователя?
 
 Маркетинг:
   - Маячить пользователям в чате, что можно добавить шорти в свои диалоги
-  
+
 Backlog:
-  - подумать над сжатием запроса: удалять пробелы, выносить имена в легенду, fine-tuning?
+  - сделать примеры сообщений в чатах для теста промптов и моделей gpt
   - BUG: fix test "will not change order of summaries if second summary came earlier than first".
   - write how many recent messages the bot can make a summarisation from, if the number of messages for summarisation is exceeded.
   - status monitoring: amount of money spent, how many chats it is in, user activity, errors
@@ -124,3 +125,4 @@ Questions bot:
 Possible:
   - Put APM to collect logs
   - Go to https://fider.io/ for feedback
+  - попробовать gpt-4o mini

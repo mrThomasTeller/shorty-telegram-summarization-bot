@@ -1,15 +1,15 @@
-import { type TranslationKey, t } from '../../../../config/translations/index.ts';
-import type Services from '../../../../services/Services.ts';
-import logger, { type LogLevel } from '../../../../config/logger.ts';
-import { getEnv } from '../../../../config/envVars.ts';
-import { formatSummaryFromGpt } from '../../../../data/summaryUtils.ts';
+import type TelegramBot from 'node-telegram-bot-api';
 import { setTimeout } from 'node:timers/promises';
+import { match } from 'ts-pattern';
+import { getEnv } from '../../../../config/envVars.ts';
+import logger, { type LogLevel } from '../../../../config/logger.ts';
+import { t } from '../../../../config/translations/index.ts';
+import { formatSummaryFromGpt } from '../../../../data/summaryUtils.ts';
+import type Services from '../../../../services/Services.ts';
 import {
   type EndSummarySummarizeResultCase,
   type SummarizeResultCase,
 } from '../types/SummarizeResultCase.ts';
-import { match } from 'ts-pattern';
-import type TelegramBot from 'node-telegram-bot-api';
 
 const handleSummarizeResultCase =
   (services: Services, msg: TelegramBot.Message) => async (resultCase: SummarizeResultCase) => {
@@ -128,12 +128,13 @@ function getBotMessageForSummarizeResultCase(resultCase: SummarizeResultCase): s
   }
 }
 
-const getEndSummaryTranslationKey = (resultCase: EndSummarySummarizeResultCase): TranslationKey =>
-  match<EndSummarySummarizeResultCase, TranslationKey>(resultCase)
-    .with({ hasPremium: false }, () => 'summarize.message.end.free')
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+const getEndSummaryTranslationKey = (resultCase: EndSummarySummarizeResultCase) =>
+  match(resultCase)
+    .with({ hasPremium: false }, () => 'summarize.message.end.free' as const)
     .with(
       { freeSummariesRest: 0, premiumSummariesRest: 0 },
-      () => 'summarize.message.end.premiumEnded'
+      () => 'summarize.message.end.premiumEnded' as const
     )
-    .with({ freeSummariesRest: 0 }, () => 'summarize.message.end.premiumNoFree')
-    .otherwise(() => 'summarize.message.end.premiumWithFree');
+    .with({ freeSummariesRest: 0 }, () => 'summarize.message.end.premiumNoFree' as const)
+    .otherwise(() => 'summarize.message.end.premiumWithFree' as const);
