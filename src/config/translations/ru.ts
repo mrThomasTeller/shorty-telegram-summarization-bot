@@ -11,6 +11,7 @@ export default {
     'help.description': 'Получить помощь по работе бота',
     'start.description': 'Начать работу с ботом',
     'tariff.description': 'Узнать текущий тариф',
+    'subscribe.description': 'Приобрести платную подписку',
     activate: {
       description: 'Активировать премиум тариф',
       adminNotification: '🙌 У нас новый подписчик! Новый ключ для тарифа "{{tariff}}": `{{key}}`',
@@ -28,6 +29,11 @@ export default {
   server: {
     maintenanceMessage:
       '😴 Бот временно отключен для технического обслуживания. Пожалуйста, попробуйте позже.',
+
+    privateChatOnly: {
+      subscribe: 'Нажмите на кнопку ниже, чтобы оформить подписку 😉',
+      other: 'Чтобы я смог выполнить эту команду, напиши мне её в ЛС @{{botName}} 😉',
+    },
   },
   summarize: {
     gptQuery:

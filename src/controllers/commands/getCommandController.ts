@@ -20,6 +20,8 @@ import activateCommand from '../../config/commands/activate.ts';
 import activateCommandController from './activateCommandController.ts';
 import settingsCommand from '../../config/commands/settings.ts';
 import settingsCommandController from './settingsCommandController.ts';
+import subscribeCommand from '../../config/commands/subscribe.ts';
+import subscribeCommandController from './subscribeCommandController.ts';
 
 export default function getCommandController(command: Command): ChatController {
   switch (command.command) {
@@ -52,6 +54,9 @@ export default function getCommandController(command: Command): ChatController {
     }
     case settingsCommand.command: {
       return settingsCommandController;
+    }
+    case subscribeCommand.command: {
+      return subscribeCommandController;
     }
     default: {
       throw new Error(`Unknown command: ${command.command}`);

@@ -1,6 +1,6 @@
 import TelegramBot from 'node-telegram-bot-api';
-import type TelegramBotService from './TelegramBotService.ts';
 import { getEnv } from '../config/envVars.ts';
+import type TelegramBotService from './TelegramBotService.ts';
 import { type TelegramBotSendMessageOptions } from './TelegramBotService.ts';
 
 export default class TelegramBotServiceImpl implements TelegramBotService {
@@ -10,12 +10,9 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
     this.bot = new TelegramBot(getEnv().TELEGRAM_BOT_TOKEN, { polling: true });
   }
 
-  async sendMessage(
-    chatId: number,
-    text: string,
-    options?: TelegramBotSendMessageOptions
-  ): Promise<void> {
-    await this.bot.sendMessage(chatId, text, { ...options, disable_web_page_preview: true });
+  async getUsername(): Promise<string | undefined> {
+    const me = await this.bot.getMe();
+    return me.username;
   }
 
   onAddedToGroupChat(callback: (chatId: number) => void): VoidFunction {
@@ -34,7 +31,17 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
     return () => this.bot.off('my_chat_member', listener);
   }
 
-  // todo test
+  onAnyMessage(callback: (msg: TelegramBot.Message) => void): VoidFunction {
+    const regexp = /.*/;
+    this.bot.onText(regexp, callback);
+    return () => this.bot.removeTextListener(regexp);
+  }
+
+  onCallbackQuery(callback: (query: TelegramBot.CallbackQuery) => void): VoidFunction {
+    this.bot.on('callback_query', callback);
+    return () => this.bot.off('callback_query', callback);
+  }
+
   onRemovedFromGroupChat(callback: (chatId: number) => void): VoidFunction {
     const listener = async (msg: TelegramBot.ChatMemberUpdated): Promise<void> => {
       const me = await this.bot.getMe();
@@ -52,18 +59,15 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
     return () => this.bot.off('my_chat_member', listener);
   }
 
-  onAnyMessage(callback: (msg: TelegramBot.Message) => void): VoidFunction {
-    const regexp = /.*/;
-    this.bot.onText(regexp, callback);
-    return () => this.bot.removeTextListener(regexp);
+  async sendMessage(
+    chatId: number,
+    text: string,
+    options?: TelegramBotSendMessageOptions
+  ): Promise<void> {
+    await this.bot.sendMessage(chatId, text, { ...options, disable_web_page_preview: true });
   }
 
   async setMyCommands(commands: TelegramBot.BotCommand[]): Promise<void> {
     await this.bot.setMyCommands(commands);
-  }
-
-  async getUsername(): Promise<string | undefined> {
-    const me = await this.bot.getMe();
-    return me.username;
   }
 }

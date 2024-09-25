@@ -43,6 +43,8 @@ type DbService = {
 
   getAllSubscriptions: () => Promise<Subscription[]>;
 
+  getAllTariffs: () => Promise<Tariff[]>;
+
   getAllUsers: () => Promise<User[]>;
 
   getChatMessages: (chatId: number, fromDate?: Date) => Promise<DbChatMessage[]>;

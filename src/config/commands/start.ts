@@ -4,7 +4,7 @@ import type Command from './Command';
 const startCommand: Command = {
   command: 'start',
   description: t('commands.start.description'),
-  whiteListOnly: true,
+  ignoreWhiteList: false,
   allowInMaintenance: false,
 };
 

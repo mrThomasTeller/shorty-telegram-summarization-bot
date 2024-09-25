@@ -1,5 +1,6 @@
 import {
   PrismaClient,
+  type Tariff,
   type ActivationKey,
   type Chat,
   type Subscription,
@@ -186,6 +187,14 @@ export default class DbServiceImpl implements DbService {
 
   getAllSubscriptions(): Promise<Subscription[]> {
     return this.prisma.subscription.findMany();
+  }
+
+  getAllTariffs(): Promise<Tariff[]> {
+    return this.prisma.tariff.findMany({
+      orderBy: {
+        price: 'asc',
+      },
+    });
   }
 
   getAllUsers(): Promise<User[]> {

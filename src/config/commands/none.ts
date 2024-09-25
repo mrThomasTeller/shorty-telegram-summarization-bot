@@ -4,7 +4,7 @@ import type Command from './Command';
 const noneCommand: Command = {
   command: '',
   description: '',
-  whiteListOnly: true,
+  ignoreWhiteList: false,
   allowInMaintenance: true,
 };
 

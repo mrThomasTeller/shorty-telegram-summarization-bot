@@ -4,7 +4,7 @@ import type Command from './Command.ts';
 const settingsCommand: Command = {
   command: 'settings',
   description: t('commands.settings.description'),
-  whiteListOnly: false,
+  ignoreWhiteList: true,
   allowInMaintenance: false,
   hide: true,
 };

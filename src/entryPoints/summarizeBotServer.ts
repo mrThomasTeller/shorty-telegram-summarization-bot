@@ -29,6 +29,17 @@ const summarizeBotServer: EntryPoint = async (services) => {
   logger.info('Summarize telegram bot started');
 
   void subscriptionsExpirationNotifier(services);
+
+  if (getEnv().DEV_SHOW_ALL_TG_MESSAGES) {
+    services.telegramBot.onAnyMessage((msg) => {
+      // eslint-disable-next-line no-console
+      console.log(msg);
+    });
+    services.telegramBot.onCallbackQuery((query) => {
+      // eslint-disable-next-line no-console
+      console.log(query);
+    });
+  }
 };
 
 export default summarizeBotServer;

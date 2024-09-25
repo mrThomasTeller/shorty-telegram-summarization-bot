@@ -42,6 +42,7 @@ module.exports = {
       },
     ],
     'n/no-callback-literal': 0,
+    'no-extra-boolean-cast': 0,
 
     // typescript
     '@typescript-eslint/no-unnecessary-condition': 'error',

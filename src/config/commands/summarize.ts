@@ -4,7 +4,7 @@ import type Command from './Command';
 const summarizeCommand: Command = {
   command: 'summarize',
   description: t('commands.summarize.description'),
-  whiteListOnly: true,
+  ignoreWhiteList: false,
   allowInMaintenance: false,
 };
 

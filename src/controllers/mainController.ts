@@ -19,7 +19,10 @@ import type Services from '../services/Services.ts';
 import logger from '../config/logger.ts';
 import noneCommand from '../config/commands/none.ts';
 
-type ObserveCase = Command | 'maintenanceMessage';
+type ObserveCase = {
+  command: Command;
+  case: 'command' | 'maintenanceMessage' | 'privateChatOnly';
+};
 
 type MessageAndParsedCommand = {
   msg: TelegramBot.Message;
@@ -60,12 +63,20 @@ const getObserveCaseForMessage =
       logger.warn(`unknown command: ${parsedCommandName}`);
     }
 
-    return (getEnv().MODE === 'MAINTENANCE' && !command.allowInMaintenance) ||
-      (whiteChatsList !== undefined &&
-        !whiteChatsList.includes(msg.chat.id) &&
-        command.whiteListOnly)
-      ? 'maintenanceMessage'
-      : command;
+    if (getEnv().MODE === 'MAINTENANCE' && command.allowInMaintenance !== true)
+      return { case: 'maintenanceMessage', command };
+
+    if (command.privateChatOnly === true && msg.chat.type !== 'private')
+      return { case: 'privateChatOnly', command };
+
+    if (
+      whiteChatsList !== undefined &&
+      !whiteChatsList.includes(msg.chat.id) &&
+      command.ignoreWhiteList !== true
+    )
+      return { case: 'maintenanceMessage', command };
+
+    return { case: 'command', command };
   };
 
 const sendMaintenanceMessageFn =
@@ -79,16 +90,47 @@ const sendMaintenanceMessageFn =
     );
   };
 
+const sendPrivateChatOnlyMessageFn =
+  (chatId: number, telegramBot: TelegramBotService, command: Command) => async () => {
+    const botName = required(await telegramBot.getUsername());
+
+    await telegramBot.sendMessage(
+      chatId,
+      t(`server.privateChatOnly.${command.command}`, {
+        botName,
+        defaultValue: t('server.privateChatOnly.other', { botName }),
+      }),
+      command.command === 'subscribe'
+        ? {
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: '⭐ Оформить подписку',
+                    url: `https://t.me/${botName}?start=subscribe`,
+                  },
+                ],
+              ],
+            },
+          }
+        : undefined
+    );
+  };
+
 const observeCommandsOrSendMaintenanceMessages =
   (chatId: number, services: Services) =>
   (chatParsedCommand$: GroupedObservable<ObserveCase, MessageAndParsedCommand>) => {
     const observeCase = chatParsedCommand$.key;
     const chatCommandMessage$ = chatParsedCommand$.pipe(map(({ msg }) => msg));
 
-    if (observeCase === 'maintenanceMessage') {
+    if (observeCase.case === 'maintenanceMessage') {
       chatCommandMessage$.subscribe(sendMaintenanceMessageFn(chatId, services.telegramBot));
+    } else if (observeCase.case === 'privateChatOnly') {
+      chatCommandMessage$.subscribe(
+        sendPrivateChatOnlyMessageFn(chatId, services.telegramBot, observeCase.command)
+      );
     } else {
-      const controller = getCommandController(observeCase);
+      const controller = getCommandController(observeCase.command);
       controller({
         chat$: chatCommandMessage$,
         chatId,

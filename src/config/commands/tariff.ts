@@ -4,7 +4,7 @@ import type Command from './Command';
 const tariffCommand: Command = {
   command: 'tariff',
   description: t('commands.tariff.description'),
-  whiteListOnly: false,
+  ignoreWhiteList: true,
   allowInMaintenance: true,
 };
 

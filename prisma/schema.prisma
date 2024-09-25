@@ -67,6 +67,8 @@ model Statistic {
 model Tariff {
   id                 String @id
   name               String @default("")
+  description        String @default("")
+  price              Int    @default(0) // rubles + cents (10000 = 100 rubles)
   summaries          Int    @default(0)
   messagesMultiplier Int    @default(1)
 

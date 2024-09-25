@@ -4,7 +4,7 @@ import type Command from './Command.ts';
 const activateCommand: Command = {
   command: 'activate',
   description: t('commands.activate.description'),
-  whiteListOnly: false,
+  ignoreWhiteList: true,
   allowInMaintenance: false,
   hide: true,
 };

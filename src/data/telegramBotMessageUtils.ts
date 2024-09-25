@@ -7,6 +7,10 @@ export type ParsedCommand = {
 };
 
 export function parseCommand(message: TelegramBot.Message): ParsedCommand | undefined {
+  if (message.chat.type === 'private' && message.text?.startsWith('/start ') === true) {
+    return { command: message.text.slice('/start '.length), target: undefined };
+  }
+
   const [command, target] = (message.text ?? '').split(/[\n @]/s);
   if (command?.startsWith('/') === true) {
     return { command: command.slice(1), target };
@@ -39,7 +43,7 @@ export function isCommandForBot(
   return message.chat.type === 'private' || parsedCommand.target === botName;
 }
 
-const telegramMarkdownSpecialSymbols = ['.', '-', '!', '*', '_', '(', ')'];
+const telegramMarkdownSpecialSymbols = ['.', '-', '!', '*', '_', '(', ')', '+'];
 
 export const escapeTelegramMarkdown = (text: string): string =>
   telegramMarkdownSpecialSymbols.reduce(
