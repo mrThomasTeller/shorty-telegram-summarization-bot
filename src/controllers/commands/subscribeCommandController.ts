@@ -1,26 +1,23 @@
-import { CallbackQuery } from 'node-telegram-bot-api';
+import { type CallbackQuery } from 'node-telegram-bot-api';
 import logger from '../../config/logger.ts';
 import { escapeTelegramMarkdown as esc } from '../../data/telegramBotMessageUtils.ts';
+import type DbService from '../../services/DbService.ts';
+import type TelegramBotService from '../../services/TelegramBotService.ts';
+import { type UKassaPaymentWebhook } from '../../services/UKassaService/UKassaPaymentWebhook.ts';
 import { ukassaService } from '../../services/UKassaService/UKassaService.ts';
 import type ChatController from '../ChatController.ts';
-import DbService from '../../services/DbService.ts';
-import TelegramBotService from '../../services/TelegramBotService.ts';
-import { UKassaPaymentWebhook } from '../../services/UKassaService/UKassaPaymentWebhook.ts';
+import { getEnv } from '../../config/envVars.ts';
 
 const emojiNumbers = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
 
 // todo CLUTCH
 let subscribed = false;
 
-type Metadata = {
-  tariffId: string;
-  userId: number;
-};
-
 // todo change tariff
 // todo change group
 // todo check already subscribed
 // todo ukassa link loader
+// todo detect referring group
 const subscribeCommandController: ChatController = ({
   chat$,
   chatId,
@@ -93,7 +90,8 @@ async function tgButtonCallback(
         metadata: {
           tariffId,
           userId: query.from.id,
-        } satisfies Metadata,
+          secret: getEnv().UKASSA_WEBHOOK_SECRET_KEY,
+        } satisfies UKassaPaymentWebhook['object']['metadata'],
       });
       await telegramBot.sendMessage(query.from.id, '⭐ Ссылка на оплату 👇', {
         reply_markup: {
@@ -110,9 +108,9 @@ async function paymentSucceeded(
   webhook: UKassaPaymentWebhook,
   telegramBot: TelegramBotService
 ): Promise<void> {
-  const metadata = webhook.object.metadata as Metadata;
+  const metadata = webhook.object.metadata;
   const { tariffId, userId } = metadata;
 
-  await telegramBot.sendMessage(userId, '💸 Оплата прошла успешно!');
+  await telegramBot.sendMessage(userId, `💸 Оплата прошла успешно! (${tariffId}, ${userId})`);
   // группа, чат?
 }

@@ -33,6 +33,10 @@ export type UKassaPaymentWebhook = {
     };
     paid: boolean;
     refundable: boolean;
-    metadata: Record<string, unknown>;
+    metadata: {
+      tariffId: string;
+      userId: number;
+      secret: string;
+    };
   };
 };
