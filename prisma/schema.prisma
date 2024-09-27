@@ -14,9 +14,10 @@ model User {
   lastName  Bytes?
   username  Bytes?
 
-  messages     Message[]
-  summaries    Summary[]
-  subscription Subscription?
+  messages       Message[]
+  summaries      Summary[]
+  subscriptions  Subscription[]
+  activationKeys ActivationKey[]
 }
 
 model Chat {
@@ -28,9 +29,9 @@ model Chat {
   settings                   Json     @default("{}")
   notifiedItsTimeToSummarize Boolean  @default(false)
 
-  messages     Message[]
-  summaries    Summary[]
-  subscription Subscription?
+  messages      Message[]
+  summaries     Summary[]
+  subscriptions Subscription[]
 }
 
 model Message {
@@ -77,15 +78,21 @@ model Tariff {
 }
 
 model Subscription {
-  id                 BigInt   @id @default(autoincrement())
+  id                 BigInt          @id @default(autoincrement())
   tariffId           String
-  chatId             BigInt?  @unique
-  userId             BigInt?  @unique
-  email              String
-  subscriberUserId   BigInt   @default(0)
+  chatId             BigInt?
+  userId             BigInt?
+  email              String?
+  subscriberUserId   BigInt
   subscriberUserName String?
-  createdAt          DateTime @default(now())
-  notifiedAt         DateTime @default(now())
+  paymentProvider    PaymentProvider @default(Boosty)
+  paymentMethodId    String?
+  autoRenew          Boolean         @default(false)
+  renewPeriodMonths  Int             @default(1)
+  createdAt          DateTime        @default(now())
+  payedAt            DateTime        @default(now())
+  notifiedAt         DateTime?       @default(now())
+  expires            DateTime        @default(now())
 
   tariff         Tariff          @relation(fields: [tariffId], references: [id], onUpdate: Cascade)
   chat           Chat?           @relation(fields: [chatId], references: [id])
@@ -93,11 +100,19 @@ model Subscription {
   activationKeys ActivationKey[]
 }
 
-model ActivationKey {
-  id                    String  @id @default(uuid())
-  tariffId              String
-  usedForSubscriptionId BigInt? @map("subscriptionId")
+enum PaymentProvider {
+  YooKassa
+  Boosty
+}
 
-  tariff              Tariff        @relation(fields: [tariffId], references: [id], onDelete: Cascade)
-  usedForsubscription Subscription? @relation(fields: [usedForSubscriptionId], references: [id], onDelete: Cascade)
+model ActivationKey {
+  id             String  @id @default(uuid())
+  tariffId       String
+  subscriptionId BigInt?
+  userId         BigInt?
+  used           Boolean @default(false)
+
+  tariff       Tariff        @relation(fields: [tariffId], references: [id], onDelete: Cascade)
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

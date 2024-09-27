@@ -36,6 +36,7 @@ export type UKassaPaymentWebhook = {
     metadata: {
       tariffId: string;
       userId: number;
+      username: string | undefined;
       secret: string;
     };
   };

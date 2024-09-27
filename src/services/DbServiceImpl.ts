@@ -1,10 +1,10 @@
 import {
   PrismaClient,
-  type Tariff,
   type ActivationKey,
   type Chat,
   type Subscription,
   type Summary,
+  type Tariff,
   type User,
 } from '@prisma/client';
 import _ from 'lodash';
@@ -13,6 +13,7 @@ import { todayMidday } from '../lib/date.ts';
 import { type TOmit } from '../lib/typeUtils.ts';
 import type DbService from './DbService.ts';
 import {
+  type AddSubscriptionParams,
   type MessageCreateInput,
   type SubscriptionWithTariff,
   type UserCreateInput,
@@ -25,9 +26,30 @@ export default class DbServiceImpl implements DbService {
     this.prisma = new PrismaClient();
   }
 
-  createActivationKey(tariffId: string): Promise<ActivationKey> {
+  async addSubscription({
+    object,
+    subscriber,
+    ...data
+  }: AddSubscriptionParams): Promise<{ id: bigint }> {
+    const subscription = await this.prisma.subscription.create({
+      data: {
+        subscriberUserId: subscriber.id,
+        subscriberUserName: subscriber.username,
+        ...object,
+        ...data,
+      },
+    });
+
+    return { id: subscription.id };
+  }
+
+  createActivationKey(
+    tariffId: string,
+    userId: number,
+    subscriptionId: bigint
+  ): Promise<ActivationKey> {
     return this.prisma.activationKey.create({
-      data: { tariffId },
+      data: { tariffId, userId, subscriptionId },
     });
   }
 
@@ -113,13 +135,6 @@ export default class DbServiceImpl implements DbService {
   async setNewsForAllChats(news: string): Promise<void> {
     await this.prisma.chat.updateMany({
       data: { news },
-    });
-  }
-
-  async setSubscriptionNotifiedAt(id: bigint, date: Date): Promise<void> {
-    await this.prisma.subscription.update({
-      where: { id },
-      data: { notifiedAt: date },
     });
   }
 
@@ -216,33 +231,11 @@ export default class DbServiceImpl implements DbService {
     });
   }
 
-  async setActivationKeyUsedForSubscription(id: string, subscriptionId: bigint): Promise<void> {
+  async updateActivationKey(id: string, data: Partial<ActivationKey>): Promise<void> {
     await this.prisma.activationKey.update({
       where: { id },
-      data: { usedForSubscriptionId: subscriptionId },
+      data,
     });
-  }
-
-  async setSubscription(
-    object: { chatId: number } | { userId: number },
-    subscriber: { id: number; username?: string },
-    tariffId: string
-  ): Promise<{ id: bigint }> {
-    const subscription = await this.prisma.subscription.upsert({
-      where: object,
-      create: {
-        ...object,
-        email: '?',
-        subscriberUserId: subscriber.id,
-        subscriberUserName: subscriber.username,
-        tariffId,
-      },
-      update: {
-        tariffId,
-      },
-    });
-
-    return { id: subscription.id };
   }
 
   async updateChat(
@@ -256,6 +249,13 @@ export default class DbServiceImpl implements DbService {
         ...data,
         settings: settings ?? undefined,
       },
+    });
+  }
+
+  async updateSubscription(id: bigint, data: Partial<Subscription>): Promise<void> {
+    await this.prisma.subscription.update({
+      where: { id },
+      data,
     });
   }
 }

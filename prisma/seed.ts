@@ -1,8 +1,8 @@
 import _ from 'lodash';
+import examples from '../docs/summarize-examples.json';
 import { getEnv } from '../src/config/envVars.ts';
 import { type ServicesImpl, createServices } from '../src/createServices.ts';
-import { decryptIfExists, encrypt } from '../src/data/encryption.ts';
-import examples from '../docs/summarize-examples.json';
+import { encrypt } from '../src/data/encryption.ts';
 import { hoursAgo } from '../src/lib/date.ts';
 import { required } from '../src/lib/lang.ts';
 
@@ -31,11 +31,11 @@ async function main({ db }: ServicesImpl): Promise<void> {
     })
   );
 
-  await db.setSubscription(
-    { userId: Number(user.id) },
-    { id: Number(user.id), username: decryptIfExists(user.username) ?? undefined },
-    '+20s,x3'
-  );
+  // await db.setSubscription(
+  //   { userId: Number(user.id) },
+  //   { id: Number(user.id), username: decryptIfExists(user.username) ?? undefined },
+  //   '+20s,x3'
+  // );
 }
 
 if (getEnv().NODE_ENV === 'development') {
