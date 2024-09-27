@@ -36,6 +36,7 @@ const activateCommandController: ChatController = ({ chat$, chatId, services }) 
 
       await services.db.updateActivationKey(activationKey.id, { used: true });
 
+      // todo sub показывать инфу именно о только что активированной подписке
       tariffCommandController({ chat$: of(msg), chatId, services });
     } catch (error) {
       logger.error('Error in activateCommandController', error);

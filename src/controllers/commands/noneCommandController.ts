@@ -12,6 +12,7 @@ import type DbChatMessage from '../../data/types/DbChatMessage.ts';
 import { rejectAsync } from '../../lib/rxOperators.ts';
 import type DbService from '../../services/DbService.ts';
 import type ChatController from '../ChatController.ts';
+import { isSubscriptionActive } from '../../data/subscriptionUtils.ts';
 
 const noneCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$
@@ -22,7 +23,8 @@ const noneCommandController: ChatController = ({ chat$, chatId, services }) => {
 
         const settings = chatSettingsSchema.parse(chat.settings);
         if (settings.notifyItsTimeToSummarize === true && !chat.notifiedItsTimeToSummarize) {
-          const subscription = await services.db.getSubscription(chatId, msg.from?.id);
+          const subscriptions = await services.db.getSubscriptions(chatId);
+          const subscription = subscriptions.find((s) => isSubscriptionActive(s));
           const maxTextToSummarizeApproximateLength = getMaxTextToSummarizeApproximateLength(
             subscription?.tariff
           );

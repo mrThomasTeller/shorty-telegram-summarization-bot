@@ -55,14 +55,19 @@ async function notifyIfNecessary({
   db: DbService;
   telegramBot: TelegramBotService;
 }): Promise<boolean> {
-  if (notificationTime > subscription.notifiedAt && new Date() >= notificationTime) {
+  if (
+    subscription.paymentProvider === 'Boosty' &&
+    subscription.notifiedAt != null &&
+    notificationTime > subscription.notifiedAt &&
+    new Date() >= notificationTime
+  ) {
     await telegramBot.sendMessage(
       getEnv().ADMIN_ID,
       `Проверь подписку:
 EMail: ${subscription.email}
 Дата/время оформления: ${dateFns.format(subscription.createdAt, 'HH:mm d MMM yyyy')}`
     );
-    await db.setSubscriptionNotifiedAt(subscription.id, notificationTime);
+    await db.updateSubscription(subscription.id, { notifiedAt: notificationTime });
     return true;
   }
 

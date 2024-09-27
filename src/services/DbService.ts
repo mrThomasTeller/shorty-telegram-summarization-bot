@@ -71,7 +71,7 @@ type DbService = {
 
   getOrCreateUser: (userInput: UserCreateInput) => Promise<[user: User, created: boolean]>;
 
-  getSubscription: (chatId: number, userId?: number) => Promise<SubscriptionWithTariff | undefined>;
+  getSubscriptions: (chatId: number, userId?: number) => Promise<SubscriptionWithTariff[]>;
 
   getSummariesFrom: (chatId: number, from: Date) => Promise<Summary[]>;
 

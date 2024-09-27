@@ -33,7 +33,7 @@ export type UKassaPaymentWebhook = {
     };
     paid: boolean;
     refundable: boolean;
-    metadata: {
+    metadata?: {
       tariffId: string;
       userId: number;
       username: string | undefined;

@@ -15,24 +15,30 @@ export class UKassaService {
     description,
     returnUrl,
     metadata,
+    paymentMethodId,
   }: {
     price: number;
     description: string;
-    returnUrl: string;
-    metadata: Record<string, unknown>;
-  }): Promise<string> {
+    returnUrl?: string;
+    metadata?: UKassaPaymentWebhook['object']['metadata'];
+    paymentMethodId?: string;
+  }): Promise<string | undefined> {
     const data = {
       amount: {
         value: (price / 100).toFixed(2),
         currency: 'RUB',
       },
       capture: true,
-      confirmation: {
-        type: 'redirect',
-        return_url: returnUrl,
-      },
+      confirmation:
+        returnUrl == null
+          ? undefined
+          : {
+              type: 'redirect',
+              return_url: returnUrl,
+            },
       description,
       metadata,
+      payment_method_id: paymentMethodId,
     };
 
     const response = await axios.post('https://api.yookassa.ru/v3/payments', data, {
@@ -47,7 +53,7 @@ export class UKassaService {
     });
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    return response.data.confirmation.confirmation_url as string;
+    return response.data?.confirmation?.confirmation_url as string | undefined;
   }
 
   onPaymentSucceeded(callback: (webhook: UKassaPaymentWebhook) => void): VoidFunction {
@@ -86,13 +92,10 @@ export class UKassaService {
           typeof req.body === 'string' ? JSON.parse(req.body) : req.body
         ) as UKassaPaymentWebhook;
 
-        if (webhook.object.metadata.secret !== getEnv().UKASSA_WEBHOOK_SECRET_KEY) {
-          res.status(403).send('Invalid secret');
-          return;
-        }
-
-        for (const callback of this.paymentSucceededCallbacks) {
-          callback(webhook);
+        if (webhook.object.metadata?.secret === getEnv().UKASSA_WEBHOOK_SECRET_KEY) {
+          for (const callback of this.paymentSucceededCallbacks) {
+            callback(webhook);
+          }
         }
       } catch (error) {
         logger.error('Error in WebServer', error);

@@ -36,24 +36,23 @@ const parseObjectCallbackData = (
 
 const emojiNumbers = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
 
-// todo CLUTCH
+// todo sub CLUTCH
 let subscribed = false;
 
-// todo списание денег раз в месяц
-// todo /subscriptions command
-// todo unsubscribe command
-// todo change tariff
-// todo change group
-// todo check already subscribed
-// todo ukassa link loader
-// todo detect referring group
-// todo check subscriptions
-// todo subscriptions periods
-// todo команда "обратиться в поддержку"
-// todo buttons emojies
-// todo fix /tariff command
-// todo возможность активировать подписку позднее
-// todo notifications about subscription end
+// todo sub /subscriptions command
+// todo sub unsubscribe command
+// todo sub change tariff
+// todo sub change group
+// todo sub check already subscribed
+// todo sub ukassa link loader
+// todo sub detect referring group
+// todo sub check subscriptions
+// todo sub subscriptions periods
+// todo sub команда "обратиться в поддержку"
+// todo sub buttons emojies
+// todo sub fix /tariff command
+// todo sub возможность активировать подписку позднее
+// todo sub notifications about subscription end
 const subscribeCommandController: ChatController = ({
   chat$,
   chatId,
@@ -63,6 +62,7 @@ const subscribeCommandController: ChatController = ({
     try {
       const tariffs = await db.getAllTariffs();
 
+      // todo sub как отписаться?
       const text = `**⭐ Выберите подписку:**\n
 ${tariffs
   .map(
@@ -157,7 +157,7 @@ async function subscribeTariffCallback({
     return;
   }
 
-  // todo remove loading
+  // todo sub remove loading
   await telegramBot.sendMessage(user.id, '⏳ Подождите…');
 
   const botName = await telegramBot.getUsername();
@@ -191,6 +191,8 @@ async function paymentSucceeded(
   telegramBot: TelegramBotService
 ): Promise<void> {
   const metadata = webhook.object.metadata;
+  if (!metadata) return;
+
   const { tariffId, userId, username } = metadata;
 
   const { id } = await db.addSubscription({
@@ -206,7 +208,7 @@ async function paymentSucceeded(
     },
   });
 
-  // todo fix appearance
+  // todo sub fix appearance
   await telegramBot.sendMessage(
     userId,
     `💸 Оплата прошла успешно!
@@ -251,7 +253,7 @@ async function subscribeObjectCallback({
 }): Promise<void> {
   if (object === 'user') {
     await db.updateSubscription(subscriptionId, { userId: BigInt(user.id) });
-    await telegramBot.sendMessage(user.id, '✅ Подписка активирована!'); // todo instructions
+    await telegramBot.sendMessage(user.id, '✅ Подписка активирована!'); // todo sub instructions
   } else {
     const key = await db.createActivationKey(tariffId, user.id, subscriptionId);
     const botName = await telegramBot.getUsername();
@@ -261,6 +263,6 @@ async function subscribeObjectCallback({
 \`/activate@${botName} ${key.id}\`\n\n
 _\\(Просто кликните на сообщение, и оно будет скопировано в буфер обмена\\)_`,
       { parse_mode: 'MarkdownV2' }
-    ); // todo ссылка (как добавить в группу)
+    ); // todo sub ссылка (как добавить в группу)
   }
 }
