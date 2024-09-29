@@ -66,6 +66,9 @@ Release 1.2:
   - detailed help
   - work out the issue with adverts
 
+Срочно:
+  - когда бот присоединяется к группе, он падает
+
 Users requests:
   - increase max symbols limit for summary
   - summary to private messages
@@ -82,9 +85,6 @@ Security Issues:
 
 UX:
   - показывать оставшиеся премиум-выжимки по команде /tariff
-
-Important:
-  - если подписка одновременно у чата и пользователя?
 
 Маркетинг:
   - Маячить пользователям в чате, что можно добавить шорти в свои диалоги

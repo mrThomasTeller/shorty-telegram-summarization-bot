@@ -13,6 +13,7 @@ import { rejectAsync } from '../../lib/rxOperators.ts';
 import type DbService from '../../services/DbService.ts';
 import type ChatController from '../ChatController.ts';
 import { isSubscriptionActive } from '../../data/subscriptionUtils.ts';
+import { encryptIfExists } from '../../data/encryption.ts';
 
 const noneCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$
@@ -54,7 +55,10 @@ async function addMessageToDb(
     msg.from && (await db.getOrCreateUser(convertTgUserToDbUserInput(msg.from)));
   const user = userCreationResult?.[0];
 
-  const { chat, created: chatCreated } = await db.getOrCreateChat(msg.chat.id);
+  const { chat, created: chatCreated } = await db.getOrCreateChat(
+    msg.chat.id,
+    encryptIfExists(msg.chat.title)
+  );
   if (chatCreated) {
     logger.info(`New chat created: ${msg.chat.id}`);
   }

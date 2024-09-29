@@ -62,6 +62,7 @@ function createDbServiceMock() {
       unsummarizedSymbols: 0,
       notifiedItsTimeToSummarize: false,
       settings: {},
+      title: encrypt(String(chatId)),
     },
     created: false,
   }));

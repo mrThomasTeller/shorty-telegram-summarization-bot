@@ -17,6 +17,7 @@ describe('recoveryMessage', () => {
       news: null,
       notifiedItsTimeToSummarize: false,
       settings: {},
+      title: null,
     };
 
     const chats: Chat[] = [

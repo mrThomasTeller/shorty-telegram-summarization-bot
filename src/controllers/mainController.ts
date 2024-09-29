@@ -91,30 +91,10 @@ const sendMaintenanceMessageFn =
   };
 
 const sendPrivateChatOnlyMessageFn =
-  (chatId: number, telegramBot: TelegramBotService, command: Command) => async () => {
+  (chatId: number, telegramBot: TelegramBotService) => async () => {
     const botName = required(await telegramBot.getUsername());
 
-    await telegramBot.sendMessage(
-      chatId,
-      t(`server.privateChatOnly.${command.command}`, {
-        botName,
-        defaultValue: t('server.privateChatOnly.other', { botName }),
-      }),
-      command.command === 'subscribe'
-        ? {
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: '⭐ Оформить подписку',
-                    url: `https://t.me/${botName}?start=subscribe`,
-                  },
-                ],
-              ],
-            },
-          }
-        : undefined
-    );
+    await telegramBot.sendMessage(chatId, t('server.privateChatOnly', { botName }));
   };
 
 const observeCommandsOrSendMaintenanceMessages =
@@ -126,9 +106,7 @@ const observeCommandsOrSendMaintenanceMessages =
     if (observeCase.case === 'maintenanceMessage') {
       chatCommandMessage$.subscribe(sendMaintenanceMessageFn(chatId, services.telegramBot));
     } else if (observeCase.case === 'privateChatOnly') {
-      chatCommandMessage$.subscribe(
-        sendPrivateChatOnlyMessageFn(chatId, services.telegramBot, observeCase.command)
-      );
+      chatCommandMessage$.subscribe(sendPrivateChatOnlyMessageFn(chatId, services.telegramBot));
     } else {
       const controller = getCommandController(observeCase.command);
       controller({

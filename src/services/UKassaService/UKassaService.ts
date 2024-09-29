@@ -6,11 +6,16 @@ import cors from 'cors';
 import express from 'express';
 import logger from '../../config/logger.ts';
 
+type Metadata = UKassaPaymentWebhook['object']['metadata'];
+
 export class UKassaService {
-  private readonly paymentSucceededCallbacks: ((webhook: UKassaPaymentWebhook) => void)[] = [];
+  private readonly paymentSucceededCallbacks: ((
+    webhook: UKassaPaymentWebhook<NonNullable<Metadata>>
+  ) => void)[] = [];
+
   private webServerStarted = false;
 
-  async createPayment({
+  async createPayment<TMetadata extends Metadata>({
     price,
     description,
     returnUrl,
@@ -20,7 +25,7 @@ export class UKassaService {
     price: number;
     description: string;
     returnUrl?: string;
-    metadata?: UKassaPaymentWebhook['object']['metadata'];
+    metadata: TMetadata;
     paymentMethodId?: string;
   }): Promise<string | undefined> {
     const data = {
@@ -56,15 +61,19 @@ export class UKassaService {
     return response.data?.confirmation?.confirmation_url as string | undefined;
   }
 
-  onPaymentSucceeded(callback: (webhook: UKassaPaymentWebhook) => void): VoidFunction {
+  onPaymentSucceeded<TMetadata extends NonNullable<Metadata>>(
+    callback: (webhook: UKassaPaymentWebhook<TMetadata>) => void
+  ): VoidFunction {
     this.startWebServer();
 
-    this.paymentSucceededCallbacks.push(callback);
+    const callbacks = this.paymentSucceededCallbacks as ((
+      webhook: UKassaPaymentWebhook<TMetadata>
+    ) => void)[];
+    callbacks.push(callback);
+
     return () => {
-      const index = this.paymentSucceededCallbacks.indexOf(callback);
-      if (index !== -1) {
-        this.paymentSucceededCallbacks.splice(index, 1);
-      }
+      const index = callbacks.indexOf(callback);
+      if (index !== -1) callbacks.splice(index, 1);
     };
   }
 
@@ -94,7 +103,7 @@ export class UKassaService {
 
         if (webhook.object.metadata?.secret === getEnv().UKASSA_WEBHOOK_SECRET_KEY) {
           for (const callback of this.paymentSucceededCallbacks) {
-            callback(webhook);
+            callback(webhook as UKassaPaymentWebhook<NonNullable<Metadata>>);
           }
         }
       } catch (error) {

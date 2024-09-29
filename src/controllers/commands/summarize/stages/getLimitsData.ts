@@ -14,6 +14,7 @@ import type Services from '../../../../services/Services.ts';
 import { type LimitsData } from '../types/LimitsData.ts';
 import { isSubscriptionActive } from '../../../../data/subscriptionUtils.ts';
 
+// todo sub test
 export const getLimitsData = _.curry(
   async (services: Services, msg: TelegramBot.Message): Promise<LimitsData> => {
     // todo test

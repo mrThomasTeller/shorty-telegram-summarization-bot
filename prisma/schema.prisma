@@ -14,14 +14,14 @@ model User {
   lastName  Bytes?
   username  Bytes?
 
-  messages       Message[]
-  summaries      Summary[]
-  subscriptions  Subscription[]
-  activationKeys ActivationKey[]
+  messages      Message[]
+  summaries     Summary[]
+  subscriptions Subscription[]
 }
 
 model Chat {
   id                         BigInt   @id
+  title                      Bytes?
   isMember                   Boolean?
   createdAt                  DateTime @default(now())
   news                       String?
@@ -73,8 +73,7 @@ model Tariff {
   summaries          Int    @default(0)
   messagesMultiplier Int    @default(1)
 
-  subscriptions  Subscription[]
-  activationKeys ActivationKey[]
+  subscriptions Subscription[]
 }
 
 model Subscription {
@@ -94,25 +93,12 @@ model Subscription {
   notifiedAt         DateTime?       @default(now())
   expires            DateTime        @default(now())
 
-  tariff         Tariff          @relation(fields: [tariffId], references: [id], onUpdate: Cascade)
-  chat           Chat?           @relation(fields: [chatId], references: [id])
-  user           User?           @relation(fields: [userId], references: [id])
-  activationKeys ActivationKey[]
+  tariff Tariff @relation(fields: [tariffId], references: [id], onUpdate: Cascade)
+  chat   Chat?  @relation(fields: [chatId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id])
 }
 
 enum PaymentProvider {
   YooKassa
   Boosty
-}
-
-model ActivationKey {
-  id             String  @id @default(uuid())
-  tariffId       String
-  subscriptionId BigInt?
-  userId         BigInt?
-  used           Boolean @default(false)
-
-  tariff       Tariff        @relation(fields: [tariffId], references: [id], onDelete: Cascade)
-  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-  user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

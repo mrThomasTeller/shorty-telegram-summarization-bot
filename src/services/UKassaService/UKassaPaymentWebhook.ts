@@ -1,4 +1,6 @@
-export type UKassaPaymentWebhook = {
+export type UKassaPaymentWebhook<
+  TMetadata extends { secret: string } | undefined = { secret: string } | undefined
+> = {
   type: 'notification';
   event: 'payment.succeeded';
   object: {
@@ -33,11 +35,6 @@ export type UKassaPaymentWebhook = {
     };
     paid: boolean;
     refundable: boolean;
-    metadata?: {
-      tariffId: string;
-      userId: number;
-      username: string | undefined;
-      secret: string;
-    };
+    metadata: TMetadata;
   };
 };

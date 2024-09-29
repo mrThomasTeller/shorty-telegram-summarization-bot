@@ -1,6 +1,5 @@
 import {
   PrismaClient,
-  type ActivationKey,
   type Chat,
   type Subscription,
   type Summary,
@@ -13,6 +12,7 @@ import { todayMidday } from '../lib/date.ts';
 import { type TOmit } from '../lib/typeUtils.ts';
 import type DbService from './DbService.ts';
 import {
+  type SubscriptionWithTariffAndChat,
   type AddSubscriptionParams,
   type MessageCreateInput,
   type SubscriptionWithTariff,
@@ -43,14 +43,8 @@ export default class DbServiceImpl implements DbService {
     return { id: subscription.id };
   }
 
-  createActivationKey(
-    tariffId: string,
-    userId: number,
-    subscriptionId: bigint
-  ): Promise<ActivationKey> {
-    return this.prisma.activationKey.create({
-      data: { tariffId, userId, subscriptionId },
-    });
+  async deleteSubscription(id: bigint): Promise<void> {
+    await this.prisma.subscription.delete({ where: { id } });
   }
 
   async createChatMessage(msg: MessageCreateInput): Promise<DbChatMessage> {
@@ -60,12 +54,19 @@ export default class DbServiceImpl implements DbService {
     });
   }
 
-  async getActivationKey(id: string): Promise<ActivationKey | undefined> {
-    return (await this.prisma.activationKey.findUnique({ where: { id } })) ?? undefined;
-  }
+  async getOrCreateChat(
+    chatId: number,
+    title: Buffer | undefined
+  ): Promise<{ chat: Chat; created: boolean }> {
+    let chat = await this.prisma.chat.findUnique({ where: { id: chatId } });
 
-  async getOrCreateChat(chatId: number): Promise<{ chat: Chat; created: boolean }> {
-    const chat = await this.prisma.chat.findUnique({ where: { id: chatId } });
+    if (chat && title != null && chat.title?.compare(title) !== 0) {
+      chat = await this.prisma.chat.update({
+        where: { id: chat.id },
+        data: { title },
+      });
+    }
+
     return chat === null
       ? {
           chat: await this.prisma.chat.create({
@@ -104,6 +105,13 @@ export default class DbServiceImpl implements DbService {
     });
 
     return _.sortBy(summaries, 'date');
+  }
+
+  getUserSubscriptions(userId: number): Promise<SubscriptionWithTariffAndChat[]> {
+    return this.prisma.subscription.findMany({
+      where: { subscriberUserId: userId },
+      include: { tariff: true, chat: true },
+    });
   }
 
   async hasMessage(messageId: number, chatId: number): Promise<boolean> {
@@ -226,18 +234,11 @@ export default class DbServiceImpl implements DbService {
     });
   }
 
-  async updateActivationKey(id: string, data: Partial<ActivationKey>): Promise<void> {
-    await this.prisma.activationKey.update({
-      where: { id },
-      data,
-    });
-  }
-
   async updateChat(
     chatId: number,
     { settings, ...data }: Partial<TOmit<Chat, 'id'>>
   ): Promise<void> {
-    await this.getOrCreateChat(chatId);
+    await this.getOrCreateChat(chatId, undefined);
     await this.prisma.chat.update({
       where: { id: chatId },
       data: {

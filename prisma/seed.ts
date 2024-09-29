@@ -17,7 +17,7 @@ async function main({ db }: ServicesImpl): Promise<void> {
     lastName: encrypt('Teller'),
   });
 
-  const { chat } = await db.getOrCreateChat(myId);
+  const { chat } = await db.getOrCreateChat(myId, user.username ?? undefined);
   await Promise.all(
     _.range(-1, -2000).map((id) => {
       const text = required(examples.messages[Math.abs(id) % examples.messages.length]);

@@ -6,7 +6,7 @@ import type ChatController from '../ChatController.ts';
 const tryMessageCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$.subscribe(async (msg) => {
     try {
-      const news = msg.text === undefined ? '' : getCommandParams(msg.text);
+      const news = getCommandParams(msg);
 
       if (news.trim() !== '') {
         await tryTelegramMessage(chatId, services.telegramBot, news);

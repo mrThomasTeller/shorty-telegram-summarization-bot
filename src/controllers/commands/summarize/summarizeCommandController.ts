@@ -26,7 +26,7 @@ const handleSingleSummarizeRequest$ = _.curry(
       concatMap(handleSummarizeResultCase(services, msg)),
 
       last(),
-      mergeMap(() => printNews(services.db, services.telegramBot, chatId)),
+      mergeMap(() => printNews(services.db, services.telegramBot, msg.chat)),
       // todo ошибки нужно ловить на глобальном уровне для каждого сообщения
       catchAndLogError('Error in summarizeCommandController')
     )

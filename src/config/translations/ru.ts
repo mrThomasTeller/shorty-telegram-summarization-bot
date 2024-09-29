@@ -11,17 +11,7 @@ export default {
     'help.description': 'Получить помощь по работе бота',
     'start.description': 'Начать работу с ботом',
     'tariff.description': 'Узнать текущий тариф',
-    'subscribe.description': 'Приобрести платную подписку',
-    activate: {
-      description: 'Активировать премиум тариф',
-      adminNotification: '🙌 У нас новый подписчик! Новый ключ для тарифа "{{tariff}}": `{{key}}`',
-      errors: {
-        badKey:
-          "🔑 Неправильный ключ активации. Обратитесь в <a href='https://boosty.to/artyom.bakharev'>личные сообщения на boosty</a> или в поддержку в телеграмме: @shorty_support_bot.",
-        useChat:
-          '🔑 Отправьте эту команду в групповой чат, для которого вы хотите активировать премиум: `/activate@{{botName}} chat {{key}}`\n\nЕсли же вы хотите активировать премиум для себя то напишите мне в ответ команду: `/activate@{{botName}} user {{key}}`',
-      },
-    },
+    'subscription.description': 'Приобрести, изменить или отписаться от платной подписки',
     settings: {
       description: 'Изменить настройки',
     },
@@ -30,10 +20,7 @@ export default {
     maintenanceMessage:
       '😴 Бот временно отключен для технического обслуживания. Пожалуйста, попробуйте позже.',
 
-    privateChatOnly: {
-      subscribe: 'Нажмите на кнопку ниже, чтобы оформить подписку 😉',
-      other: 'Чтобы я смог выполнить эту команду, напиши мне её в ЛС @{{botName}} 😉',
-    },
+    privateChatOnly: 'Чтобы я смог выполнить эту команду, напиши мне её в ЛС @{{botName}} 😉',
   },
   summarize: {
     gptQuery:

@@ -16,12 +16,10 @@ import scheduleNewsCommand from '../../config/commands/scheduleNews.ts';
 import scheduleNewsCommandController from './scheduleNewsCommandController.ts';
 import tariffCommand from '../../config/commands/tariff.ts';
 import tariffCommandController from './tariffCommandController.ts';
-import activateCommand from '../../config/commands/activate.ts';
-import activateCommandController from './activateCommandController.ts';
 import settingsCommand from '../../config/commands/settings.ts';
 import settingsCommandController from './settingsCommandController.ts';
-import subscribeCommand from '../../config/commands/subscribe.ts';
-import subscribeCommandController from './subscribeCommandController.ts';
+import subscriptionCommand from '../../config/commands/subscription.ts';
+import subscriptionCommandController from './subscriptionCommandController.ts';
 
 export default function getCommandController(command: Command): ChatController {
   switch (command.command) {
@@ -49,14 +47,11 @@ export default function getCommandController(command: Command): ChatController {
     case tariffCommand.command: {
       return tariffCommandController;
     }
-    case activateCommand.command: {
-      return activateCommandController;
-    }
     case settingsCommand.command: {
       return settingsCommandController;
     }
-    case subscribeCommand.command: {
-      return subscribeCommandController;
+    case subscriptionCommand.command: {
+      return subscriptionCommandController;
     }
     default: {
       throw new Error(`Unknown command: ${command.command}`);
