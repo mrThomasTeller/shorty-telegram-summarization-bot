@@ -7,11 +7,12 @@ const tariffCommandController: ChatController = ({ chat$, chatId, services }) =>
   chat$.subscribe(async (msg) => {
     try {
       const subscription = await services.db.getSubscriptions(chatId, msg.from?.id);
-      const message = subscription
-        ? t('tariff.premium', { name: subscription.tariff.name })
-        : t('tariff.free', { count: getEnv().MAX_SUMMARIES_PER_WEEK });
+      // todo sub show all subscriptions
+      // const message = subscription
+      //   ? t('tariff.premium', { name: subscription.tariff.name })
+      //   : t('tariff.free', { count: getEnv().MAX_SUMMARIES_PER_WEEK });
 
-      await services.telegramBot.sendMessage(chatId, message);
+      // await services.telegramBot.sendMessage(chatId, message);
     } catch (error) {
       logger.error('Error in tariffCommandController', error);
     }

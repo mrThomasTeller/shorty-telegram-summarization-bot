@@ -17,6 +17,7 @@ import { PaymentProvider } from '@prisma/client';
 import { addMonths } from 'date-fns';
 import { isSubscriptionActive } from '../../data/subscriptionUtils.ts';
 import { decryptIfExists } from '../../data/encryption.ts';
+import { type SubscriptionWithTariffAndChat } from '../../services/DbService.ts';
 
 let key = 0;
 
@@ -60,6 +61,7 @@ const parseTariffCallbackData = (data: string) => ({
 enum EditSubscriptionAction {
   changeTariff = 't',
   changeGroup = 'g',
+  changeToMe = 'm',
   unsubscribe = 'u',
   unsubscribeConfirmed = 'uc',
   unsubscribeDeclined = 'ud',
@@ -68,8 +70,9 @@ enum EditSubscriptionAction {
 const editSubscriptionCallbackKey = `subscription_${++key}`;
 const makeEditSubscriptionCallbackData = (
   subscriptionId: bigint,
-  action: EditSubscriptionAction
-): string => `${editSubscriptionCallbackKey}/${subscriptionId}/${action}`;
+  action: EditSubscriptionAction,
+  groupId?: bigint
+): string => `${editSubscriptionCallbackKey}/${subscriptionId}/${action}/${groupId ?? 0}`;
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const parseEditSubscriptionCallbackData = (data: string) => ({
   subscriptionId: BigInt(
@@ -79,6 +82,8 @@ const parseEditSubscriptionCallbackData = (data: string) => ({
     data.split('/')[2] as EditSubscriptionAction,
     'action is required in callback data'
   ),
+  groupId:
+    BigInt(required(data.split('/')[3], 'groupId is required in callback data')) || undefined,
 });
 
 const emojiNumbers = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
@@ -86,12 +91,9 @@ const emojiNumbers = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6�
 let subscribed = false;
 
 // todo sub check already subscribed
-// todo sub detect referring group
-// todo sub check subscriptions
 // todo sub subscriptions periods
 // todo sub команда "обратиться в поддержку"
 // todo sub buttons emojies
-// todo sub fix /tariff command
 // todo sub до какого числа действует подписка?
 // todo sub resubscribe
 const subscriptionCommandController: ChatController = ({
@@ -101,71 +103,67 @@ const subscriptionCommandController: ChatController = ({
   chat$.subscribe(async (msg) => {
     try {
       if (msg.chat.type !== 'private') {
-        await subscribeFromPrivateChat(telegramBot, msg);
-        return;
+        return await subscribeFromPrivateChat(telegramBot, msg);
       }
 
       const user = required(msg.from, 'User is required');
-
-      const groupId = toBigInt(getCommandParams(msg));
-      if (groupId != null) {
-        // todo sub возможность перевести другую подписку на эту группу
-        await objectCallback({
-          object: ObjectType.group,
-          id: groupId,
-          db,
-          telegramBot,
-          user,
-        });
-        return;
-      }
-
       const subscriptions = await db.getUserSubscriptions(user.id);
+      // todo 2sub для бусти выводить инструкцию
       const activeSubscriptions = subscriptions.filter(
         (s) => s.paymentProvider !== 'Boosty' && isSubscriptionActive(s)
       );
       const userSubscription = activeSubscriptions.find((s) => s.userId != null);
       const groupsSubscriptions = activeSubscriptions.filter((s) => s.chatId != null);
 
-      // todo sub text
+      const groupId = toBigInt(getCommandParams(msg));
+      if (groupId == null) {
+        return await chooseObject({ userSubscription, groupsSubscriptions, telegramBot, user });
+      }
+
+      if (activeSubscriptions.length === 0) {
+        return await objectCallback({
+          object: ObjectType.group,
+          id: groupId,
+          db,
+          telegramBot,
+          user,
+        });
+      }
+
       await telegramBot.sendMessage(
         user.id,
-        `💸 Оплата прошла успешно!
-    
-    ❓ Теперь выберите: вы хотите активировать премиум на себя или на групповой чат?
-    
-    Если на себя: то вы сможете делать краткие выжимки в любом чате (в котором есть Shorty).
-    Если на групповой чат: то любой участник этого чата сможет делать краткие выжимки.`,
+        // todo sub какую группу?
+        'Вы хотите оплатить новую подписку или перевести существующую на эту группу?',
         {
           reply_markup: {
             inline_keyboard: [
               [
-                userSubscription
-                  ? {
-                      text: 'Редактировать подписку на себя',
-                      callback_data: makeObjectCallbackData(
-                        ObjectType.subscription,
-                        userSubscription.id
-                      ),
-                    }
-                  : {
-                      text: 'Оформить подписку на себя',
-                      callback_data: makeObjectCallbackData(ObjectType.user, user.id),
-                    },
-              ],
-              [
                 {
-                  text: 'Оформить новую подписку на групповой чат',
-                  callback_data: makeObjectCallbackData(ObjectType.group, 0),
+                  text: 'Оплатить новую подписку',
+                  callback_data: makeObjectCallbackData(ObjectType.group, groupId),
+                },
+              ],
+              userSubscription && [
+                {
+                  text: 'Переключить подписку с себя на эту группу',
+                  callback_data: makeEditSubscriptionCallbackData(
+                    userSubscription.id,
+                    EditSubscriptionAction.changeGroup,
+                    groupId
+                  ),
                 },
               ],
               groupsSubscriptions.map((s) => ({
-                text: `Редактировать подписку на "${
-                  decryptIfExists(s.chat?.title) ?? 'групповой чат ' + s.chatId
-                }"`,
-                callback_data: makeObjectCallbackData(ObjectType.subscription, s.id),
+                text: `Переключить подписку с "${
+                  decryptIfExists(s.chat?.title) ?? 'группы ' + s.chatId
+                }" на эту группу`,
+                callback_data: makeEditSubscriptionCallbackData(
+                  s.id,
+                  EditSubscriptionAction.changeGroup,
+                  groupId
+                ),
               })),
-            ],
+            ].filter(Boolean),
           },
         }
       );
@@ -202,6 +200,59 @@ async function subscribeFromPrivateChat(
       ],
     },
   });
+}
+
+async function chooseObject({
+  userSubscription,
+  groupsSubscriptions,
+  telegramBot,
+  user,
+}: {
+  userSubscription: SubscriptionWithTariffAndChat | undefined;
+  groupsSubscriptions: SubscriptionWithTariffAndChat[];
+  telegramBot: TelegramBotService;
+  user: TelegramBot.User;
+}): Promise<void> {
+  // todo sub text
+  await telegramBot.sendMessage(
+    user.id,
+    `Вы хотите активировать премиум на себя или на групповой чат?
+
+Если на себя: то вы сможете делать краткие выжимки в любом чате (в котором есть Shorty).
+Если на групповой чат: то любой участник этого чата сможет делать краткие выжимки.`,
+    {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            userSubscription
+              ? {
+                  text: 'Редактировать подписку на себя',
+                  callback_data: makeObjectCallbackData(
+                    ObjectType.subscription,
+                    userSubscription.id
+                  ),
+                }
+              : {
+                  text: 'Оформить подписку на себя',
+                  callback_data: makeObjectCallbackData(ObjectType.user, user.id),
+                },
+          ],
+          [
+            {
+              text: 'Оформить новую подписку на групповой чат',
+              callback_data: makeObjectCallbackData(ObjectType.group, 0),
+            },
+          ],
+          groupsSubscriptions.map((s) => ({
+            text: `Редактировать подписку на "${
+              decryptIfExists(s.chat?.title) ?? 'групповой чат ' + s.chatId
+            }"`,
+            callback_data: makeObjectCallbackData(ObjectType.subscription, s.id),
+          })),
+        ],
+      },
+    }
+  );
 }
 
 function formatPrice(price: number): string {
@@ -268,9 +319,9 @@ async function objectCallback({
   telegramBot: TelegramBotService;
   user: TelegramBot.User;
 }): Promise<void> {
-  // eslint-disable-next-line unicorn/prefer-ternary
   if (object === ObjectType.subscription) {
-    // const subscription = await db.getSubscription(id);
+    const subscription = await db.getSubscription(id);
+
     // todo sub детали подписки
     await telegramBot.sendMessage(user.id, `Как вы хотите изменить подписку?`, {
       reply_markup: {
@@ -283,11 +334,22 @@ async function objectCallback({
                 EditSubscriptionAction.changeTariff
               ),
             },
+          ],
+          [
             {
-              text: 'Изменить группу',
+              text: 'Переключить на другой групповой чат',
               callback_data: makeEditSubscriptionCallbackData(
                 id,
                 EditSubscriptionAction.changeGroup
+              ),
+            },
+          ],
+          subscription.userId == null && [
+            {
+              text: 'Переключить на себя',
+              callback_data: makeEditSubscriptionCallbackData(
+                id,
+                EditSubscriptionAction.changeToMe
               ),
             },
           ],
@@ -300,7 +362,7 @@ async function objectCallback({
               ),
             },
           ],
-        ],
+        ].filter(Boolean),
       },
     });
   } else {
@@ -440,12 +502,14 @@ async function paymentSucceeded(
 
 async function editSubscriptionCallback({
   subscriptionId,
+  groupId,
   action,
   db,
   telegramBot,
   user,
 }: {
   subscriptionId: bigint;
+  groupId: bigint | undefined;
   action: EditSubscriptionAction;
   db: DbService;
   telegramBot: TelegramBotService;
@@ -465,7 +529,17 @@ async function editSubscriptionCallback({
       break;
     }
     case EditSubscriptionAction.changeGroup: {
-      // todo sub нужно из группы написать команду /subscription
+      if (groupId == null) {
+        // todo sub нужно из группы написать команду /subscription
+      } else {
+        await db.updateSubscription(subscriptionId, { chatId: groupId, userId: null });
+        await telegramBot.sendMessage(user.id, '✅ Подписка переключена на группу'); // todo sub какую группу? инструкции
+      }
+      break;
+    }
+    case EditSubscriptionAction.changeToMe: {
+      await db.updateSubscription(subscriptionId, { chatId: null, userId: BigInt(user.id) });
+      await telegramBot.sendMessage(user.id, '✅ Подписка переключена на вас'); // todo sub инструкции
       break;
     }
     case EditSubscriptionAction.unsubscribe: {

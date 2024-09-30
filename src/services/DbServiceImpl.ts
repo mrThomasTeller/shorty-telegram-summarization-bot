@@ -234,6 +234,10 @@ export default class DbServiceImpl implements DbService {
     });
   }
 
+  async getSubscription(id: bigint): Promise<Subscription> {
+    return await this.prisma.subscription.findUniqueOrThrow({ where: { id } });
+  }
+
   async updateChat(
     chatId: number,
     { settings, ...data }: Partial<TOmit<Chat, 'id'>>
