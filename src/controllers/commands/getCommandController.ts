@@ -19,7 +19,7 @@ import tariffCommandController from './tariffCommandController.ts';
 import settingsCommand from '../../config/commands/settings.ts';
 import settingsCommandController from './settingsCommandController.ts';
 import subscriptionCommand from '../../config/commands/subscription.ts';
-import subscriptionCommandController from './subscriptionCommandController.ts';
+import subscriptionCommandController from './subscription/subscriptionCommandController.ts';
 
 export default function getCommandController(command: Command): ChatController {
   switch (command.command) {

@@ -10,6 +10,7 @@ import {
   type EndSummarySummarizeResultCase,
   type SummarizeResultCase,
 } from '../types/SummarizeResultCase.ts';
+import { required } from '../../../../lib/lang.ts';
 
 const handleSummarizeResultCase =
   (services: Services, msg: TelegramBot.Message) => async (resultCase: SummarizeResultCase) => {
@@ -30,7 +31,8 @@ const handleSummarizeResultCase =
       });
     }
 
-    const text = getBotMessageForSummarizeResultCase(resultCase);
+    const botName = required(await services.telegramBot.getUsername(), 'Bot name is required');
+    const text = getBotMessageForSummarizeResultCase(resultCase, msg, botName);
 
     await services.telegramBot.sendMessage(
       msg.chat.id,
@@ -74,7 +76,11 @@ function getLogMessageForSummarizeResultCase(
   }
 }
 
-function getBotMessageForSummarizeResultCase(resultCase: SummarizeResultCase): string {
+function getBotMessageForSummarizeResultCase(
+  resultCase: SummarizeResultCase,
+  msg: TelegramBot.Message,
+  botName: string
+): string {
   switch (resultCase.type) {
     case 'startSummary': {
       return t('summarize.message.start');
@@ -86,11 +92,17 @@ function getBotMessageForSummarizeResultCase(resultCase: SummarizeResultCase): s
       return formatSummaryFromGpt(resultCase.text);
     }
     case 'endSummary': {
-      return t(getEndSummaryTranslationKey(resultCase), {
-        free: resultCase.freeSummariesRest,
-        freeTotal: getEnv().MAX_SUMMARIES_PER_WEEK,
-        premium: resultCase.premiumSummariesRest,
-      });
+      return (
+        t('summarize.message.end') +
+        '\n' +
+        t(getEndSummaryTranslationKey(resultCase), {
+          free: resultCase.freeSummariesRest,
+          freeTotal: getEnv().MAX_SUMMARIES_PER_WEEK,
+          premium: resultCase.premiumSummariesRest,
+          botName,
+          chatId: msg.chat.id,
+        })
+      );
     }
     case 'maxTriesExceeded': {
       return t('summarize.errors.maxQueriesToGptExceeded');
@@ -116,11 +128,16 @@ function getBotMessageForSummarizeResultCase(resultCase: SummarizeResultCase): s
           : 'summarize.errors.maxSummariesExceeded.free',
         {
           count: getEnv().MAX_SUMMARIES_PER_WEEK,
+          botName,
+          chatId: msg.chat.id,
         }
       );
     }
     case 'tooManySummaryParts': {
-      return t('summarize.message.tooManyMessages');
+      return t('summarize.message.tooManyMessages', {
+        botName,
+        chatId: msg.chat.id,
+      });
     }
     case 'ads': {
       return t('summarize.message.dontShowAds');
@@ -131,10 +148,10 @@ function getBotMessageForSummarizeResultCase(resultCase: SummarizeResultCase): s
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const getEndSummaryTranslationKey = (resultCase: EndSummarySummarizeResultCase) =>
   match(resultCase)
-    .with({ hasPremium: false }, () => 'summarize.message.end.free' as const)
+    .with({ hasPremium: false }, () => 'shared.rest.free' as const)
     .with(
       { freeSummariesRest: 0, premiumSummariesRest: 0 },
-      () => 'summarize.message.end.premiumEnded' as const
+      () => 'shared.rest.premiumEnded' as const
     )
-    .with({ freeSummariesRest: 0 }, () => 'summarize.message.end.premiumNoFree' as const)
-    .otherwise(() => 'summarize.message.end.premiumWithFree' as const);
+    .with({ freeSummariesRest: 0 }, () => 'shared.rest.premiumNoFree' as const)
+    .otherwise(() => 'shared.rest.premiumWithFree' as const);

@@ -31,15 +31,8 @@ export default {
       start: '⚙️ Собираю сообщения за последний день...',
       header: '🔡 Краткая выжимка:',
       tooManyMessages:
-        'Сообщений накопилось очень много 🤯 Я смогу сделать выжимку только из самых последних. <a href="https://boosty.to/artyom.bakharev/posts/7ace6829-b612-448f-8b0e-583c8aad964e">⚡️ Увеличить лимит</a>',
-      end: {
-        free: '😌 Это всё\n🔋 У вас $t(_terms.last, {"count": {{free}}}) {{free}} из {{freeTotal}} $t(_terms.freeSummary_gen, {"count": {{freeTotal}}}) на этой неделе (<a href="https://boosty.to/artyom.bakharev/posts/7ace6829-b612-448f-8b0e-583c8aad964e">⚡️ увеличить лимит</a>)',
-        premiumWithFree:
-          '😌 Это всё\n🔋 У вас $t(_terms.last, {"count": {{free}}}) {{free}} $t(_terms.freeSummary, {"count": {{free}}}) на неделю и {{premium}} $t(_terms.premiumSummary, {"count": {{premium}}}) на месяц',
-        premiumNoFree: '😌 Это всё\n🔋 У вас осталось {{premium}} премиум выжимок на месяц',
-        premiumEnded:
-          '😌 Это всё\n🔋 У вас закончились премиум выжимки на месяц. Подождите следующей недели или <a href="https://boosty.to/artyom.bakharev/posts/293f0cc3-51b4-4df6-a98c-52d98f9b6ea2">⚡️ переходите на более высокий тариф</a>',
-      },
+        'Сообщений накопилось очень много 🤯 Я смогу сделать выжимку только из самых последних. <a href="https://t.me/{{botName}}?start=subscription={{chatId}}">⚡️ Увеличить лимит</a>',
+      end: '😌 Это всё',
       dontShowAds:
         '🚫 <a href="https://boosty.to/artyom.bakharev/posts/7ace6829-b612-448f-8b0e-583c8aad964e">⚡️ Не хочу видеть рекламу!</a>',
     },
@@ -52,9 +45,9 @@ export default {
       fewMessages:
         '🙄 Слишком мало сообщений для создания выжимки. Нужно хотя бы {{count}}. Вы пообщайтесь, а потом позовите меня 😉',
       maxSummariesExceeded: {
-        free: '🤯 Вы можете делать не более {{count}} $t(_terms.summary_gen, {"count": {{count}}}) в неделю. Приходите на следующей неделе или <a href="https://boosty.to/artyom.bakharev/posts/7ace6829-b612-448f-8b0e-583c8aad964e">⚡️ оформите подписку</a> 😉',
+        free: '🤯 Вы можете делать не более {{count}} $t(_terms.summary_gen, {"count": {{count}}}) в неделю. Приходите на следующей неделе или <a href="https://t.me/{{botName}}?start=subscription={{chatId}}">⚡️ оформите подписку</a> 😉',
         premium:
-          '🤯 Бесплатные и премиум выжимки кончились. Приходите на следующей неделе или <a href="https://boosty.to/artyom.bakharev/posts/293f0cc3-51b4-4df6-a98c-52d98f9b6ea2">⚡️ оформите более высокий тариф</a> 😉',
+          '🤯 Бесплатные и премиум выжимки кончились. Приходите на следующей неделе или <a href="https://t.me/{{botName}}?start=subscription={{chatId}}">⚡️ оформите более высокий тариф</a> 😉',
       },
     },
     debug: {
@@ -67,7 +60,18 @@ export default {
   },
   tariff: {
     free: '🆓 Сейчас вы на бесплатном тарифе. У вас есть {{count}} $t(_terms.freeSummary, {"count": {{count}}}) в неделю.',
-    premium: '🚀 Сейчас вы на тарифе: "{{name}}". Спасибо, за вашу поддержку 🙏',
+    premium: '🚀 Сейчас вы на тарифе: "{{name}}".  Спасибо, за вашу поддержку 🙏',
+  },
+
+  shared: {
+    rest: {
+      free: '🔋 У вас $t(_terms.last, {"count": {{free}}}) {{free}} из {{freeTotal}} $t(_terms.freeSummary_gen, {"count": {{freeTotal}}}) на этой неделе (<a href="https://t.me/{{botName}}?start=subscription={{chatId}}">⚡️ увеличить лимит</a>)',
+      premiumWithFree:
+        '🔋 У вас $t(_terms.last, {"count": {{free}}}) {{free}} $t(_terms.freeSummary, {"count": {{free}}}) на неделю и {{premium}} $t(_terms.premiumSummary, {"count": {{premium}}}) на месяц',
+      premiumNoFree: '🔋 У вас осталось {{premium}} премиум выжимок на месяц',
+      premiumEnded:
+        '🔋 У вас закончились премиум выжимки на месяц. Подождите следующей недели или <a href="https://t.me/{{botName}}?start=subscription={{chatId}}">⚡️ переходите на более высокий тариф</a>',
+    },
   },
 
   // Nominative - именительный падеж (кто? что?)

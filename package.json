@@ -1,6 +1,6 @@
 {
   "name": "shorty-chat-bot",
-  "version": "1.0.4-beta.45",
+  "version": "1.0.4-beta.46",
   "description": "",
   "main": "src/start.ts",
   "type": "module",
