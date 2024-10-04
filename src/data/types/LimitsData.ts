@@ -1,4 +1,4 @@
-import { type SubscriptionWithTariff } from '../../../../services/DbService.ts';
+import { type SubscriptionWithTariff } from '../../services/DbService.ts';
 
 export type LimitsData = {
   lastSummaryDate: Date | undefined;

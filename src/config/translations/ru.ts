@@ -59,8 +59,8 @@ export default {
       '💻 Бот тут\nEnvironment: {{nodeEnv}}\nVersion: {{version}}\nChat ID: {{chatId}}\nUser ID: {{userId}}\nUsername: {{username}}',
   },
   tariff: {
-    free: '🆓 Сейчас вы на бесплатном тарифе. У вас есть {{count}} $t(_terms.freeSummary, {"count": {{count}}}) в неделю.',
-    premium: '🚀 Сейчас вы на тарифе: "{{name}}".  Спасибо, за вашу поддержку 🙏',
+    free: '🆓 Сейчас вы на бесплатном тарифе.\n{{rest}}',
+    premium: '🚀 Сейчас вы на тарифе: "{{name}}".\n{{rest}}\nСпасибо, за вашу поддержку 🙏',
   },
 
   shared: {

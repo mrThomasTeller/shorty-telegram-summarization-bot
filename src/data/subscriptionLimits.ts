@@ -1,18 +1,17 @@
 import { type Summary } from '@prisma/client';
 import { max as maxTime } from 'date-fns';
+import { t } from 'i18next';
 import _ from 'lodash';
 import type TelegramBot from 'node-telegram-bot-api';
-import { getEnv } from '../../../../config/envVars.ts';
-import {
-  getMaxSummaryParts,
-  getMaxTextToSummarizeApproximateLength,
-} from '../../../../data/tariffUtils.ts';
-import { monthFromPeriodStart, thisWeekStart, yesterday } from '../../../../lib/date.ts';
-import { type SubscriptionWithTariff } from '../../../../services/DbService.ts';
-import type DbService from '../../../../services/DbService.ts';
-import type Services from '../../../../services/Services.ts';
-import { type LimitsData } from '../types/LimitsData.ts';
-import { isSubscriptionActive } from '../../../../data/subscriptionUtils.ts';
+import { match } from 'ts-pattern';
+import { getEnv } from '../config/envVars.ts';
+import { monthFromPeriodStart, thisWeekStart, yesterday } from '../lib/date.ts';
+import type DbService from '../services/DbService.ts';
+import { type SubscriptionWithTariff } from '../services/DbService.ts';
+import type Services from '../services/Services.ts';
+import { isSubscriptionActive } from './subscriptionUtils.ts';
+import { getMaxSummaryParts, getMaxTextToSummarizeApproximateLength } from './tariffUtils.ts';
+import { type LimitsData } from './types/LimitsData.ts';
 
 // todo sub test
 export const getLimitsData = _.curry(
@@ -112,3 +111,29 @@ async function getLimitsDataForSubscription({
     ),
   };
 }
+
+export const getSummariesRestText = (
+  limits: Pick<LimitsData, 'freeSummariesRest' | 'premiumSummariesRest' | 'subscription'>,
+  chatId: number,
+  botName: string
+): string =>
+  t(getRestTranslationKey(limits), {
+    free: limits.freeSummariesRest,
+    freeTotal: getEnv().MAX_SUMMARIES_PER_WEEK,
+    premium: limits.premiumSummariesRest,
+    botName,
+    chatId,
+  });
+
+const getRestTranslationKey = (
+  limits: Pick<LimitsData, 'freeSummariesRest' | 'premiumSummariesRest' | 'subscription'>
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+) =>
+  match(limits)
+    .with({ subscription: undefined }, () => 'shared.rest.free' as const)
+    .with(
+      { freeSummariesRest: 0, premiumSummariesRest: 0 },
+      () => 'shared.rest.premiumEnded' as const
+    )
+    .with({ freeSummariesRest: 0 }, () => 'shared.rest.premiumNoFree' as const)
+    .otherwise(() => 'shared.rest.premiumWithFree' as const);

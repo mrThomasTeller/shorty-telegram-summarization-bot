@@ -1,16 +1,13 @@
 import type TelegramBot from 'node-telegram-bot-api';
 import { setTimeout } from 'node:timers/promises';
-import { match } from 'ts-pattern';
 import { getEnv } from '../../../../config/envVars.ts';
 import logger, { type LogLevel } from '../../../../config/logger.ts';
 import { t } from '../../../../config/translations/index.ts';
+import { getSummariesRestText } from '../../../../data/subscriptionLimits.ts';
 import { formatSummaryFromGpt } from '../../../../data/summaryUtils.ts';
-import type Services from '../../../../services/Services.ts';
-import {
-  type EndSummarySummarizeResultCase,
-  type SummarizeResultCase,
-} from '../types/SummarizeResultCase.ts';
 import { required } from '../../../../lib/lang.ts';
+import type Services from '../../../../services/Services.ts';
+import { type SummarizeResultCase } from '../types/SummarizeResultCase.ts';
 
 const handleSummarizeResultCase =
   (services: Services, msg: TelegramBot.Message) => async (resultCase: SummarizeResultCase) => {
@@ -92,17 +89,11 @@ function getBotMessageForSummarizeResultCase(
       return formatSummaryFromGpt(resultCase.text);
     }
     case 'endSummary': {
-      return (
-        t('summarize.message.end') +
-        '\n' +
-        t(getEndSummaryTranslationKey(resultCase), {
-          free: resultCase.freeSummariesRest,
-          freeTotal: getEnv().MAX_SUMMARIES_PER_WEEK,
-          premium: resultCase.premiumSummariesRest,
-          botName,
-          chatId: msg.chat.id,
-        })
-      );
+      return `${t('summarize.message.end')}\n${getSummariesRestText(
+        resultCase,
+        msg.chat.id,
+        botName
+      )}`;
     }
     case 'maxTriesExceeded': {
       return t('summarize.errors.maxQueriesToGptExceeded');
@@ -144,14 +135,3 @@ function getBotMessageForSummarizeResultCase(
     }
   }
 }
-
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-const getEndSummaryTranslationKey = (resultCase: EndSummarySummarizeResultCase) =>
-  match(resultCase)
-    .with({ hasPremium: false }, () => 'shared.rest.free' as const)
-    .with(
-      { freeSummariesRest: 0, premiumSummariesRest: 0 },
-      () => 'shared.rest.premiumEnded' as const
-    )
-    .with({ freeSummariesRest: 0 }, () => 'shared.rest.premiumNoFree' as const)
-    .otherwise(() => 'shared.rest.premiumWithFree' as const);

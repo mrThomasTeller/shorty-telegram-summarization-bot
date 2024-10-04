@@ -7,7 +7,7 @@ import type Services from '../../../services/Services.ts';
 import printNews from '../../../useCases/printNews.ts';
 import type ChatController from '../../ChatController.ts';
 import { getChatMessagesForSummary } from './stages/getChatMessagesForSummary.ts';
-import { getLimitsData } from './stages/getLimitsData.ts';
+import { getLimitsData } from '../../../data/subscriptionLimits.ts';
 import handleSummarizeResultCase from './stages/handleSummarizeResultCase.ts';
 import queryGptOrReturnError$ from './stages/queryGptOrReturnError$.ts';
 

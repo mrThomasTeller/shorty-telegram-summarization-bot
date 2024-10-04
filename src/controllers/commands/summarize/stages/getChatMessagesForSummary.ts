@@ -7,7 +7,7 @@ import type DbChatMessage from '../../../../data/types/DbChatMessage.ts';
 import { yesterday } from '../../../../lib/date.ts';
 import type Services from '../../../../services/Services.ts';
 import { type ChatMessagesForSummaryData } from '../types/ChatMessagesForSummaryData.ts';
-import { type LimitsData } from '../types/LimitsData.ts';
+import { type LimitsData } from '../../../../data/types/LimitsData.ts';
 import { type SummarizeResultCase } from '../types/SummarizeResultCase.ts';
 
 export const getChatMessagesForSummary = _.curry(

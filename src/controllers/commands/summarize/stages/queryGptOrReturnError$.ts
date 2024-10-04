@@ -122,7 +122,7 @@ const insertSummaryLayout = (
       (c) => c.type === 'responseFromGPT',
       {
         type: 'endSummary',
-        hasPremium: !!subscription,
+        subscription,
         freeSummariesRest,
         premiumSummariesRest,
       },

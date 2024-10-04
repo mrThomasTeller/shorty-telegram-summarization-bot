@@ -1,19 +1,20 @@
-import { getEnv } from '../../config/envVars.ts';
 import logger from '../../config/logger.ts';
 import { t } from '../../config/translations/index.ts';
-import { getFirstActiveSubscription } from '../../data/subscriptionUtils.ts';
+import { getLimitsData, getSummariesRestText } from '../../data/subscriptionLimits.ts';
+import { required } from '../../lib/lang.ts';
 import type ChatController from '../ChatController.ts';
 
-// todo sub сколько осталось?
+// todo stest
 const tariffCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$.subscribe(async (msg) => {
     try {
-      const subscriptions = await services.db.getSubscriptions(chatId, msg.from?.id);
-      const activeSubscription = getFirstActiveSubscription(subscriptions);
+      const limitsData = await getLimitsData(services, msg);
+      const botName = required(await services.telegramBot.getUsername(), 'Bot name is required');
+      const restText = getSummariesRestText(limitsData, msg.chat.id, botName);
 
-      const message = activeSubscription
-        ? t('tariff.premium', { name: activeSubscription.tariff.name })
-        : t('tariff.free', { count: getEnv().MAX_SUMMARIES_PER_WEEK });
+      const message = limitsData.subscription
+        ? t('tariff.premium', { name: limitsData.subscription.tariff.name, rest: restText })
+        : t('tariff.free', { rest: restText });
 
       await services.telegramBot.sendMessage(chatId, message);
     } catch (error) {
