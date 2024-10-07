@@ -1,5 +1,5 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import { decryptIfExists } from '../../../data/encryption.ts';
+import { getSubscriptionObjectText } from '../../../data/subscriptionUtils.ts';
 import { type SubscriptionWithTariffAndChat } from '../../../services/DbService.ts';
 import type TelegramBotService from '../../../services/TelegramBotService.ts';
 import { makeObjectCallbackData } from './tgButtonsCallbacks.ts';
@@ -16,20 +16,22 @@ export async function chooseObject({
   telegramBot: TelegramBotService;
   user: TelegramBot.User;
 }): Promise<void> {
-  // todo sub text
   await telegramBot.sendMessage(
     user.id,
-    `Вы хотите активировать премиум на себя или на групповой чат?
+    `Здесь вы можете:
+1️⃣ Оформить новую подписку
+2️⃣ Просмотреть информацию о существующей подписке
+3️⃣ Отредактировать существующую подписку (изменить тариф, группу, отписаться или подписаться заново)
 
-Если на себя: то вы сможете делать краткие выжимки в любом чате (в котором есть Shorty).
-Если на групповой чат: то любой участник этого чата сможет делать краткие выжимки.`,
+👉 При оформлении подписки на себя вы сможете делать краткие выжимки в любом чате (в котором есть Shorty)
+👉 При оформлении подписки на групповой чат любой участник этого чата сможет делать краткие выжимки`,
     {
       reply_markup: {
         inline_keyboard: [
           [
             userSubscription
               ? {
-                  text: 'Редактировать подписку на себя',
+                  text: getSubscriptionObjectText(userSubscription),
                   callback_data: makeObjectCallbackData(
                     ObjectType.subscription,
                     userSubscription.id
@@ -47,9 +49,7 @@ export async function chooseObject({
             },
           ],
           groupsSubscriptions.map((s) => ({
-            text: `Редактировать подписку на "${
-              decryptIfExists(s.chat?.title) ?? 'групповой чат ' + s.chatId
-            }"`,
+            text: getSubscriptionObjectText(s),
             callback_data: makeObjectCallbackData(ObjectType.subscription, s.id),
           })),
         ],

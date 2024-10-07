@@ -20,7 +20,9 @@ export default summarizeCommandController;
 const handleSingleSummarizeRequest$ = _.curry(
   (chatId: number, services: Services, msg: TelegramBot.Message): Observable<void> =>
     of(msg).pipe(
-      mergeMap(getLimitsData(services)),
+      mergeMap((msg) =>
+        getLimitsData({ db: services.db, userId: msg.from?.id, chatId: msg.chat.id })
+      ),
       mergeMap(getChatMessagesForSummary(services, msg)),
       mergeMap((data) => matchEither(of, queryGptOrReturnError$(services, chatId), data)),
       concatMap(handleSummarizeResultCase(services, msg)),

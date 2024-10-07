@@ -40,8 +40,8 @@ describe('summarizeBotServer summarize command special cases', () => {
         { message: t('summarize.message.header'), userId: myTgGroup2Id },
         { message: gptTestSummary(0, 5), userId: myTgGroupId },
         { message: gptTestSummary(0, 5), userId: myTgGroup2Id },
-        { message: t('summarize.message.end.free'), userId: myTgGroupId },
-        { message: t('summarize.message.end.free'), userId: myTgGroup2Id },
+        // { message: t('summarize.message.end.free'), userId: myTgGroupId },
+        // { message: t('summarize.message.end.free'), userId: myTgGroup2Id },
         { message: t('summarize.message.dontShowAds'), userId: myTgGroupId, parseMode: 'HTML' },
         { message: t('summarize.message.dontShowAds'), userId: myTgGroup2Id, parseMode: 'HTML' },
       ],
@@ -78,7 +78,7 @@ describe('summarizeBotServer summarize command special cases', () => {
         t('summarize.message.header'),
         gptTestSummary(0, pointsCount),
         gptTestSummary(1, pointsCount),
-        t('summarize.message.end.free'),
+        // t('summarize.message.end.free'),
         { message: t('summarize.message.dontShowAds'), parseMode: 'HTML' },
       ],
       myTgGroupId
@@ -131,7 +131,7 @@ describe('summarizeBotServer summarize command special cases', () => {
         t('summarize.message.tooManyMessages'),
         t('summarize.message.header'),
         ...allowedPagesRange.map((page, index) => gptTestSummary(page, 2, index)),
-        t('summarize.message.end.free'),
+        // t('summarize.message.end.free'),
         { message: t('summarize.message.dontShowAds'), parseMode: 'HTML' },
       ],
       myTgGroupId

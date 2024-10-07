@@ -11,10 +11,11 @@ import { type UKassaPaymentWebhook } from '../../../services/UKassaService/UKass
 import { ukassaService } from '../../../services/UKassaService/UKassaService.ts';
 import type ChatController from '../../ChatController.ts';
 import { chooseObject } from './chooseObject.ts';
+import { chooseTariff } from './chooseTariff.ts';
+import { chooseSubscriptionToChange } from './editSubscription.ts';
 import { tgButtonCallback } from './tgButtonsCallbacks.ts';
 import { ObjectType } from './types/ObjectType.ts';
 import { type UkassaWebhookMetadata } from './types/UkassaWebhookMetadata.ts';
-import { chooseSubscriptionToChange, editSubscription } from './editSubscription.ts';
 
 let subscribed = false;
 
@@ -40,7 +41,6 @@ const subscriptionCommandController: ChatController = ({
       const hasActiveBoostySubscription = subscriptions.some(
         (s) => s.paymentProvider === 'Boosty' && isSubscriptionActive(s)
       );
-
       if (hasActiveBoostySubscription) {
         return await forBoostySubscription(telegramBot, msg.chat.id);
       }
@@ -57,7 +57,7 @@ const subscriptionCommandController: ChatController = ({
       }
 
       if (activeSubscriptions.length === 0) {
-        return await editSubscription({
+        return await chooseTariff({
           object: ObjectType.group,
           id: groupId,
           db,
@@ -66,12 +66,14 @@ const subscriptionCommandController: ChatController = ({
         });
       }
 
+      // todo sub check existing subscription
       await chooseSubscriptionToChange({
         telegramBot,
         user,
         groupId,
         userSubscription,
         groupsSubscriptions,
+        db,
       });
     } catch (error) {
       logger.error('Error in subscriptionCommandController', error);

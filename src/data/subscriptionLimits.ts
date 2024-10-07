@@ -1,73 +1,79 @@
 import { type Summary } from '@prisma/client';
 import { max as maxTime } from 'date-fns';
 import { t } from 'i18next';
-import _ from 'lodash';
-import type TelegramBot from 'node-telegram-bot-api';
 import { match } from 'ts-pattern';
 import { getEnv } from '../config/envVars.ts';
 import { monthFromPeriodStart, thisWeekStart, yesterday } from '../lib/date.ts';
 import type DbService from '../services/DbService.ts';
 import { type SubscriptionWithTariff } from '../services/DbService.ts';
-import type Services from '../services/Services.ts';
 import { isSubscriptionActive } from './subscriptionUtils.ts';
 import { getMaxSummaryParts, getMaxTextToSummarizeApproximateLength } from './tariffUtils.ts';
 import { type LimitsData } from './types/LimitsData.ts';
 
-// todo sub test
-export const getLimitsData = _.curry(
-  async (services: Services, msg: TelegramBot.Message): Promise<LimitsData> => {
-    // todo test
-    const [summariesFor24Hours, weekChatFreeSummariesCount, subscriptions] = await Promise.all([
-      services.db.getSummariesFrom(msg.chat.id, yesterday()),
-      services.db.countSummariesFrom({
-        chatId: msg.chat.id,
-        from: thisWeekStart(),
-        usedPremium: false,
-      }),
-      services.db.getSubscriptions(msg.chat.id, msg.from?.id),
-    ]);
+// todo stest
+export async function getLimitsData({
+  db,
+  userId,
+  chatId,
+  subscription,
+}: {
+  db: DbService;
+  userId: number | bigint | undefined;
+  chatId: number | bigint;
+  subscription?: SubscriptionWithTariff;
+}): Promise<LimitsData> {
+  const [summariesFor24Hours, weekChatFreeSummariesCount, subscriptions] = await Promise.all([
+    db.getSummariesFrom(Number(chatId), yesterday()),
+    db.countSummariesFrom({
+      chatId: Number(chatId),
+      from: thisWeekStart(),
+      usedPremium: false,
+    }),
+    subscription
+      ? [subscription]
+      : db.getSubscriptions(Number(chatId), userId == null ? undefined : Number(userId)),
+  ]);
 
-    const limitsDataArr = await Promise.all(
-      subscriptions.map((subscription) =>
-        getLimitsDataForSubscription({
-          subscription,
-          summariesFor24Hours,
-          weekChatFreeSummariesCount,
-          db: services.db,
-          chatId: msg.chat.id,
-        })
-      )
-    );
-
-    const userSubscriptions = limitsDataArr.filter(
-      (limitsData) => limitsData.subscription?.userId != null
-    );
-    const groupSubscriptions = limitsDataArr.filter(
-      (limitsData) => limitsData.subscription?.chatId != null
-    );
-
-    const prioritizedSubscriptions = [...groupSubscriptions, ...userSubscriptions];
-
-    const activeSubscription = prioritizedSubscriptions.find(
-      (limitsData) =>
-        limitsData.subscription &&
-        isSubscriptionActive(limitsData.subscription) &&
-        limitsData.premiumSummariesRest > 0
-    );
-
-    return (
-      activeSubscription ??
-      prioritizedSubscriptions[0] ??
-      (await getLimitsDataForSubscription({
-        subscription: undefined,
+  const limitsDataArr = await Promise.all(
+    subscriptions.map((subscription) =>
+      getLimitsDataForSubscription({
+        subscription,
         summariesFor24Hours,
         weekChatFreeSummariesCount,
-        db: services.db,
-        chatId: msg.chat.id,
-      }))
-    );
-  }
-);
+        db,
+        chatId: Number(chatId),
+      })
+    )
+  );
+
+  const userSubscriptions = limitsDataArr.filter(
+    (limitsData) => limitsData.subscription?.userId != null
+  );
+  const groupSubscriptions = limitsDataArr.filter(
+    (limitsData) => limitsData.subscription?.chatId != null
+  );
+
+  const prioritizedSubscriptions = [...groupSubscriptions, ...userSubscriptions];
+
+  const activeSubscription = prioritizedSubscriptions.find(
+    (limitsData) =>
+      limitsData.subscription &&
+      isSubscriptionActive(limitsData.subscription) &&
+      limitsData.premiumSummariesRest > 0
+  );
+
+  return (
+    activeSubscription ??
+    prioritizedSubscriptions[0] ??
+    (await getLimitsDataForSubscription({
+      subscription: undefined,
+      summariesFor24Hours,
+      weekChatFreeSummariesCount,
+      db,
+      chatId: Number(chatId),
+    }))
+  );
+}
 
 async function getLimitsDataForSubscription({
   subscription,
@@ -114,7 +120,7 @@ async function getLimitsDataForSubscription({
 
 export const getSummariesRestText = (
   limits: Pick<LimitsData, 'freeSummariesRest' | 'premiumSummariesRest' | 'subscription'>,
-  chatId: number,
+  chatId: number | bigint,
   botName: string
 ): string =>
   t(getRestTranslationKey(limits), {

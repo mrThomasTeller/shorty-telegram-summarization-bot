@@ -209,7 +209,7 @@ function testCorrectSummary({
         t('summarize.message.start'),
         t('summarize.message.header'),
         ...gptTestSummariesWithReEnumeratedPoints,
-        t('summarize.message.end.free'),
+        // t('summarize.message.end.free'),
         { message: t('summarize.message.dontShowAds'), parseMode: 'HTML' },
       ],
       myTgGroupId

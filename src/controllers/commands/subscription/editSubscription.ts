@@ -1,5 +1,8 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import { decryptIfExists } from '../../../data/encryption.ts';
+import { getGroupTitle } from '../../../data/dbChatUtils.ts';
+import { getSubscriptionObjectText } from '../../../data/subscriptionUtils.ts';
+import { getTariffText } from '../../../data/tariffUtils.ts';
+import { required } from '../../../lib/lang.ts';
 import type DbService from '../../../services/DbService.ts';
 import { type SubscriptionWithTariffAndChat } from '../../../services/DbService.ts';
 import type TelegramBotService from '../../../services/TelegramBotService.ts';
@@ -8,7 +11,6 @@ import { makeEditSubscriptionCallbackData, makeObjectCallbackData } from './tgBu
 import { EditSubscriptionAction } from './types/EditSubscriptionAction.ts';
 import { ObjectType } from './types/ObjectType.ts';
 
-// todo sub resubscribe
 export async function editSubscription({
   object,
   id,
@@ -25,57 +27,74 @@ export async function editSubscription({
   if (object === ObjectType.subscription) {
     const subscription = await db.getSubscription(id);
 
-    // todo sub детали подписки
-    await telegramBot.sendMessage(user.id, `Как вы хотите изменить подписку?`, {
-      reply_markup: {
-        inline_keyboard: [
-          [
-            {
-              text: 'Изменить тариф',
-              callback_data: makeEditSubscriptionCallbackData(
-                id,
-                EditSubscriptionAction.changeTariff
-              ),
-            },
-          ],
-          [
-            {
-              text: 'Переключить на другой групповой чат',
-              callback_data: makeEditSubscriptionCallbackData(
-                id,
-                EditSubscriptionAction.changeGroup
-              ),
-            },
-          ],
-          subscription.userId == null && [
-            {
-              text: 'Переключить на себя',
-              callback_data: makeEditSubscriptionCallbackData(
-                id,
-                EditSubscriptionAction.changeToMe
-              ),
-            },
-          ],
-          [
-            subscription.autoRenew
-              ? {
-                  text: 'Отписаться',
-                  callback_data: makeEditSubscriptionCallbackData(
-                    id,
-                    EditSubscriptionAction.unsubscribe
-                  ),
-                }
-              : {
-                  text: 'Включить автопродление подписки',
-                  callback_data: makeEditSubscriptionCallbackData(
-                    id,
-                    EditSubscriptionAction.resubscribe
-                  ),
-                },
-          ],
-        ].filter(Boolean),
-      },
+    const tariffText = await getTariffText({
+      db,
+      telegramBot,
+      userId: user.id,
+      chatId: required(
+        subscription.chatId ?? subscription.userId,
+        'subscription chatId or userId is required'
+      ),
+      subscription,
     });
+
+    const subscriptionObjectText = getSubscriptionObjectText(subscription);
+
+    // todo 2sub кнопка назад
+    await telegramBot.sendMessage(
+      user.id,
+      `${subscriptionObjectText}\n\n${tariffText}\n\nВы хотите изменить подписку?`,
+      {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: 'Изменить тариф',
+                callback_data: makeEditSubscriptionCallbackData(
+                  id,
+                  EditSubscriptionAction.changeTariff
+                ),
+              },
+            ],
+            [
+              {
+                text: 'Переключить на другой групповой чат',
+                callback_data: makeEditSubscriptionCallbackData(
+                  id,
+                  EditSubscriptionAction.changeGroup
+                ),
+              },
+            ],
+            subscription.userId == null && [
+              {
+                text: 'Переключить на себя',
+                callback_data: makeEditSubscriptionCallbackData(
+                  id,
+                  EditSubscriptionAction.changeToMe
+                ),
+              },
+            ],
+            [
+              subscription.autoRenew
+                ? {
+                    text: 'Отписаться',
+                    callback_data: makeEditSubscriptionCallbackData(
+                      id,
+                      EditSubscriptionAction.unsubscribe
+                    ),
+                  }
+                : {
+                    text: 'Включить автопродление подписки',
+                    callback_data: makeEditSubscriptionCallbackData(
+                      id,
+                      EditSubscriptionAction.resubscribe
+                    ),
+                  },
+            ],
+          ].filter(Boolean),
+        },
+      }
+    );
   } else {
     await chooseTariff({
       object,
@@ -117,7 +136,13 @@ export async function doEditSubscription({
     }
     case EditSubscriptionAction.changeGroup: {
       if (groupId == null) {
-        // todo sub нужно из группы написать команду /subscription
+        const botName = await telegramBot.getUsername();
+        await telegramBot.sendMessage(
+          user.id,
+          `Для того, чтобы переключить подписку на новую группу:
+1️⃣ Добавьте меня в эту новую группу
+2️⃣ В новой группе отправьте команду \`/subscription@${botName}\``
+        );
       } else {
         await db.updateSubscription(subscriptionId, { chatId: groupId, userId: null });
         await telegramBot.sendMessage(user.id, '✅ Подписка переключена на группу'); // todo sub какую группу? инструкции
@@ -180,7 +205,7 @@ export async function doEditSubscription({
         // todo sub нужно будет подписаться после истечения подписки
       } else {
         await db.updateSubscription(subscriptionId, { autoRenew: true });
-        await telegramBot.sendMessage(user.id, '✅ Автопродление подписки включено'); // todo sub когда и какой будет следующий платёж?
+        await telegramBot.sendMessage(user.id, '✅ Автопродление подписки включено'); // todo sub когда и какой будет следующий платё��?
       }
       break;
     }
@@ -193,17 +218,24 @@ export async function chooseSubscriptionToChange({
   groupId,
   userSubscription,
   groupsSubscriptions,
+  db,
 }: {
   telegramBot: TelegramBotService;
   user: TelegramBot.User;
   groupId: bigint;
   userSubscription: SubscriptionWithTariffAndChat | undefined;
   groupsSubscriptions: SubscriptionWithTariffAndChat[];
+  db: DbService;
 }): Promise<void> {
+  const chat = await db.getChat(Number(groupId));
+
   await telegramBot.sendMessage(
     user.id,
-    // todo sub какую группу?
-    'Вы хотите оплатить новую подписку или перевести существующую на эту группу?',
+    `${getGroupTitle(
+      groupId,
+      chat,
+      'nom'
+    )}\n\nВы хотите оплатить новую подписку или перевести существующую на эту группу?`,
     {
       reply_markup: {
         inline_keyboard: [
@@ -224,9 +256,11 @@ export async function chooseSubscriptionToChange({
             },
           ],
           groupsSubscriptions.map((s) => ({
-            text: `Переключить подписку с "${
-              decryptIfExists(s.chat?.title) ?? 'группы ' + s.chatId
-            }" на эту группу`,
+            text: `Переключить подписку с "${getGroupTitle(
+              required(s.chatId, 'chatId is required'),
+              s.chat,
+              'gen'
+            )}" на эту группу`,
             callback_data: makeEditSubscriptionCallbackData(
               s.id,
               EditSubscriptionAction.changeGroup,

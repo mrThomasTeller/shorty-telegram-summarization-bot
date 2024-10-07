@@ -219,6 +219,10 @@ export default class DbServiceImpl implements DbService {
     return this.prisma.user.findMany();
   }
 
+  getChat(chatId: number): Promise<Chat | null> {
+    return this.prisma.chat.findUnique({ where: { id: chatId } });
+  }
+
   getChatMessages(chatId: number, fromDate?: Date | undefined): Promise<DbChatMessage[]> {
     return this.prisma.message.findMany({
       where: {
@@ -234,8 +238,11 @@ export default class DbServiceImpl implements DbService {
     });
   }
 
-  async getSubscription(id: bigint): Promise<Subscription> {
-    return await this.prisma.subscription.findUniqueOrThrow({ where: { id } });
+  async getSubscription(id: bigint): Promise<SubscriptionWithTariffAndChat> {
+    return await this.prisma.subscription.findUniqueOrThrow({
+      where: { id },
+      include: { tariff: true, chat: true },
+    });
   }
 
   async updateChat(

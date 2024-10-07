@@ -30,8 +30,7 @@ export async function chooseTariff({
 }): Promise<void> {
   const tariffs = await db.getAllTariffs();
 
-  // todo sub как отписаться?
-  const text = `**⭐ Выберите подписку:**\n
+  const text = `**⭐ Выберите тариф:**\n
     ${tariffs
       .map(
         (tariff, index) =>
@@ -78,13 +77,13 @@ export async function tariffChosen({
     return;
   }
 
-  // todo sub remove loading
+  // todo 2sub remove loading
   await telegramBot.sendMessage(user.id, '⏳ Подождите…');
 
   const botName = await telegramBot.getUsername();
   const paymentUrl = await ukassaService.createPayment<UkassaWebhookMetadata>({
     price: tariff.price,
-    description: `Подписка на тариф "${tariff.name}"`, // todo sub подробнее
+    description: `Shorty: подписка на тариф "${tariff.name}". Период оплаты: 1 месяц.`,
     returnUrl: `https://t.me/${botName}`,
     metadata: {
       object,

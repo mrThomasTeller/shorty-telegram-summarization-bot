@@ -56,6 +56,20 @@ async function checkSubscriptions({
             expires: addMonths(subscription.expires, subscription.renewPeriodMonths),
             // todo sub payed at
           });
+
+          // const limitsData = await getLimitsData(
+          //   db,
+          //   Number(subscription.userId),
+          //   Number(subscription.chatId),
+          //   subscription
+          // );
+
+          // Используйте limitsData по необходимости
+
+          await db.updateSubscription(subscription.id, {
+            expires: addMonths(subscription.expires, subscription.renewPeriodMonths),
+            // todo sub payed at
+          });
         } catch (error) {
           // todo sub notify about autorenewal error
           // todo sub try to renew again
