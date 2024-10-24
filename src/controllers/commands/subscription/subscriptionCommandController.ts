@@ -19,12 +19,11 @@ import { type UkassaWebhookMetadata } from './types/UkassaWebhookMetadata.ts';
 
 let subscribed = false;
 
-// todo sub check already subscribed
+// todo tsub check already subscribed
 // todo 2sub subscriptions periods
 // todo 2sub discounts for long periods
-// todo sub buttons emojies
-// todo sub до какого числа действует подписка?
-// todo sub возможность докупать пакеты выжимок
+// todo tsub buttons emojies
+// todo 2sub возможность докупать пакеты выжимок
 const subscriptionCommandController: ChatController = ({
   chat$,
   services: { db, telegramBot },
@@ -66,7 +65,6 @@ const subscriptionCommandController: ChatController = ({
         });
       }
 
-      // todo sub check existing subscription
       await chooseSubscriptionToChange({
         telegramBot,
         user,
@@ -138,28 +136,33 @@ async function paymentSucceeded(
       autoRenew: webhook.object.payment_method.saved,
     });
 
+    const tariff = await db.getTariff(tariffId);
+
     await telegramBot.sendMessage(
       userId,
-      '💸 Оплата прошла успешно!\n✅ Теперь вы на новом тарифе!'
-    ); // todo sub каком?
+      `💸 Оплата прошла успешно!\n✅ Теперь вы на тарифе "${tariff.name}"!`
+    );
   } else {
-    await db.addSubscription({
-      autoRenew: webhook.object.payment_method.saved,
-      paymentMethodId: webhook.object.payment_method.id,
-      renewPeriodMonths: 1,
-      paymentProvider: PaymentProvider.YooKassa,
-      expires: addMonths(new Date(), 1),
-      tariffId,
-      subscriber: {
-        id: userId,
-        username,
+    await db.addSubscription(
+      {
+        autoRenew: webhook.object.payment_method.saved,
+        paymentMethodId: webhook.object.payment_method.id,
+        renewPeriodMonths: 1,
+        paymentProvider: PaymentProvider.YooKassa,
+        expires: addMonths(new Date(), 1),
+        tariffId,
+        subscriber: {
+          id: userId,
+          username,
+        },
+        object: object === ObjectType.user ? { userId } : { chatId: Number(id) },
       },
-      object: object === ObjectType.user ? { userId } : { chatId: Number(id) },
-    });
+      true
+    );
 
     await telegramBot.sendMessage(
       userId,
       '💸 Оплата прошла успешно!\n✅ Ваша подписка активирована!'
-    ); // todo sub instructions
+    ); // todo 2sub instructions
   }
 }

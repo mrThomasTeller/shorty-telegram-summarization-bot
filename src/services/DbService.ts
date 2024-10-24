@@ -31,7 +31,7 @@ export type AddSubscriptionParams = {
 
 // todo разделить на несколько сервисов
 type DbService = {
-  addSubscription: (params: AddSubscriptionParams) => Promise<{ id: bigint }>;
+  addSubscription: (params: AddSubscriptionParams, deleteOld?: boolean) => Promise<{ id: bigint }>;
 
   countSummariesFrom: (params: {
     chatId?: number;
@@ -53,7 +53,7 @@ type DbService = {
 
   getAllChats: () => Promise<Chat[]>;
 
-  getAllSubscriptions: () => Promise<Subscription[]>;
+  getAllSubscriptions: () => Promise<SubscriptionWithTariffAndChat[]>;
 
   getAllTariffs: () => Promise<Tariff[]>;
 
@@ -75,6 +75,8 @@ type DbService = {
   getSubscriptions: (chatId: number, userId?: number) => Promise<SubscriptionWithTariff[]>;
 
   getSummariesFrom: (chatId: number, from: Date) => Promise<Summary[]>;
+
+  getTariff: (id: string) => Promise<Tariff>;
 
   getUserSubscriptions: (userId: number) => Promise<SubscriptionWithTariffAndChat[]>;
 

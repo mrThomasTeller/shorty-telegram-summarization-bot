@@ -4,6 +4,7 @@ import { type SubscriptionWithTariffAndChat } from '../../../services/DbService.
 import type TelegramBotService from '../../../services/TelegramBotService.ts';
 import { makeObjectCallbackData } from './tgButtonsCallbacks.ts';
 import { ObjectType } from './types/ObjectType.ts';
+import { ucFirst } from '../../../lib/string.ts';
 
 export async function chooseObject({
   userSubscription,
@@ -31,7 +32,7 @@ export async function chooseObject({
           [
             userSubscription
               ? {
-                  text: getSubscriptionObjectText(userSubscription),
+                  text: ucFirst(getSubscriptionObjectText(userSubscription, true)),
                   callback_data: makeObjectCallbackData(
                     ObjectType.subscription,
                     userSubscription.id
@@ -49,7 +50,7 @@ export async function chooseObject({
             },
           ],
           groupsSubscriptions.map((s) => ({
-            text: getSubscriptionObjectText(s),
+            text: ucFirst(getSubscriptionObjectText(s, true)),
             callback_data: makeObjectCallbackData(ObjectType.subscription, s.id),
           })),
         ],

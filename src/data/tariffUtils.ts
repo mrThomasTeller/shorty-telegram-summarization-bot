@@ -17,7 +17,7 @@ export const getMaxTextToSummarizeApproximateLength = (tariff: Tariff | Nullish)
   getMaxSummaryParts(tariff) * config.summary.maxPartLength;
 
 // todo не надо брать chatId если передали subscription
-export async function getTariffText({
+export async function getTariffRestText({
   db,
   telegramBot,
   userId,
@@ -45,3 +45,7 @@ export async function getTariffText({
       })
     : t('tariff.free', { rest: restText });
 }
+
+export const getTariffPriceText = (tariff: Tariff): string => `${formatPrice(tariff.price)} / мес`;
+
+const formatPrice = (price: number): string => `${Math.floor(price / 100)}₽`;

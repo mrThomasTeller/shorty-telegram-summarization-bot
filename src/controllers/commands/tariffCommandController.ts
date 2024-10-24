@@ -1,11 +1,11 @@
 import logger from '../../config/logger.ts';
-import { getTariffText } from '../../data/tariffUtils.ts';
+import { getTariffRestText } from '../../data/tariffUtils.ts';
 import type ChatController from '../ChatController.ts';
 
 const tariffCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$.subscribe(async (msg) => {
     try {
-      const text = await getTariffText({
+      const text = await getTariffRestText({
         db: services.db,
         userId: msg.from?.id,
         chatId,

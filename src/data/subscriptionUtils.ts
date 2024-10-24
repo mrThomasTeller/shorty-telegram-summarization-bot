@@ -7,6 +7,7 @@ import {
 } from './../services/DbService.ts';
 import { getGroupTitle } from './dbChatUtils.ts';
 import { required } from '../lib/lang.ts';
+import { getTariffPriceText } from './tariffUtils.ts';
 
 export const isSubscriptionActive = (subscription: SubscriptionWithTariff): boolean =>
   subscription.expires > new Date();
@@ -29,19 +30,27 @@ const getSubscriptionPriority = (subscription: SubscriptionWithTariff): number =
 // или
 // Ваша подписка действует до 01.01.2024 12:00 по МСК
 export const getSubscriptionExpiresText = (subscription: Subscription): string => {
-  const expiresDate = new Date(subscription.expires);
-  const formattedDate = format(expiresDate, 'dd.MM.yyyy HH:mm', { locale: ru });
+  const formattedDate = getSubscriptionExpireFormattedDate(subscription);
 
   return subscription.autoRenew
-    ? `Автосписание по вашей подписке произойдет ${formattedDate} по МСК`
-    : `Ваша подписка действует до ${formattedDate} по МСК`;
+    ? `Автосписание по вашей подписке произойдет ${formattedDate}`
+    : `Ваша подписка действует до ${formattedDate}`;
 };
 
-export const getSubscriptionObjectText = (subscription: SubscriptionWithTariffAndChat): string =>
-  Boolean(subscription.userId)
-    ? `Подписка на себя (${subscription.tariff.name})`
-    : `Подписка на "${getGroupTitle(
+export function getSubscriptionObjectText(
+  subscription: SubscriptionWithTariffAndChat,
+  includePrice = false
+): string {
+  const price = includePrice ? `, ${getTariffPriceText(subscription.tariff)}` : '';
+
+  return Boolean(subscription.userId)
+    ? `подписка на себя (${subscription.tariff.name}${price})`
+    : `подписка на "${getGroupTitle(
         required(subscription.chatId, 'chatId is required'),
         subscription.chat,
         'gen'
-      )}" (${subscription.tariff.name})`;
+      )}" (${subscription.tariff.name}${price})`;
+}
+
+export const getSubscriptionExpireFormattedDate = (subscription: Subscription): string =>
+  `${format(new Date(subscription.expires), 'dd.MM.yyyy HH:mm', { locale: ru })} по МСК`;

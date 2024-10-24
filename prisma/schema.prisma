@@ -77,21 +77,23 @@ model Tariff {
 }
 
 model Subscription {
-  id                 BigInt          @id @default(autoincrement())
-  tariffId           String
-  chatId             BigInt?
-  userId             BigInt?
-  email              String?
-  subscriberUserId   BigInt
-  subscriberUserName String?
-  paymentProvider    PaymentProvider @default(Boosty)
-  paymentMethodId    String?
-  autoRenew          Boolean         @default(false)
-  renewPeriodMonths  Int             @default(1)
-  createdAt          DateTime        @default(now())
-  payedAt            DateTime        @default(now())
-  notifiedAt         DateTime?       @default(now())
-  expires            DateTime        @default(now())
+  id                       BigInt          @id @default(autoincrement())
+  tariffId                 String
+  chatId                   BigInt?
+  userId                   BigInt?
+  email                    String?
+  subscriberUserId         BigInt
+  subscriberUserName       String?
+  paymentProvider          PaymentProvider @default(Boosty)
+  paymentMethodId          String?
+  autoRenew                Boolean         @default(false)
+  renewPeriodMonths        Int             @default(1)
+  createdAt                DateTime        @default(now())
+  payedAt                  DateTime        @default(now())
+  notifiedAt               DateTime?       @default(now())
+  expires                  DateTime        @default(now())
+  disableSubscriptionCheck Boolean         @default(false)
+  triesToRenew             Int             @default(0)
 
   tariff Tariff @relation(fields: [tariffId], references: [id], onUpdate: Cascade)
   chat   Chat?  @relation(fields: [chatId], references: [id])

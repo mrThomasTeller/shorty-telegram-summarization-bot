@@ -11,7 +11,7 @@ import type TelegramBotService from '../services/TelegramBotService.ts';
 import type EntryPoint from './EntryPoint.ts';
 import subscriptionsExpirationNotifier from './summarizeBotServer/subscriptionsExpirationNotifier.ts';
 import { ukassaService } from '../services/UKassaService/UKassaService.ts';
-import { subscriptionsRenewer } from './summarizeBotServer/subscriptionsRenewer.ts';
+import { subscriptionsChecker } from './summarizeBotServer/subscriptionsChecker.ts';
 
 // todo refactor this function
 const summarizeBotServer: EntryPoint = async (services) => {
@@ -33,7 +33,7 @@ const summarizeBotServer: EntryPoint = async (services) => {
   logger.info('Summarize telegram bot started');
 
   void subscriptionsExpirationNotifier(services);
-  void subscriptionsRenewer(services);
+  void subscriptionsChecker(services);
 
   if (getEnv().DEV_SHOW_ALL_TG_MESSAGES) {
     services.telegramBot.onAnyMessage((msg) => {

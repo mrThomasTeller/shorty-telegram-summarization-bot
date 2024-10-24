@@ -79,7 +79,10 @@ module.exports = {
     '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
     '@typescript-eslint/promise-function-async': 0,
     '@typescript-eslint/naming-convention': 0,
-    '@typescript-eslint/strict-boolean-expressions': ['error', { allowNullableObject: true }],
+    '@typescript-eslint/strict-boolean-expressions': [
+      'error',
+      { allowNullableObject: true, allowNullableBoolean: true },
+    ],
     '@typescript-eslint/switch-exhaustiveness-check': 'error',
     '@typescript-eslint/array-type': ['error', { default: 'array' }],
     '@typescript-eslint/no-confusing-void-expression': 0,

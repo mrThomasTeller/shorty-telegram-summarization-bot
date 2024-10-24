@@ -1,7 +1,10 @@
 import type TelegramBot from 'node-telegram-bot-api';
 import { getGroupTitle } from '../../../data/dbChatUtils.ts';
-import { getSubscriptionObjectText } from '../../../data/subscriptionUtils.ts';
-import { getTariffText } from '../../../data/tariffUtils.ts';
+import {
+  getSubscriptionExpireFormattedDate,
+  getSubscriptionObjectText,
+} from '../../../data/subscriptionUtils.ts';
+import { getTariffRestText } from '../../../data/tariffUtils.ts';
 import { required } from '../../../lib/lang.ts';
 import type DbService from '../../../services/DbService.ts';
 import { type SubscriptionWithTariffAndChat } from '../../../services/DbService.ts';
@@ -10,6 +13,7 @@ import { chooseTariff } from './chooseTariff.ts';
 import { makeEditSubscriptionCallbackData, makeObjectCallbackData } from './tgButtonsCallbacks.ts';
 import { EditSubscriptionAction } from './types/EditSubscriptionAction.ts';
 import { ObjectType } from './types/ObjectType.ts';
+import { ucFirst } from '../../../lib/string.ts';
 
 export async function editSubscription({
   object,
@@ -27,7 +31,7 @@ export async function editSubscription({
   if (object === ObjectType.subscription) {
     const subscription = await db.getSubscription(id);
 
-    const tariffText = await getTariffText({
+    const tariffText = await getTariffRestText({
       db,
       telegramBot,
       userId: user.id,
@@ -38,7 +42,7 @@ export async function editSubscription({
       subscription,
     });
 
-    const subscriptionObjectText = getSubscriptionObjectText(subscription);
+    const subscriptionObjectText = ucFirst(getSubscriptionObjectText(subscription, true));
 
     // todo 2sub кнопка назад
     await telegramBot.sendMessage(
@@ -77,7 +81,7 @@ export async function editSubscription({
             [
               subscription.autoRenew
                 ? {
-                    text: 'Отписаться',
+                    text: 'Отключить автопродление подписки',
                     callback_data: makeEditSubscriptionCallbackData(
                       id,
                       EditSubscriptionAction.unsubscribe
@@ -145,51 +149,63 @@ export async function doEditSubscription({
         );
       } else {
         await db.updateSubscription(subscriptionId, { chatId: groupId, userId: null });
-        await telegramBot.sendMessage(user.id, '✅ Подписка переключена на группу'); // todo sub какую группу? инструкции
+
+        const chat = await db.getChat(Number(groupId));
+        await telegramBot.sendMessage(
+          user.id,
+          `✅ Подписка переключена на группу "${getGroupTitle(groupId, chat, 'gen')}"`
+        );
       }
       break;
     }
     case EditSubscriptionAction.changeToMe: {
       await db.updateSubscription(subscriptionId, { chatId: null, userId: BigInt(user.id) });
-      await telegramBot.sendMessage(user.id, '✅ Подписка переключена на вас'); // todo sub инструкции
+      await telegramBot.sendMessage(user.id, '✅ Подписка переключена на вас');
       break;
     }
     case EditSubscriptionAction.unsubscribe: {
-      // todo sub до какого ещё будет действовать подписка?
-      await telegramBot.sendMessage(user.id, '❓ Вы уверены, что хотите отписаться?', {
-        reply_markup: {
-          inline_keyboard: [
-            [
-              {
-                text: 'Да, отписаться',
-                callback_data: makeEditSubscriptionCallbackData(
-                  subscriptionId,
-                  EditSubscriptionAction.unsubscribeConfirmed
-                ),
-              },
-              {
-                text: 'Отмена',
-                callback_data: makeEditSubscriptionCallbackData(
-                  subscriptionId,
-                  EditSubscriptionAction.unsubscribeDeclined
-                ),
-              },
+      await telegramBot.sendMessage(
+        user.id,
+        `❓ Вы уверены, что хотите отключить автопродление подписки? Подписка будет действовать до ${getSubscriptionExpireFormattedDate(
+          subscription
+        )}.`,
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: 'Да, отписаться',
+                  callback_data: makeEditSubscriptionCallbackData(
+                    subscriptionId,
+                    EditSubscriptionAction.unsubscribeConfirmed
+                  ),
+                },
+                {
+                  text: 'Отмена',
+                  callback_data: makeEditSubscriptionCallbackData(
+                    subscriptionId,
+                    EditSubscriptionAction.unsubscribeDeclined
+                  ),
+                },
+              ],
             ],
-          ],
-        },
-      });
+          },
+        }
+      );
       break;
     }
 
     case EditSubscriptionAction.unsubscribeConfirmed: {
       await db.updateSubscription(subscriptionId, { autoRenew: false });
-      await telegramBot.sendMessage(user.id, '✅ Вы успешно отписались');
-      // todo sub до какого числа действует подписка? Как подписаться заново?
+      await telegramBot.sendMessage(
+        user.id,
+        '✅ Вы успешно отключили автопродление. Вы всегда можете опять включить его введя команду /subscription в этом чате.'
+      );
       break;
     }
 
     case EditSubscriptionAction.unsubscribeDeclined: {
-      await telegramBot.sendMessage(user.id, '❕ Действие отменено');
+      await telegramBot.sendMessage(user.id, 'Действие отменено');
       await editSubscription({
         object: ObjectType.subscription,
         id: subscriptionId,
@@ -202,10 +218,18 @@ export async function doEditSubscription({
 
     case EditSubscriptionAction.resubscribe: {
       if (subscription.paymentMethodId == null) {
-        // todo sub нужно будет подписаться после истечения подписки
+        await telegramBot.sendMessage(
+          user.id,
+          '😔 К сожалению, вы не отметили опцию `Разрешаю автосписания` при оплате подписки. Для того, чтобы включить автопродление вам нужно дождаться истечения текущей подписки и после этого оформить новую подписку. Когда будете оформлять новую подписку обязательно отметьте опцию `Разрешаю автосписания` во время оплаты. Я напомню вам об этом когда текущая подписка закончится.'
+        );
       } else {
         await db.updateSubscription(subscriptionId, { autoRenew: true });
-        await telegramBot.sendMessage(user.id, '✅ Автопродление подписки включено'); // todo sub когда и какой будет следующий платё��?
+        await telegramBot.sendMessage(
+          user.id,
+          `✅ Автопродление подписки возобновлено. Следующее списание произойдет ${getSubscriptionExpireFormattedDate(
+            subscription
+          )}.`
+        );
       }
       break;
     }

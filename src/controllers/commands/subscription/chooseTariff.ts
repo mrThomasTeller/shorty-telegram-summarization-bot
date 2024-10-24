@@ -8,12 +8,9 @@ import { ukassaService } from '../../../services/UKassaService/UKassaService.ts'
 import { makeTariffCallbackData } from './tgButtonsCallbacks.ts';
 import { type ObjectType } from './types/ObjectType.ts';
 import { type UkassaWebhookMetadata } from './types/UkassaWebhookMetadata.ts';
+import { getTariffPriceText } from '../../../data/tariffUtils.ts';
 
 const emojiNumbers = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
-
-function formatPrice(price: number): string {
-  return `${Math.floor(price / 100)}₽`;
-}
 
 export async function chooseTariff({
   object,
@@ -34,10 +31,10 @@ export async function chooseTariff({
     ${tariffs
       .map(
         (tariff, index) =>
-          `**${emojiNumbers[index]} ${esc(tariff.name)} \\(${formatPrice(
-            tariff.price
+          `**${emojiNumbers[index]} ${esc(tariff.name)} \\(${getTariffPriceText(
+            tariff
             // eslint-disable-next-line sonarjs/no-nested-template-literals
-          )} / мес\\)**${Boolean(tariff.description) ? `\n_${esc(tariff.description)}_` : ''}`
+          )}\\)**${Boolean(tariff.description) ? `\n_${esc(tariff.description)}_` : ''}`
       )
       .join('\n\n')}`;
 
@@ -46,7 +43,7 @@ export async function chooseTariff({
     reply_markup: {
       inline_keyboard: tariffs.map((tariff, index) => [
         {
-          text: `${emojiNumbers[index]} ${tariff.name} (${formatPrice(tariff.price)} / мес)`,
+          text: `${emojiNumbers[index]} ${tariff.name} (${getTariffPriceText(tariff)})`,
           callback_data: makeTariffCallbackData(object, id, tariff.id),
         },
       ]),

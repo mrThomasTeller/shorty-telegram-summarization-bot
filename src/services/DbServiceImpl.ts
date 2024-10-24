@@ -26,11 +26,19 @@ export default class DbServiceImpl implements DbService {
     this.prisma = new PrismaClient();
   }
 
-  async addSubscription({
-    object,
-    subscriber,
-    ...data
-  }: AddSubscriptionParams): Promise<{ id: bigint }> {
+  async addSubscription(
+    { object, subscriber, ...data }: AddSubscriptionParams,
+    deleteOld = false
+  ): Promise<{ id: bigint }> {
+    if (deleteOld) {
+      await this.prisma.subscription.deleteMany({
+        where: {
+          subscriberUserId: subscriber.id,
+          ...object,
+        },
+      });
+    }
+
     const subscription = await this.prisma.subscription.create({
       data: {
         subscriberUserId: subscriber.id,
@@ -203,8 +211,10 @@ export default class DbServiceImpl implements DbService {
     return this.prisma.chat.findMany();
   }
 
-  getAllSubscriptions(): Promise<Subscription[]> {
-    return this.prisma.subscription.findMany();
+  getAllSubscriptions(): Promise<SubscriptionWithTariffAndChat[]> {
+    return this.prisma.subscription.findMany({
+      include: { tariff: true, chat: true },
+    });
   }
 
   getAllTariffs(): Promise<Tariff[]> {
@@ -243,6 +253,10 @@ export default class DbServiceImpl implements DbService {
       where: { id },
       include: { tariff: true, chat: true },
     });
+  }
+
+  getTariff(id: string): Promise<Tariff> {
+    return this.prisma.tariff.findUniqueOrThrow({ where: { id } });
   }
 
   async updateChat(
