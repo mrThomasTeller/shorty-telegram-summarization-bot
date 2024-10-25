@@ -45,6 +45,7 @@ export async function editSubscription({
     const subscriptionObjectText = ucFirst(getSubscriptionObjectText(subscription, true));
 
     // todo 2sub кнопка назад
+    // fixme cover
     await telegramBot.sendMessage(
       user.id,
       `${subscriptionObjectText}\n\n${tariffText}\n\nВы хотите изменить подписку?`,
@@ -53,6 +54,7 @@ export async function editSubscription({
           inline_keyboard: [
             [
               {
+                // fixme cover
                 text: 'Изменить тариф',
                 callback_data: makeEditSubscriptionCallbackData(
                   id,
@@ -62,7 +64,8 @@ export async function editSubscription({
             ],
             [
               {
-                text: 'Переключить на другой групповой чат',
+                // fixme cover
+                text: 'Переключить на другую группу',
                 callback_data: makeEditSubscriptionCallbackData(
                   id,
                   EditSubscriptionAction.changeGroup
@@ -71,6 +74,7 @@ export async function editSubscription({
             ],
             subscription.userId == null && [
               {
+                // fixme cover
                 text: 'Переключить на себя',
                 callback_data: makeEditSubscriptionCallbackData(
                   id,
@@ -81,6 +85,7 @@ export async function editSubscription({
             [
               subscription.autoRenew
                 ? {
+                    // fixme cover
                     text: 'Отключить автопродление подписки',
                     callback_data: makeEditSubscriptionCallbackData(
                       id,
@@ -88,6 +93,7 @@ export async function editSubscription({
                     ),
                   }
                 : {
+                    // fixme cover
                     text: 'Включить автопродление подписки',
                     callback_data: makeEditSubscriptionCallbackData(
                       id,
@@ -100,6 +106,7 @@ export async function editSubscription({
       }
     );
   } else {
+    // fixme cover
     await chooseTariff({
       object,
       id,
@@ -129,6 +136,7 @@ export async function doEditSubscription({
 
   switch (action) {
     case EditSubscriptionAction.changeTariff: {
+      // fixme cover
       await chooseTariff({
         object: ObjectType.subscription,
         id: subscriptionId,
@@ -141,6 +149,7 @@ export async function doEditSubscription({
     case EditSubscriptionAction.changeGroup: {
       if (groupId == null) {
         const botName = await telegramBot.getUsername();
+        // fixme cover
         await telegramBot.sendMessage(
           user.id,
           `Для того, чтобы переключить подписку на новую группу:
@@ -151,6 +160,7 @@ export async function doEditSubscription({
         await db.updateSubscription(subscriptionId, { chatId: groupId, userId: null });
 
         const chat = await db.getChat(Number(groupId));
+        // fixme cover
         await telegramBot.sendMessage(
           user.id,
           `✅ Подписка переключена на группу "${getGroupTitle(groupId, chat, 'gen')}"`
@@ -160,10 +170,12 @@ export async function doEditSubscription({
     }
     case EditSubscriptionAction.changeToMe: {
       await db.updateSubscription(subscriptionId, { chatId: null, userId: BigInt(user.id) });
+      // fixme cover
       await telegramBot.sendMessage(user.id, '✅ Подписка переключена на вас');
       break;
     }
     case EditSubscriptionAction.unsubscribe: {
+      // fixme cover
       await telegramBot.sendMessage(
         user.id,
         `❓ Вы уверены, что хотите отключить автопродление подписки? Подписка будет действовать до ${getSubscriptionExpireFormattedDate(
@@ -174,6 +186,7 @@ export async function doEditSubscription({
             inline_keyboard: [
               [
                 {
+                  // fixme cover
                   text: 'Да, отписаться',
                   callback_data: makeEditSubscriptionCallbackData(
                     subscriptionId,
@@ -181,6 +194,7 @@ export async function doEditSubscription({
                   ),
                 },
                 {
+                  // fixme cover
                   text: 'Отмена',
                   callback_data: makeEditSubscriptionCallbackData(
                     subscriptionId,
@@ -197,6 +211,7 @@ export async function doEditSubscription({
 
     case EditSubscriptionAction.unsubscribeConfirmed: {
       await db.updateSubscription(subscriptionId, { autoRenew: false });
+      // fixme cover
       await telegramBot.sendMessage(
         user.id,
         '✅ Вы успешно отключили автопродление. Вы всегда можете опять включить его введя команду /subscription в этом чате.'
@@ -205,7 +220,8 @@ export async function doEditSubscription({
     }
 
     case EditSubscriptionAction.unsubscribeDeclined: {
-      await telegramBot.sendMessage(user.id, 'Действие отменено');
+      // fixme cover
+      await telegramBot.sendMessage(user.id, '🚫 Действие отменено');
       await editSubscription({
         object: ObjectType.subscription,
         id: subscriptionId,
@@ -218,12 +234,14 @@ export async function doEditSubscription({
 
     case EditSubscriptionAction.resubscribe: {
       if (subscription.paymentMethodId == null) {
+        // fixme cover
         await telegramBot.sendMessage(
           user.id,
           '😔 К сожалению, вы не отметили опцию `Разрешаю автосписания` при оплате подписки. Для того, чтобы включить автопродление вам нужно дождаться истечения текущей подписки и после этого оформить новую подписку. Когда будете оформлять новую подписку обязательно отметьте опцию `Разрешаю автосписания` во время оплаты. Я напомню вам об этом когда текущая подписка закончится.'
         );
       } else {
         await db.updateSubscription(subscriptionId, { autoRenew: true });
+        // fixme cover
         await telegramBot.sendMessage(
           user.id,
           `✅ Автопродление подписки возобновлено. Следующее списание произойдет ${getSubscriptionExpireFormattedDate(
@@ -253,6 +271,7 @@ export async function chooseSubscriptionToChange({
 }): Promise<void> {
   const chat = await db.getChat(Number(groupId));
 
+  // fixme cover
   await telegramBot.sendMessage(
     user.id,
     `${getGroupTitle(
@@ -265,12 +284,14 @@ export async function chooseSubscriptionToChange({
         inline_keyboard: [
           [
             {
+              // fixme cover
               text: 'Оплатить новую подписку',
               callback_data: makeObjectCallbackData(ObjectType.group, groupId),
             },
           ],
           userSubscription && [
             {
+              // fixme cover
               text: 'Переключить подписку с себя на эту группу',
               callback_data: makeEditSubscriptionCallbackData(
                 userSubscription.id,
@@ -280,6 +301,7 @@ export async function chooseSubscriptionToChange({
             },
           ],
           groupsSubscriptions.map((s) => ({
+            // fixme cover
             text: `Переключить подписку с "${getGroupTitle(
               required(s.chatId, 'chatId is required'),
               s.chat,

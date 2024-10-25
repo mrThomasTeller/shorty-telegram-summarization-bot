@@ -31,6 +31,7 @@ const subscriptionCommandController: ChatController = ({
   chat$.subscribe(async (msg) => {
     try {
       if (msg.chat.type !== 'private') {
+        // fixme cover
         return await subscribeFromPrivateChat(telegramBot, msg);
       }
 
@@ -41,6 +42,7 @@ const subscriptionCommandController: ChatController = ({
         (s) => s.paymentProvider === 'Boosty' && isSubscriptionActive(s)
       );
       if (hasActiveBoostySubscription) {
+        // fixme cover
         return await forBoostySubscription(telegramBot, msg.chat.id);
       }
 
@@ -52,10 +54,12 @@ const subscriptionCommandController: ChatController = ({
 
       const groupId = toBigInt(getCommandParams(msg));
       if (groupId == null) {
+        // fixme cover
         return await chooseObject({ userSubscription, groupsSubscriptions, telegramBot, user });
       }
 
       if (activeSubscriptions.length === 0) {
+        // fixme cover
         return await chooseTariff({
           object: ObjectType.group,
           id: groupId,
@@ -65,6 +69,7 @@ const subscriptionCommandController: ChatController = ({
         });
       }
 
+      // fixme cover
       await chooseSubscriptionToChange({
         telegramBot,
         user,
@@ -94,6 +99,7 @@ async function subscribeFromPrivateChat(
   msg: TelegramBot.Message
 ): Promise<void> {
   const botName = await telegramBot.getUsername();
+  // fixme cover
   await telegramBot.sendMessage(msg.chat.id, 'Нажмите на кнопку ниже, чтобы оформить подписку 😉', {
     reply_markup: {
       inline_keyboard: [
@@ -112,6 +118,7 @@ async function forBoostySubscription(
   telegramBot: TelegramBotService,
   chatId: number
 ): Promise<void> {
+  // fixme cover
   await telegramBot.sendMessage(
     chatId,
     '❗ У вас есть активные подписки на Boosty. В будущем мы перестанем принимать оплату через Boosty. Чтобы переоформить подписку и иметь возможность управлять ей через Telegram обратитесь в поддержку @shorty_support_bot. В этом случае вы получите бонусный бесплатный месяц!'
@@ -126,6 +133,7 @@ async function paymentSucceeded(
   const { object, id, tariffId, userId, username } = webhook.object.metadata;
 
   if (object === ObjectType.subscription) {
+    // fixme cover
     // todo 2sub брать только разницу в деньгах
     await db.updateSubscription(id, {
       expires: addMonths(new Date(), 1),
@@ -138,11 +146,13 @@ async function paymentSucceeded(
 
     const tariff = await db.getTariff(tariffId);
 
+    // fixme cover
     await telegramBot.sendMessage(
       userId,
       `💸 Оплата прошла успешно!\n✅ Теперь вы на тарифе "${tariff.name}"!`
     );
   } else {
+    // fixme cover
     await db.addSubscription(
       {
         autoRenew: webhook.object.payment_method.saved,
@@ -160,6 +170,7 @@ async function paymentSucceeded(
       true
     );
 
+    // fixme cover
     await telegramBot.sendMessage(
       userId,
       '💸 Оплата прошла успешно!\n✅ Ваша подписка активирована!'

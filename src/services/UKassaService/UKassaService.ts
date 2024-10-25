@@ -113,7 +113,7 @@ export class UKassaService {
     });
 
     app.listen(port, () => {
-      logger.info(`WebServer started at http://localhost:${port}`);
+      logger.info(`UKassa WebServer started at http://localhost:${port}`);
     });
   }
 }

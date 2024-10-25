@@ -59,6 +59,7 @@ async function checkSubscriptions({
             paymentMethodId: subscription.paymentMethodId ?? undefined,
           });
 
+          // fixme cover
           await db.updateSubscription(subscription.id, {
             expires: addMonths(subscription.expires, subscription.renewPeriodMonths),
             payedAt: new Date(),
@@ -69,11 +70,13 @@ async function checkSubscriptions({
 
           const triesToRenew = subscription.triesToRenew + 1;
           if (triesToRenew >= config.subscriptions.maxTriesToRenew) {
+            // fixme cover
             await db.updateSubscription(subscription.id, {
               disableSubscriptionCheck: true,
               triesToRenew: 0,
             });
 
+            // fixme cover
             await telegramBot.sendMessage(
               Number(subscription.subscriberUserId),
               // todo tsub предложить продлить
@@ -82,8 +85,10 @@ async function checkSubscriptions({
               )} Не получилось автоматически продлить подписку. Чтобы продлить подписку вручную нажмите: /subscription-test`
             );
           } else {
+            // fixme cover
             await db.updateSubscription(subscription.id, { triesToRenew });
 
+            // fixme cover
             await telegramBot.sendMessage(
               Number(subscription.subscriberUserId),
               // todo tsub предложить продлить
@@ -97,12 +102,14 @@ async function checkSubscriptions({
           }
         }
       } else {
+        // fixme cover
         await telegramBot.sendMessage(
           Number(subscription.subscriberUserId),
           // todo tsub предложить продлить
           `${getEndSubscriptionText(subscription)} Чтобы продлить нажмите: /subscription-test`
         );
 
+        // fixme cover
         await db.updateSubscription(subscription.id, {
           disableSubscriptionCheck: true,
         });

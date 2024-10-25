@@ -25,13 +25,15 @@ export async function chooseObject({
 3️⃣ Отредактировать существующую подписку (изменить тариф, группу, отписаться или подписаться заново)
 
 👉 При оформлении подписки на себя вы сможете делать краткие выжимки в любом чате (в котором есть Shorty)
-👉 При оформлении подписки на групповой чат любой участник этого чата сможет делать краткие выжимки`,
+
+👉 При оформлении подписки на группу любой участник этого чата сможет делать краткие выжимки`,
     {
       reply_markup: {
         inline_keyboard: [
           [
             userSubscription
               ? {
+                  // fixme cover
                   text: ucFirst(getSubscriptionObjectText(userSubscription, true)),
                   callback_data: makeObjectCallbackData(
                     ObjectType.subscription,
@@ -45,10 +47,13 @@ export async function chooseObject({
           ],
           [
             {
-              text: 'Оформить новую подписку на групповой чат',
+              // fixme cover
+              text: 'Оформить новую подписку на группу',
               callback_data: makeObjectCallbackData(ObjectType.group, 0),
             },
           ],
+          // fixme cover add
+          // fixme cover change
           groupsSubscriptions.map((s) => ({
             text: ucFirst(getSubscriptionObjectText(s, true)),
             callback_data: makeObjectCallbackData(ObjectType.subscription, s.id),
