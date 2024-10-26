@@ -16,7 +16,9 @@ export const getChatMessagesForSummary = _.curry(
     msg: TelegramBot.Message,
     limits: LimitsData
   ): Promise<Either<SummarizeResultCase, ChatMessagesForSummaryData>> => {
-    const summariesRest = limits.freeSummariesRest + limits.premiumSummariesRest;
+    // fixme cover
+    const summariesRest =
+      limits.premiumSummariesRest > 0 ? limits.premiumSummariesRest : limits.freeSummariesRest;
 
     if (summariesRest <= 0) {
       return either.left({ type: 'tooManySummaries', hasPremium: !!limits.subscription });
@@ -34,12 +36,10 @@ export const getChatMessagesForSummary = _.curry(
     return either.right({
       ...limits,
       messages,
-      freeSummariesRest: Math.max(limits.freeSummariesRest - 1, 0),
-      premiumSummariesRest:
-        limits.freeSummariesRest > 0
-          ? limits.premiumSummariesRest
-          : limits.premiumSummariesRest - 1,
-      usedPremium: limits.freeSummariesRest <= 0,
+      premiumSummariesRest: Math.max(limits.premiumSummariesRest - 1, 0),
+      freeSummariesRest:
+        limits.premiumSummariesRest > 0 ? limits.freeSummariesRest : limits.freeSummariesRest - 1,
+      usedPremium: limits.premiumSummariesRest > 0,
     });
   }
 );

@@ -199,7 +199,7 @@ function testCorrectSummary({
       expect(summaryPartsCount).toBe(gptTestSummariesCount);
     }
     expectBotCreatedUsers(db, [myTgUser, otherTgUser]);
-    expect(db.getOrCreateChat).toHaveBeenCalledWith(myTgGroupId);
+    expect(db.upsertChat).toHaveBeenCalledWith(myTgGroupId);
     expectBotCreatedDbChatMessages(db, tgMessages);
     expectBotQueriedSummaryFromGpt(gpt, summaryPartPointsCount, dbMessagesChunksForGpt);
     expectBotAddedSummariesToDb(db, myTgGroupId, 1);

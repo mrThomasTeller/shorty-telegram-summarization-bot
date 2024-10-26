@@ -119,4 +119,4 @@ async function checkSubscriptions({
 }
 
 const getEndSubscriptionText = (subscription: SubscriptionWithTariffAndChat): string =>
-  `🔔 Ваша ${ucFirst(getSubscriptionObjectText(subscription))} закончилась.`;
+  `🔔 Ваша ${ucFirst(getSubscriptionObjectText({ subscription }))} закончилась.`;

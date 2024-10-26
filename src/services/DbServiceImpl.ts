@@ -29,7 +29,7 @@ export default class DbServiceImpl implements DbService {
   async addSubscription(
     { object, subscriber, ...data }: AddSubscriptionParams,
     deleteOld = false
-  ): Promise<{ id: bigint }> {
+  ): Promise<SubscriptionWithTariffAndChat> {
     if (deleteOld) {
       await this.prisma.subscription.deleteMany({
         where: {
@@ -39,16 +39,15 @@ export default class DbServiceImpl implements DbService {
       });
     }
 
-    const subscription = await this.prisma.subscription.create({
+    return await this.prisma.subscription.create({
       data: {
         subscriberUserId: subscriber.id,
         subscriberUserName: subscriber.username,
         ...object,
         ...data,
       },
+      include: { tariff: true, chat: true },
     });
-
-    return { id: subscription.id };
   }
 
   async deleteSubscription(id: bigint): Promise<void> {
@@ -60,29 +59,6 @@ export default class DbServiceImpl implements DbService {
       data: msg,
       include: { from: true },
     });
-  }
-
-  async getOrCreateChat(
-    chatId: number,
-    title: Buffer | undefined
-  ): Promise<{ chat: Chat; created: boolean }> {
-    let chat = await this.prisma.chat.findUnique({ where: { id: chatId } });
-
-    if (chat && title != null && chat.title?.compare(title) !== 0) {
-      chat = await this.prisma.chat.update({
-        where: { id: chat.id },
-        data: { title },
-      });
-    }
-
-    return chat === null
-      ? {
-          chat: await this.prisma.chat.create({
-            data: { id: chatId, isMember: true },
-          }),
-          created: true,
-        }
-      : { chat, created: false };
   }
 
   async getOrCreateUser(userInput: UserCreateInput): Promise<[user: User, created: boolean]> {
@@ -263,7 +239,7 @@ export default class DbServiceImpl implements DbService {
     chatId: number,
     { settings, ...data }: Partial<TOmit<Chat, 'id'>>
   ): Promise<void> {
-    await this.getOrCreateChat(chatId, undefined);
+    await this.upsertChat(chatId, undefined);
     await this.prisma.chat.update({
       where: { id: chatId },
       data: {
@@ -278,5 +254,28 @@ export default class DbServiceImpl implements DbService {
       where: { id },
       data,
     });
+  }
+
+  async upsertChat(
+    chatId: number,
+    title: Buffer | undefined
+  ): Promise<{ chat: Chat; created: boolean }> {
+    let chat = await this.prisma.chat.findUnique({ where: { id: chatId } });
+
+    if (chat && title != null && chat.title?.compare(title) !== 0) {
+      chat = await this.prisma.chat.update({
+        where: { id: chat.id },
+        data: { title },
+      });
+    }
+
+    return chat === null
+      ? {
+          chat: await this.prisma.chat.create({
+            data: { id: chatId, isMember: true },
+          }),
+          created: true,
+        }
+      : { chat, created: false };
   }
 }

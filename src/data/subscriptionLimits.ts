@@ -113,7 +113,7 @@ async function getLimitsDataForSubscription({
     lastSummaryDate: maxTime([lastSummaryDate, yesterday()]),
     maxSummaryParts: getMaxSummaryParts(subscription?.tariff),
     maxTextToSummarizeApproximateLength: getMaxTextToSummarizeApproximateLength(
-      subscription?.tariff
+      premiumSummariesRest > 0 ? subscription?.tariff : undefined
     ),
   };
 }
@@ -141,5 +141,4 @@ const getRestTranslationKey = (
       { freeSummariesRest: 0, premiumSummariesRest: 0 },
       () => 'shared.rest.premiumEnded' as const
     )
-    .with({ freeSummariesRest: 0 }, () => 'shared.rest.premiumNoFree' as const)
-    .otherwise(() => 'shared.rest.premiumWithFree' as const);
+    .otherwise(() => 'shared.rest.premium' as const);

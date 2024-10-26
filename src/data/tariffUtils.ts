@@ -24,11 +24,13 @@ export async function getTariffRestText({
   chatId,
   subscription,
   thanks = false,
+  price = false,
 }: {
   db: DbService;
   telegramBot: TelegramBotService;
   userId: number | bigint | undefined;
   chatId: number | bigint;
+  price?: boolean;
   subscription?: SubscriptionWithTariff;
   thanks?: boolean;
 }): Promise<string> {
@@ -39,9 +41,11 @@ export async function getTariffRestText({
   return limitsData.subscription
     ? t('tariff.premium', {
         name: limitsData.subscription.tariff.name,
+        price: price ? ` (${getTariffPriceText(limitsData.subscription.tariff)})` : '',
         rest: restText,
         expires: getSubscriptionExpiresText(limitsData.subscription),
         thanks: thanks ? t('tariff.thanks') : '',
+        interpolation: { escapeValue: false },
       })
     : t('tariff.free', { rest: restText });
 }

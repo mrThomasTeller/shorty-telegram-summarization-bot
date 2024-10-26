@@ -55,7 +55,7 @@ async function addMessageToDb(
     msg.from && (await db.getOrCreateUser(convertTgUserToDbUserInput(msg.from)));
   const user = userCreationResult?.[0];
 
-  const { chat, created: chatCreated } = await db.getOrCreateChat(
+  const { chat, created: chatCreated } = await db.upsertChat(
     msg.chat.id,
     encryptIfExists(msg.chat.title)
   );

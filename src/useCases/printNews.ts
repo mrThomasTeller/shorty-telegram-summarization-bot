@@ -9,7 +9,7 @@ export default async function printNews(
   telegramBot: TelegramBotService,
   tgChat: TelegramBot.Chat
 ): Promise<void> {
-  const { chat } = await db.getOrCreateChat(tgChat.id, encryptIfExists(tgChat.title));
+  const { chat } = await db.upsertChat(tgChat.id, encryptIfExists(tgChat.title));
   if ((chat.news ?? '').trim() !== '') {
     await telegramBot.sendMessage(tgChat.id, chat.news ?? '', { parse_mode: 'MarkdownV2' });
   }

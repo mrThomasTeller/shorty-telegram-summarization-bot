@@ -3,20 +3,21 @@ import logger from '../../../config/logger.ts';
 import { required } from '../../../lib/lang.ts';
 import type DbService from '../../../services/DbService.ts';
 import type TelegramBotService from '../../../services/TelegramBotService.ts';
-import { tariffChosen } from './chooseTariff.ts';
+import { chooseTariff, tariffChosen } from './chooseTariff.ts';
 import { doEditSubscription, editSubscription } from './editSubscription.ts';
 import { type EditSubscriptionAction } from './types/EditSubscriptionAction.ts';
-import { type ObjectType } from './types/ObjectType.ts';
+import { ObjectType } from './types/ObjectType.ts';
+import { subscribeFromGroupInstructions } from './common.ts';
 
 let key = 0;
 
 const objectCallbackKey = `subscription_${++key}`;
-export const makeObjectCallbackData = (object: ObjectType, id: number | bigint): string =>
-  `${objectCallbackKey}/${object}/${id}`;
+export const makeObjectCallbackData = (object: ObjectType, id?: number | bigint): string =>
+  `${objectCallbackKey}/${object}/${id ?? 0}`;
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const parseObjectCallbackData = (data: string) => ({
   object: required(data.split('/')[1] as ObjectType, 'object is required in callback data'),
-  id: BigInt(required(data.split('/')[2], 'id is required in callback data')),
+  id: BigInt(required(data.split('/')[2], 'id is required in callback data')) || undefined,
 });
 
 const tariffCallbackKey = `subscription_${++key}`;
@@ -64,14 +65,29 @@ export async function tgButtonCallback(
     // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
     switch (key) {
       case objectCallbackKey: {
-        await editSubscription({
+        const params = {
           ...parseObjectCallbackData(query.data),
           db,
           telegramBot,
           user: query.from,
-        });
+        };
+
+        if (params.object === ObjectType.subscription) {
+          await editSubscription({
+            ...params,
+            id: required(params.id, 'subscription id is required'),
+          });
+        } else if (params.object === ObjectType.group && params.id == null) {
+          await subscribeFromGroupInstructions(telegramBot, query.from.id, 'subscribe');
+        } else {
+          await chooseTariff({
+            ...params,
+            id: required(params.id, 'object id is required'),
+          });
+        }
         break;
       }
+
       case tariffCallbackKey: {
         await tariffChosen({
           ...parseTariffCallbackData(query.data),
@@ -81,6 +97,7 @@ export async function tgButtonCallback(
         });
         break;
       }
+
       case editSubscriptionCallbackKey: {
         await doEditSubscription({
           ...parseEditSubscriptionCallbackData(query.data),

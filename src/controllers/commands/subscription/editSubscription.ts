@@ -14,107 +14,103 @@ import { makeEditSubscriptionCallbackData, makeObjectCallbackData } from './tgBu
 import { EditSubscriptionAction } from './types/EditSubscriptionAction.ts';
 import { ObjectType } from './types/ObjectType.ts';
 import { ucFirst } from '../../../lib/string.ts';
+import { subscribeFromGroupInstructions } from './common.ts';
 
 export async function editSubscription({
-  object,
   id,
   db,
   telegramBot,
   user,
 }: {
-  object: ObjectType;
   id: bigint;
   db: DbService;
   telegramBot: TelegramBotService;
   user: TelegramBot.User;
 }): Promise<void> {
-  if (object === ObjectType.subscription) {
-    const subscription = await db.getSubscription(id);
+  const subscription = await db.getSubscription(id);
 
-    const tariffText = await getTariffRestText({
-      db,
-      telegramBot,
-      userId: user.id,
-      chatId: required(
-        subscription.chatId ?? subscription.userId,
-        'subscription chatId or userId is required'
-      ),
+  const subscriptionObjectText = ucFirst(
+    getSubscriptionObjectText({
       subscription,
-    });
+      grammarCase: 'nom',
+      addition: 'none',
+    })
+  );
 
-    const subscriptionObjectText = ucFirst(getSubscriptionObjectText(subscription, true));
+  const tariffText = await getTariffRestText({
+    db,
+    telegramBot,
+    userId: user.id,
+    chatId: required(
+      subscription.chatId ?? subscription.userId,
+      'subscription chatId or userId is required'
+    ),
+    subscription,
+    price: true,
+  });
 
-    // todo 2sub кнопка назад
-    // fixme cover
-    await telegramBot.sendMessage(
-      user.id,
-      `${subscriptionObjectText}\n\n${tariffText}\n\nВы хотите изменить подписку?`,
-      {
-        reply_markup: {
-          inline_keyboard: [
-            [
-              {
-                // fixme cover
-                text: 'Изменить тариф',
-                callback_data: makeEditSubscriptionCallbackData(
-                  id,
-                  EditSubscriptionAction.changeTariff
-                ),
-              },
-            ],
-            [
-              {
-                // fixme cover
-                text: 'Переключить на другую группу',
-                callback_data: makeEditSubscriptionCallbackData(
-                  id,
-                  EditSubscriptionAction.changeGroup
-                ),
-              },
-            ],
-            subscription.userId == null && [
-              {
-                // fixme cover
-                text: 'Переключить на себя',
-                callback_data: makeEditSubscriptionCallbackData(
-                  id,
-                  EditSubscriptionAction.changeToMe
-                ),
-              },
-            ],
-            [
-              subscription.autoRenew
-                ? {
-                    // fixme cover
-                    text: 'Отключить автопродление подписки',
-                    callback_data: makeEditSubscriptionCallbackData(
-                      id,
-                      EditSubscriptionAction.unsubscribe
-                    ),
-                  }
-                : {
-                    // fixme cover
-                    text: 'Включить автопродление подписки',
-                    callback_data: makeEditSubscriptionCallbackData(
-                      id,
-                      EditSubscriptionAction.resubscribe
-                    ),
-                  },
-            ],
-          ].filter(Boolean),
-        },
-      }
-    );
-  } else {
-    // fixme cover
-    await chooseTariff({
-      object,
-      id,
-      db,
-      telegramBot,
-      user,
-    });
-  }
+  await telegramBot.sendMessage(
+    user.id,
+    `${subscriptionObjectText}\n\n${tariffText}\n\nВы хотите изменить подписку?`,
+    {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              // fixme cover
+              text: '💼 Изменить тариф',
+              callback_data: makeEditSubscriptionCallbackData(
+                id,
+                EditSubscriptionAction.changeTariff
+              ),
+            },
+          ],
+          [
+            {
+              // fixme cover
+              text:
+                subscription.chatId == null
+                  ? '👥 Переключить на группу'
+                  : '👥 Переключить на другую группу',
+              callback_data: makeEditSubscriptionCallbackData(
+                id,
+                EditSubscriptionAction.changeGroup
+              ),
+            },
+          ],
+          subscription.userId == null && [
+            {
+              // fixme cover
+              text: '👤 Переключить на себя',
+              callback_data: makeEditSubscriptionCallbackData(
+                id,
+                EditSubscriptionAction.changeToMe
+              ),
+            },
+          ],
+          [
+            subscription.autoRenew
+              ? {
+                  // fixme cover
+                  text: '🚫 Отключить автопродление',
+                  callback_data: makeEditSubscriptionCallbackData(
+                    id,
+                    EditSubscriptionAction.unsubscribe
+                  ),
+                }
+              : {
+                  // fixme cover
+                  text: '🔔 Включить автопродление',
+                  callback_data: makeEditSubscriptionCallbackData(
+                    id,
+                    EditSubscriptionAction.resubscribe
+                  ),
+                },
+          ],
+        ].filter(Boolean),
+      },
+    }
+  );
 }
 
 export async function doEditSubscription({
@@ -148,14 +144,8 @@ export async function doEditSubscription({
     }
     case EditSubscriptionAction.changeGroup: {
       if (groupId == null) {
-        const botName = await telegramBot.getUsername();
         // fixme cover
-        await telegramBot.sendMessage(
-          user.id,
-          `Для того, чтобы переключить подписку на новую группу:
-1️⃣ Добавьте меня в эту новую группу
-2️⃣ В новой группе отправьте команду \`/subscription@${botName}\``
-        );
+        await subscribeFromGroupInstructions(telegramBot, user.id, 'changeGroup');
       } else {
         await db.updateSubscription(subscriptionId, { chatId: groupId, userId: null });
 
@@ -163,7 +153,11 @@ export async function doEditSubscription({
         // fixme cover
         await telegramBot.sendMessage(
           user.id,
-          `✅ Подписка переключена на группу "${getGroupTitle(groupId, chat, 'gen')}"`
+          `✅ Подписка переключена на группу "${getGroupTitle({
+            chatId: groupId,
+            chat,
+            grammarCase: 'gen',
+          })}"`
         );
       }
       break;
@@ -223,7 +217,6 @@ export async function doEditSubscription({
       // fixme cover
       await telegramBot.sendMessage(user.id, '🚫 Действие отменено');
       await editSubscription({
-        object: ObjectType.subscription,
         id: subscriptionId,
         db,
         telegramBot,
@@ -274,11 +267,11 @@ export async function chooseSubscriptionToChange({
   // fixme cover
   await telegramBot.sendMessage(
     user.id,
-    `${getGroupTitle(
-      groupId,
+    `${getGroupTitle({
+      chatId: groupId,
       chat,
-      'nom'
-    )}\n\nВы хотите оплатить новую подписку или перевести существующую на эту группу?`,
+      grammarCase: 'nom',
+    })}\n\nВы хотите оплатить новую подписку или перевести существующую на эту группу?`,
     {
       reply_markup: {
         inline_keyboard: [
@@ -302,11 +295,11 @@ export async function chooseSubscriptionToChange({
           ],
           groupsSubscriptions.map((s) => ({
             // fixme cover
-            text: `Переключить подписку с "${getGroupTitle(
-              required(s.chatId, 'chatId is required'),
-              s.chat,
-              'gen'
-            )}" на эту группу`,
+            text: `Переключить подписку с "${getGroupTitle({
+              chatId: required(s.chatId, 'chatId is required'),
+              chat: s.chat,
+              grammarCase: 'gen',
+            })}" на эту группу`,
             callback_data: makeEditSubscriptionCallbackData(
               s.id,
               EditSubscriptionAction.changeGroup,

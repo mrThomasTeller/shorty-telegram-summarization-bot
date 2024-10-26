@@ -16,37 +16,88 @@
 --     23
 --   ),
 --   ('+50s', 1, '+50 выжимок', 50)
+UPDATE
+  "Tariff"
+SET
+  "id" = '35s',
+  "name" = '35 выжимок',
+  "summaries" = 35
+WHERE
+  "id" = '+20s';
 
-update "Tariff"
-set "id" = '+23s', "name" = '+23 выжимки', "summaries" = 23
-where "id" = '+20s';
+UPDATE
+  "Tariff"
+SET
+  "id" = '35s,x2',
+  "name" = '35 выжимок и x2 сообщений для выжимки',
+  "summaries" = 35
+WHERE
+  "id" = '+20s,x2';
 
-update "Tariff"
-set "id" = '+23s,x2', "name" = '+23 выжимки и x2 сообщений для выжимки', "summaries" = 23
-where "id" = '+20s,x2';
+UPDATE
+  "Tariff"
+SET
+  "id" = '35s,x3',
+  "name" = '35 выжимок и x3 сообщений для выжимки',
+  "summaries" = 35
+WHERE
+  "id" = '+20s,x3';
 
-update "Tariff"
-set "id" = '+23s,x3', "name" = '+23 выжимки и x3 сообщений для выжимки', "summaries" = 23
-where "id" = '+20s,x3';
+UPDATE
+  "Tariff"
+SET
+  "id" = '70s',
+  "name" = '70 выжимок',
+  "summaries" = 70
+WHERE
+  "id" = '+50s';
+
+UPDATE
+  "Tariff"
+SET
+  "id" = '120s',
+  "name" = '120 выжимок',
+  "summaries" = 120
+WHERE
+  "id" = '+100s';
 
 -- descriptions, prices
+UPDATE
+  "Tariff"
+SET
+  "description" = '35 выжимок в месяц: с лихвой хватит на каждый день!',
+  "price" = 15000
+WHERE
+  "id" = '35s';
 
-update "Tariff"
-set "description" = '23 дополнительные выжимки в месяц. Вместе с бесплатными у вас будет больше 35 выжимок в месяц: с лихвой хватит на каждый день!', "price" = 15000
-where "id" = '+23s';
+UPDATE
+  "Tariff"
+SET
+  "description" = '',
+  "price" = 25000
+WHERE
+  "id" = '70s';
 
-update "Tariff"
-set "description" = '', "price" = 25000
-where "id" = '+50s';
+UPDATE
+  "Tariff"
+SET
+  "description" = 'Увеличивает в два раза лимит на количество сообщений для одной выжимки. Подходит для чатов с большим количеством сообщений.',
+  "price" = 27000
+WHERE
+  "id" = '35s,x2';
 
-update "Tariff"
-set "description" = 'Увеличивает в два раза лимит на количество сообщений для одной выжимки. Подходит для чатов с большим количеством сообщений.', "price" = 27000
-where "id" = '+23s,x2';
+UPDATE
+  "Tariff"
+SET
+  "description" = 'В три раза увеличивает лимит на количество сообщений для одной выжимки! Если в вашем чате очень очень много сообщений! 😃',
+  "price" = 40000
+WHERE
+  "id" = '35s,x3';
 
-update "Tariff"
-set "description" = 'В три раза увеличивает лимит на количество сообщений для одной выжимки! Если в вашем чате очень очень много сообщений! 😃', "price" = 40000
-where "id" = '+23s,x3';
-
-update "Tariff"
-set "description" = '', "price" = 47500
-where "id" = '+100s';
+UPDATE
+  "Tariff"
+SET
+  "description" = '',
+  "price" = 47500
+WHERE
+  "id" = '120s';

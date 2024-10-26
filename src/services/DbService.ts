@@ -31,7 +31,10 @@ export type AddSubscriptionParams = {
 
 // todo разделить на несколько сервисов
 type DbService = {
-  addSubscription: (params: AddSubscriptionParams, deleteOld?: boolean) => Promise<{ id: bigint }>;
+  addSubscription: (
+    params: AddSubscriptionParams,
+    deleteOld?: boolean
+  ) => Promise<SubscriptionWithTariffAndChat>;
 
   countSummariesFrom: (params: {
     chatId?: number;
@@ -63,11 +66,6 @@ type DbService = {
 
   getChatMessages: (chatId: number, fromDate?: Date) => Promise<DbChatMessage[]>;
 
-  getOrCreateChat: (
-    chatId: number,
-    title: Buffer | undefined
-  ) => Promise<{ chat: Chat; created: boolean }>;
-
   getOrCreateUser: (userInput: UserCreateInput) => Promise<[user: User, created: boolean]>;
 
   getSubscription: (id: bigint) => Promise<SubscriptionWithTariffAndChat>;
@@ -91,6 +89,11 @@ type DbService = {
   updateChat: (chatId: number, data: Partial<TOmit<Chat, 'id'>>) => Promise<void>;
 
   updateSubscription: (id: bigint, data: Partial<Subscription>) => Promise<void>;
+
+  upsertChat: (
+    chatId: number,
+    title: Buffer | undefined
+  ) => Promise<{ chat: Chat; created: boolean }>;
 };
 
 export default DbService;

@@ -2,7 +2,7 @@ export default {
   recovery: {
     message:
       '🦾🤖 Бот снова вернулся к работе! Правда он не знает о тех сообщениях, которые вы посылали пока он был на обслуживании. Теперь он опять запоминает все ваши новые сообщения и с удовольствием сделает краткую выжимку для вас!',
-    debugInfo: 'Сообщения отправлены в {{count}} $t(_terms.chat, {"count": {{count}}})!',
+    debugInfo: 'Сообщения отправлены в {{count}} $t(terms.chat, {"count": {{count}}})!',
     cantSendMessageError: 'Не могу отправить сообщение: {{message}}',
   },
   commands: {
@@ -11,7 +11,7 @@ export default {
     'help.description': 'Получить помощь по работе бота',
     'start.description': 'Начать работу с ботом',
     'tariff.description': 'Узнать текущий тариф',
-    'subscription.description': 'Приобрести, изменить или отписаться от платной подписки',
+    'subscription.description': 'Приобрести или изменить платную подписку',
     settings: {
       description: 'Изменить настройки',
     },
@@ -45,9 +45,9 @@ export default {
       fewMessages:
         '🙄 Слишком мало сообщений для создания выжимки. Нужно хотя бы {{count}}. Вы пообщайтесь, а потом позовите меня 😉',
       maxSummariesExceeded: {
-        free: '🤯 Вы можете делать не более {{count}} $t(_terms.summary_gen, {"count": {{count}}}) в неделю. Приходите на следующей неделе или <a href="https://t.me/{{botName}}?start=subscription={{chatId}}">⚡️ оформите подписку</a> 😉',
+        free: '🤯 Вы можете делать не более {{count}} $t(terms.summary_gen, {"count": {{count}}}) в неделю. Приходите на следующей неделе или <a href="https://t.me/{{botName}}?start=subscription={{chatId}}">⚡️ оформите подписку</a> 😉',
         premium:
-          '🤯 Бесплатные и премиум выжимки кончились. Приходите на следующей неделе или <a href="https://t.me/{{botName}}?start=subscription={{chatId}}">⚡️ оформите более высокий тариф</a> 😉',
+          '🤯 Бесплатные и премиум выжимки кончились. Приходите на следующей неделе, чтобы получить бесплатные выжимки, или <a href="https://t.me/{{botName}}?start=subscription={{chatId}}">⚡️ оформите более высокий тариф</a> 😉',
       },
     },
     debug: {
@@ -60,19 +60,18 @@ export default {
   },
   tariff: {
     free: '🆓 Сейчас вы на бесплатном тарифе.\n{{rest}}',
-    premium: '🚀 Сейчас вы на тарифе: "{{name}}".\n{{rest}}\n{{expires}}{{thanks}}',
+    premium: '🚀 Сейчас вы на тарифе: "{{name}}"{{price}}\n{{rest}}\n{{expires}}{{thanks}}',
     thanks: '\nСпасибо, за вашу поддержку 🙏',
   },
 
   shared: {
     rest: {
-      free: '🔋 У вас $t(_terms.last, {"count": {{free}}}) {{free}} из {{freeTotal}} $t(_terms.freeSummary_gen, {"count": {{freeTotal}}}) на этой неделе (<a href="https://t.me/{{botName}}?start=subscription={{chatId}}">⚡️ увеличить лимит</a>)',
-      premiumWithFree:
-        '🔋 У вас $t(_terms.last, {"count": {{free}}}) {{free}} $t(_terms.freeSummary, {"count": {{free}}}) на неделю и {{premium}} $t(_terms.premiumSummary, {"count": {{premium}}}) на месяц',
-      premiumNoFree: '🔋 У вас осталось {{premium}} премиум выжимок на месяц',
+      free: '🔋 У вас $t(terms.last, {"count": {{free}}}) {{free}} из {{freeTotal}} $t(terms.freeSummary_gen, {"count": {{freeTotal}}}) на этой неделе (<a href="https://t.me/{{botName}}?start=subscription={{chatId}}">⚡️ увеличить лимит</a>)',
+      premium: '🔋 У вас осталось {{premium}} премиум выжимок на месяц',
       premiumEnded:
-        '🔋 У вас закончились премиум выжимки на месяц. Подождите следующей недели или <a href="https://t.me/{{botName}}?start=subscription={{chatId}}">⚡️ переходите на более высокий тариф</a>',
+        '🔋 У вас закончились премиум выжимки на месяц. Подождите следующей недели, чтобы получить бесплатные выжимки, или <a href="https://t.me/{{botName}}?start=subscription={{chatId}}">⚡️ переходите на более высокий тариф</a>',
     },
+    freeSummariesCount: '{{count}} $t(terms.freeSummary_gen, {"count": {{count}}})',
   },
 
   // падеж - case
@@ -82,7 +81,7 @@ export default {
   // Dative - дательный падеж (кому? чему?)
   // Instrumental - творительный падеж (кем? чем?)
   // Prepositional - предложный падеж (о ком? о чём?)
-  _terms: {
+  terms: {
     chat_few: 'чата',
     chat_one: 'чат',
     chat: 'чатов',
@@ -91,11 +90,16 @@ export default {
     freeSummary: 'бесплатных выжимок',
     freeSummary_gen_one: 'бесплатной выжимки',
     freeSummary_gen: 'бесплатных выжимок',
+    group_nom: 'группа',
+    group_acc: 'группу',
+    group_gen: 'группы',
     last_one: 'осталась',
     last: 'осталось',
     premiumSummary_few: 'премиум выжимки',
     premiumSummary_one: 'премиум выжимка',
     premiumSummary: 'премиум выжимок',
+    subscription_nom_one: 'подписка',
+    subscription_acc_one: 'подписку',
     summary_gen_one: 'выжимки',
     summary_gen: 'выжимок',
   },

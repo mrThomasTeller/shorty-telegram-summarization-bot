@@ -9,8 +9,7 @@ import { makeTariffCallbackData } from './tgButtonsCallbacks.ts';
 import { type ObjectType } from './types/ObjectType.ts';
 import { type UkassaWebhookMetadata } from './types/UkassaWebhookMetadata.ts';
 import { getTariffPriceText } from '../../../data/tariffUtils.ts';
-
-const emojiNumbers = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+import { getEmojiNumber } from '../../../lib/text.ts';
 
 export async function chooseTariff({
   object,
@@ -31,21 +30,19 @@ export async function chooseTariff({
 ${tariffs
   .map(
     (tariff, index) =>
-      `**${emojiNumbers[index]} ${esc(tariff.name)} \\(${getTariffPriceText(
+      `**${getEmojiNumber(index + 1)} \`${esc(tariff.name)}\` \\(${getTariffPriceText(
         tariff
         // eslint-disable-next-line sonarjs/no-nested-template-literals
       )}\\)**${Boolean(tariff.description) ? `\n_${esc(tariff.description)}_` : ''}`
   )
   .join('\n\n')}`;
 
-  // fixme cover
   await telegramBot.sendMessage(user.id, text, {
     parse_mode: 'MarkdownV2',
     reply_markup: {
       inline_keyboard: tariffs.map((tariff, index) => [
         {
-          // fixme cover
-          text: `${emojiNumbers[index]} ${tariff.name}`,
+          text: `${getEmojiNumber(index + 1)} ${tariff.name}`,
           callback_data: makeTariffCallbackData(object, id, tariff.id),
         },
       ]),
@@ -77,7 +74,6 @@ export async function tariffChosen({
   }
 
   // todo 2sub remove loading
-  // fixme cover
   await telegramBot.sendMessage(user.id, '⏳ Подождите…');
 
   const botName = await telegramBot.getUsername();
@@ -87,7 +83,7 @@ export async function tariffChosen({
     returnUrl: `https://t.me/${botName}`,
     metadata: {
       object,
-      id,
+      id: Number(id),
       tariffId,
       userId: user.id,
       username: user.username,
@@ -95,14 +91,12 @@ export async function tariffChosen({
     },
   });
 
-  // fixme cover
   await telegramBot.sendMessage(
     user.id,
     '❗ Пожалуйста, отметьте опцию `Разрешаю автосписания` \\(`I allow debiting money automatically`\\) если не хотите вручную продлевать подписку каждый месяц\\. В этом случае подписка будет продлеваться автоматически\\.\n\n⭐ Ссылка на оплату 👇',
     {
       parse_mode: 'MarkdownV2',
       reply_markup: {
-        // fixme cover
         inline_keyboard: [[{ text: 'Оплатить через сервис ЮKassa', url: paymentUrl }]],
       },
     }

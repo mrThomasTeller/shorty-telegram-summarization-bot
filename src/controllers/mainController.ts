@@ -1,4 +1,4 @@
-import { type GroupedObservable, groupBy, map } from 'rxjs';
+import { type GroupedObservable, groupBy, map, mergeMap } from 'rxjs';
 import type ChatController from './ChatController.ts';
 import { getEnv, getWhiteChatsList } from '../config/envVars.ts';
 import {
@@ -18,6 +18,8 @@ import type TelegramBot from 'node-telegram-bot-api';
 import type Services from '../services/Services.ts';
 import logger from '../config/logger.ts';
 import noneCommand from '../config/commands/none.ts';
+import { convertTgUserToDbUserInput } from '../data/convertors.ts';
+import { encryptIfExists } from '../data/encryption.ts';
 
 type ObserveCase = {
   command: Command;
@@ -46,6 +48,7 @@ const mainController: ChatController = ({ chat$, chatId, services }) => {
     .subscribe(observeCommandsOrSendMaintenanceMessages(chatId, services));
 };
 
+// todo забыл зачем это надо...
 const messageHasCommandForBot =
   (telegramBot: TelegramBotService) =>
   async ({ msg, parsedCommand }: MessageAndParsedCommand): Promise<boolean> => {
@@ -101,7 +104,17 @@ const observeCommandsOrSendMaintenanceMessages =
   (chatId: number, services: Services) =>
   (chatParsedCommand$: GroupedObservable<ObserveCase, MessageAndParsedCommand>) => {
     const observeCase = chatParsedCommand$.key;
-    const chatCommandMessage$ = chatParsedCommand$.pipe(map(({ msg }) => msg));
+    const chatCommandMessage$ = chatParsedCommand$.pipe(
+      mergeMap(async ({ msg }) => {
+        if (msg.from) {
+          await services.db.getOrCreateUser(convertTgUserToDbUserInput(msg.from));
+        }
+
+        await services.db.upsertChat(msg.chat.id, encryptIfExists(msg.chat.title));
+
+        return msg;
+      })
+    );
 
     if (observeCase.case === 'maintenanceMessage') {
       chatCommandMessage$.subscribe(sendMaintenanceMessageFn(chatId, services.telegramBot));

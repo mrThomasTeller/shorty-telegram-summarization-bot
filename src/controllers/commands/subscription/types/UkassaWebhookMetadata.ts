@@ -2,7 +2,7 @@ import { type ObjectType } from './ObjectType.ts';
 
 export type UkassaWebhookMetadata = {
   object: ObjectType;
-  id: bigint;
+  id: number;
   tariffId: string;
   userId: number;
   username: string | undefined;

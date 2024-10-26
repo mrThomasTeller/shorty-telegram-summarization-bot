@@ -33,6 +33,8 @@ export async function sendStartMessage(
   telegramBot: TelegramBotService,
   chatId: number
 ): Promise<void> {
+  const botName = await telegramBot.getUsername();
+
   await telegramBot.sendMessage(
     chatId,
     renderStartMessage(required(await telegramBot.getUsername())),
@@ -43,7 +45,7 @@ export async function sendStartMessage(
           [
             {
               text: 'Добавить в групповой чат',
-              url: 'https://t.me/shorty_chat_bot?startgroup=true',
+              url: `https://t.me/${botName}?startgroup=true`,
             },
           ],
         ],

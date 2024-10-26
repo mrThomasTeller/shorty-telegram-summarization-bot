@@ -18,7 +18,7 @@ const settingsCommandController: ChatController = ({ chat$, chatId, services }) 
       const parseResult = chatSettingsSchema.safeParse({ [name]: value ?? '' });
 
       if (parseResult.success) {
-        const { chat } = await services.db.getOrCreateChat(chatId, encryptIfExists(msg.chat.title));
+        const { chat } = await services.db.upsertChat(chatId, encryptIfExists(msg.chat.title));
         await services.db.updateChat(chatId, {
           settings: {
             ...chatSettingsSchema.parse(chat.settings),

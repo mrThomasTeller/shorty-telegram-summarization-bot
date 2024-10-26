@@ -53,7 +53,7 @@ function createDbServiceMock() {
     false,
   ]);
 
-  service.getOrCreateChat.mockImplementation(async (chatId) => ({
+  service.upsertChat.mockImplementation(async (chatId) => ({
     chat: {
       id: BigInt(chatId),
       isMember: true,

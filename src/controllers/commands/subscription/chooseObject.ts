@@ -4,8 +4,12 @@ import { type SubscriptionWithTariffAndChat } from '../../../services/DbService.
 import type TelegramBotService from '../../../services/TelegramBotService.ts';
 import { makeObjectCallbackData } from './tgButtonsCallbacks.ts';
 import { ObjectType } from './types/ObjectType.ts';
-import { ucFirst } from '../../../lib/string.ts';
+import { strCompare, ucFirst } from '../../../lib/string.ts';
+import { getEmojiNumber } from '../../../lib/text.ts';
+import { getGroupTitle } from '../../../data/dbChatUtils.ts';
+import { required } from '../../../lib/lang.ts';
 
+// todo 2sub сделать меню ссылками
 export async function chooseObject({
   userSubscription,
   groupsSubscriptions,
@@ -17,48 +21,60 @@ export async function chooseObject({
   telegramBot: TelegramBotService;
   user: TelegramBot.User;
 }): Promise<void> {
+  const options = [
+    {
+      description:
+        '✚ Оформить новую подписку на `группу`, тогда любой участник этой группы сможет делать краткие выжимки',
+      button: '✚ Новая подписка на группу',
+      callback_data: makeObjectCallbackData(ObjectType.group),
+    },
+    userSubscription
+      ? {
+          description: `✏️ Редактировать ${getSubscriptionObjectText({
+            subscription: userSubscription,
+            grammarCase: 'acc',
+            addition: 'tariffAndPrice',
+            markdown: true,
+          })}`,
+          button: '✏️ Подписка на себя',
+          callback_data: makeObjectCallbackData(ObjectType.subscription, userSubscription.id),
+        }
+      : {
+          description:
+            '✚ Оформить новую подписку на `себя`, тогда вы сможете делать краткие выжимки в любом чате \\(в котором есть Shorty\\)',
+          button: '✚ Новая подписка на себя',
+          callback_data: makeObjectCallbackData(ObjectType.user, user.id),
+        },
+    ...groupsSubscriptions
+      .map((s) => ({
+        description: `✏️ Редактировать ${getSubscriptionObjectText({
+          subscription: s,
+          grammarCase: 'acc',
+          addition: 'tariffAndPrice',
+          markdown: true,
+        })}`,
+        button: `✏️ ${ucFirst(
+          getGroupTitle({ chatId: required(s.chatId, 'chatId is required'), chat: s.chat })
+        )}`,
+        callback_data: makeObjectCallbackData(ObjectType.subscription, s.id),
+      }))
+      .sort((a, b) => strCompare(a.button, b.button)),
+  ];
+
   await telegramBot.sendMessage(
     user.id,
-    `Здесь вы можете:
-1️⃣ Оформить новую подписку
-2️⃣ Просмотреть информацию о существующей подписке
-3️⃣ Отредактировать существующую подписку (изменить тариф, группу, отписаться или подписаться заново)
-
-👉 При оформлении подписки на себя вы сможете делать краткие выжимки в любом чате (в котором есть Shorty)
-
-👉 При оформлении подписки на группу любой участник этого чата сможет делать краткие выжимки`,
+    `Через это меню вы можете:\n\n${options
+      .map((o, i) => `${getEmojiNumber(i + 1)} ${o.description}`)
+      .join('\n')}`,
     {
+      parse_mode: 'MarkdownV2',
       reply_markup: {
-        inline_keyboard: [
-          [
-            userSubscription
-              ? {
-                  // fixme cover
-                  text: ucFirst(getSubscriptionObjectText(userSubscription, true)),
-                  callback_data: makeObjectCallbackData(
-                    ObjectType.subscription,
-                    userSubscription.id
-                  ),
-                }
-              : {
-                  text: 'Оформить подписку на себя',
-                  callback_data: makeObjectCallbackData(ObjectType.user, user.id),
-                },
-          ],
-          [
-            {
-              // fixme cover
-              text: 'Оформить новую подписку на группу',
-              callback_data: makeObjectCallbackData(ObjectType.group, 0),
-            },
-          ],
-          // fixme cover add
-          // fixme cover change
-          groupsSubscriptions.map((s) => ({
-            text: ucFirst(getSubscriptionObjectText(s, true)),
-            callback_data: makeObjectCallbackData(ObjectType.subscription, s.id),
-          })),
-        ],
+        inline_keyboard: options.map((o, i) => [
+          {
+            text: `${getEmojiNumber(i + 1)} ${o.button}`,
+            callback_data: o.callback_data,
+          },
+        ]),
       },
     }
   );

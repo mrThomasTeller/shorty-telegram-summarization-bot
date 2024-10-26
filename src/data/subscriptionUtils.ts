@@ -8,6 +8,8 @@ import {
 import { getGroupTitle } from './dbChatUtils.ts';
 import { required } from '../lib/lang.ts';
 import { getTariffPriceText } from './tariffUtils.ts';
+import { t } from '../config/translations/index.ts';
+import { escapeTelegramMarkdown } from './telegramBotMessageUtils.ts';
 
 export const isSubscriptionActive = (subscription: SubscriptionWithTariff): boolean =>
   subscription.expires > new Date();
@@ -37,19 +39,39 @@ export const getSubscriptionExpiresText = (subscription: Subscription): string =
     : `Ваша подписка действует до ${formattedDate}`;
 };
 
-export function getSubscriptionObjectText(
-  subscription: SubscriptionWithTariffAndChat,
-  includePrice = false
-): string {
-  const price = includePrice ? `, ${getTariffPriceText(subscription.tariff)}` : '';
+export function getSubscriptionObjectText({
+  subscription,
+  grammarCase = 'nom',
+  addition = 'tariff',
+  markdown = false,
+}: {
+  subscription: SubscriptionWithTariffAndChat;
+  grammarCase?: 'nom' | 'acc';
+  addition?: 'tariffAndPrice' | 'tariff' | 'none';
+  markdown?: boolean;
+}): string {
+  const price = addition === 'tariffAndPrice' ? `, ${getTariffPriceText(subscription.tariff)}` : '';
 
-  return Boolean(subscription.userId)
-    ? `подписка на себя (${subscription.tariff.name}${price})`
-    : `подписка на "${getGroupTitle(
-        required(subscription.chatId, 'chatId is required'),
-        subscription.chat,
-        'gen'
-      )}" (${subscription.tariff.name}${price})`;
+  const additionalText_ = addition === 'none' ? '' : ` (${subscription.tariff.name}${price})`;
+  const additionalText = markdown
+    ? `_${escapeTelegramMarkdown(additionalText_)}_`
+    : additionalText_;
+
+  const subscriptionTerm = t(`terms.subscription_${grammarCase}_one`);
+
+  const object = Boolean(subscription.userId)
+    ? markdown
+      ? '`себя`'
+      : 'себя'
+    : getGroupTitle({
+        chatId: required(subscription.chatId, 'chatId is required'),
+        chat: subscription.chat,
+        grammarCase: 'acc',
+        alwaysAddGroupTerm: true,
+        markdown,
+      });
+
+  return `${subscriptionTerm} на ${object}${additionalText}`;
 }
 
 export const getSubscriptionExpireFormattedDate = (subscription: Subscription): string =>
