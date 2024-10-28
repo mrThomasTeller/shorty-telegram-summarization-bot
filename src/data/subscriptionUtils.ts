@@ -6,7 +6,7 @@ import {
   type SubscriptionWithTariffAndChat,
 } from './../services/DbService.ts';
 import { getGroupTitle } from './dbChatUtils.ts';
-import { required } from '../lib/lang.ts';
+import { required } from '../lib/common/lang.ts';
 import { getTariffPriceText } from './tariffUtils.ts';
 import { t } from '../config/translations/index.ts';
 import { escapeTelegramMarkdown } from './telegramBotMessageUtils.ts';
@@ -44,11 +44,13 @@ export function getSubscriptionObjectText({
   grammarCase = 'nom',
   addition = 'tariff',
   markdown = false,
+  subscriptionTerm = true,
 }: {
   subscription: SubscriptionWithTariffAndChat;
   grammarCase?: 'nom' | 'acc';
   addition?: 'tariffAndPrice' | 'tariff' | 'none';
   markdown?: boolean;
+  subscriptionTerm?: boolean;
 }): string {
   const price = addition === 'tariffAndPrice' ? `, ${getTariffPriceText(subscription.tariff)}` : '';
 
@@ -57,7 +59,9 @@ export function getSubscriptionObjectText({
     ? `_${escapeTelegramMarkdown(additionalText_)}_`
     : additionalText_;
 
-  const subscriptionTerm = t(`terms.subscription_${grammarCase}_one`);
+  const subscriptionTermText = subscriptionTerm
+    ? t(`terms.subscription_${grammarCase}_one`) + ' '
+    : '';
 
   const object = Boolean(subscription.userId)
     ? markdown
@@ -71,7 +75,7 @@ export function getSubscriptionObjectText({
         markdown,
       });
 
-  return `${subscriptionTerm} на ${object}${additionalText}`;
+  return `${subscriptionTermText}на ${object}${additionalText}`;
 }
 
 export const getSubscriptionExpireFormattedDate = (subscription: Subscription): string =>

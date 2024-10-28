@@ -1,6 +1,6 @@
 import { setTimeout } from 'node:timers/promises';
 import { catchError } from '../async.ts';
-import logger from '../../config/logger.ts';
+import logger from '../../../config/logger.ts';
 
 // Mock logger.error to test catchError
 jest.spyOn(logger, 'error').mockImplementation(() => logger);

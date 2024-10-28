@@ -5,7 +5,7 @@ import {
   getSubscriptionObjectText,
 } from '../../../data/subscriptionUtils.ts';
 import { getTariffRestText } from '../../../data/tariffUtils.ts';
-import { required } from '../../../lib/lang.ts';
+import { required } from '../../../lib/common/lang.ts';
 import type DbService from '../../../services/DbService.ts';
 import { type SubscriptionWithTariffAndChat } from '../../../services/DbService.ts';
 import type TelegramBotService from '../../../services/TelegramBotService.ts';
@@ -13,7 +13,7 @@ import { chooseTariff } from './chooseTariff.ts';
 import { makeEditSubscriptionCallbackData, makeObjectCallbackData } from './tgButtonsCallbacks.ts';
 import { EditSubscriptionAction } from './types/EditSubscriptionAction.ts';
 import { ObjectType } from './types/ObjectType.ts';
-import { ucFirst } from '../../../lib/string.ts';
+import { ucFirst } from '../../../lib/common/string.ts';
 import { subscribeFromGroupInstructions } from './common.ts';
 
 export async function editSubscription({
@@ -57,8 +57,7 @@ export async function editSubscription({
         inline_keyboard: [
           [
             {
-              // fixme cover
-              text: '💼 Изменить тариф',
+              text: '💼 Изменить/обновить тариф',
               callback_data: makeEditSubscriptionCallbackData(
                 id,
                 EditSubscriptionAction.changeTariff

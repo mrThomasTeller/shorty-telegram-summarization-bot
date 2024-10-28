@@ -12,6 +12,8 @@ import type EntryPoint from './EntryPoint.ts';
 import subscriptionsExpirationNotifier from './summarizeBotServer/subscriptionsExpirationNotifier.ts';
 import { ukassaService } from '../services/UKassaService/UKassaService.ts';
 import { subscriptionsChecker } from './summarizeBotServer/subscriptionsChecker.ts';
+import { encryptIfExists } from '../data/encryption.ts';
+import { convertTgUserToDbUserInput } from '../data/convertors.ts';
 
 // todo refactor this function
 const summarizeBotServer: EntryPoint = async (services) => {
@@ -49,19 +51,28 @@ const summarizeBotServer: EntryPoint = async (services) => {
 
 export default summarizeBotServer;
 
-const addedToGroupChatHandler = (services: Services) => async (chatId: number) => {
-  await sendHelpMessage(services.telegramBot, chatId);
+const addedToGroupChatHandler =
+  ({ telegramBot, db }: Services) =>
+  async (msg: TelegramBot.ChatMemberUpdated) => {
+    // todo test
+    await db.statisticsAddedToChat();
+    await db.getOrCreateUser(convertTgUserToDbUserInput(msg.from));
+    await db.updateChat(msg.chat.id, {
+      isMember: true,
+      invitedByUserId: BigInt(msg.from.id),
+      title: encryptIfExists(msg.chat.title),
+    });
 
-  // todo test
-  await services.db.statisticsAddedToChat();
-  await services.db.updateChat(chatId, { isMember: true });
-};
+    await sendHelpMessage(telegramBot, msg.chat.id);
+  };
 
-const removedFromGroupChatHandler = (services: Services) => async (chatId: number) => {
-  // todo test
-  await services.db.statisticsRemovedFromChat();
-  await services.db.updateChat(chatId, { isMember: false });
-};
+const removedFromGroupChatHandler =
+  ({ db }: Services) =>
+  async (msg: TelegramBot.ChatMemberUpdated) => {
+    // todo test
+    await db.statisticsRemovedFromChat();
+    await db.updateChat(msg.chat.id, { isMember: false, title: encryptIfExists(msg.chat.title) });
+  };
 
 function createTgMessagesObservable(
   telegramBotService: TelegramBotService

@@ -13,5 +13,5 @@ export default async function printNews(
   if ((chat.news ?? '').trim() !== '') {
     await telegramBot.sendMessage(tgChat.id, chat.news ?? '', { parse_mode: 'MarkdownV2' });
   }
-  await db.updateChat(tgChat.id, { news: null });
+  await db.updateChat(tgChat.id, { news: null, title: encryptIfExists(tgChat.title) });
 }

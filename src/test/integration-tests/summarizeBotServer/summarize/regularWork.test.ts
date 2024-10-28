@@ -18,7 +18,7 @@ import {
 import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils.ts';
 import createSummarizeBotServerContext from '../createSummarizeBotServerContext.ts';
 import { t } from '../../../../config/translations/index.ts';
-import { daysAgo, hoursAgo } from '../../../../lib/date.ts';
+import { daysAgo, hoursAgo } from '../../../../lib/common/date.ts';
 import { messagesCountInOneSummaryQuery } from '../../lib/constants.ts';
 
 // todo use text length instead of messages count

@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import {
   PrismaClient,
   type Chat,
@@ -8,8 +9,8 @@ import {
 } from '@prisma/client';
 import _ from 'lodash';
 import type DbChatMessage from '../data/types/DbChatMessage.ts';
-import { todayMidday } from '../lib/date.ts';
-import { type TOmit } from '../lib/typeUtils.ts';
+import { todayMidday } from '../lib/common/date.ts';
+import { type TOmit } from '../lib/common/typeUtils.ts';
 import type DbService from './DbService.ts';
 import {
   type SubscriptionWithTariffAndChat,
@@ -89,6 +90,22 @@ export default class DbServiceImpl implements DbService {
     });
 
     return _.sortBy(summaries, 'date');
+  }
+
+  getUserChats(userId: number): Promise<Chat[]> {
+    return this.prisma.chat.findMany({
+      where: {
+        OR: [
+          {
+            invitedByUserId: BigInt(userId),
+          },
+          {
+            messages: { some: { userId } },
+          },
+        ],
+        isMember: true,
+      },
+    });
   }
 
   getUserSubscriptions(userId: number): Promise<SubscriptionWithTariffAndChat[]> {
@@ -237,9 +254,13 @@ export default class DbServiceImpl implements DbService {
 
   async updateChat(
     chatId: number,
-    { settings, ...data }: Partial<TOmit<Chat, 'id'>>
+    {
+      settings,
+      title,
+      ...data
+    }: Partial<TOmit<Chat, 'id' | 'title'>> & { title: Buffer | undefined }
   ): Promise<void> {
-    await this.upsertChat(chatId, undefined);
+    await this.upsertChat(chatId, title);
     await this.prisma.chat.update({
       where: { id: chatId },
       data: {
@@ -256,6 +277,7 @@ export default class DbServiceImpl implements DbService {
     });
   }
 
+  // todo объединить с updateChat
   async upsertChat(
     chatId: number,
     title: Buffer | undefined

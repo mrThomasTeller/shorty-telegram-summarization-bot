@@ -5,9 +5,10 @@ import logger, { type LogLevel } from '../../../../config/logger.ts';
 import { t } from '../../../../config/translations/index.ts';
 import { getSummariesRestText } from '../../../../data/subscriptionLimits.ts';
 import { formatSummaryFromGpt } from '../../../../data/summaryUtils.ts';
-import { required } from '../../../../lib/lang.ts';
+import { required } from '../../../../lib/common/lang.ts';
 import type Services from '../../../../services/Services.ts';
 import { type SummarizeResultCase } from '../types/SummarizeResultCase.ts';
+import { encryptIfExists } from '../../../../data/encryption.ts';
 
 const handleSummarizeResultCase =
   (services: Services, msg: TelegramBot.Message) => async (resultCase: SummarizeResultCase) => {
@@ -25,6 +26,7 @@ const handleSummarizeResultCase =
       await services.db.updateChat(msg.chat.id, {
         unsummarizedSymbols: 0,
         notifiedItsTimeToSummarize: false,
+        title: encryptIfExists(msg.chat.title),
       });
     }
 

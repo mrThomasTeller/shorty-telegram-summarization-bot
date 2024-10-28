@@ -7,7 +7,7 @@ import {
   isSubscriptionActive,
 } from '../../../data/subscriptionUtils.ts';
 import { getCommandParams } from '../../../data/telegramBotMessageUtils.ts';
-import { required, toBigInt } from '../../../lib/lang.ts';
+import { required, toBigInt } from '../../../lib/common/lang.ts';
 import type DbService from '../../../services/DbService.ts';
 import type TelegramBotService from '../../../services/TelegramBotService.ts';
 import { type UKassaPaymentWebhook } from '../../../services/UKassaService/UKassaPaymentWebhook.ts';
@@ -19,6 +19,9 @@ import { chooseSubscriptionToChange } from './editSubscription.ts';
 import { tgButtonCallback } from './tgButtonsCallbacks.ts';
 import { ObjectType } from './types/ObjectType.ts';
 import { type UkassaWebhookMetadata } from './types/UkassaWebhookMetadata.ts';
+import { getTariffRestText } from '../../../data/tariffUtils.ts';
+import { SubscriptionWithTariffAndChat } from '../../../services/DbService.ts';
+import { match } from 'ts-pattern';
 
 let subscribed = false;
 
@@ -35,6 +38,8 @@ const subscriptionCommandController: ChatController = ({
 }) => {
   chat$.subscribe(async (msg) => {
     try {
+      console.log('subscriptionCommandController msg', msg.text);
+
       if (msg.chat.type !== 'private') {
         return await subscribeFromGroupChat(telegramBot, msg);
       }
@@ -58,7 +63,7 @@ const subscriptionCommandController: ChatController = ({
 
       const groupId = toBigInt(getCommandParams(msg));
       if (groupId == null) {
-        return await chooseObject({ userSubscription, groupsSubscriptions, telegramBot, user });
+        return await chooseObject({ userSubscription, groupsSubscriptions, telegramBot, user, db });
       }
 
       if (activeSubscriptions.length === 0) {
@@ -134,50 +139,48 @@ async function paymentSucceeded(
 ): Promise<void> {
   const { object, id, tariffId, userId, username } = webhook.object.metadata;
 
-  if (object === ObjectType.subscription) {
-    // fixme cover
-    // todo 2sub брать только разницу в деньгах
-    await db.updateSubscription(BigInt(id), {
-      expires: addMonths(new Date(), 1),
-      renewPeriodMonths: 1,
-      tariffId,
-      paymentProvider: PaymentProvider.YooKassa,
-      paymentMethodId: webhook.object.payment_method.id,
-      autoRenew: webhook.object.payment_method.saved,
-    });
-
-    const tariff = await db.getTariff(tariffId);
-
-    // fixme cover
-    await telegramBot.sendMessage(
-      userId,
-      `💸 Оплата прошла успешно!\n✅ Теперь вы на тарифе "${tariff.name}"!`
-    );
-  } else {
-    const subscription = await db.addSubscription(
-      {
-        autoRenew: webhook.object.payment_method.saved,
-        paymentMethodId: webhook.object.payment_method.id,
-        renewPeriodMonths: 1,
-        paymentProvider: PaymentProvider.YooKassa,
+  const subscription = await match(object)
+    .with(ObjectType.subscription, async () => {
+      // todo 2sub брать только разницу в деньгах
+      await db.updateSubscription(BigInt(id), {
         expires: addMonths(new Date(), 1),
+        renewPeriodMonths: 1,
         tariffId,
-        subscriber: {
-          id: userId,
-          username,
-        },
-        object: object === ObjectType.user ? { userId } : { chatId: Number(id) },
-      },
-      true
+        paymentProvider: PaymentProvider.YooKassa,
+        paymentMethodId: webhook.object.payment_method.id,
+        autoRenew: webhook.object.payment_method.saved,
+      });
+
+      return await db.getSubscription(BigInt(id));
+    })
+    .otherwise(
+      async () =>
+        await db.addSubscription(
+          {
+            autoRenew: webhook.object.payment_method.saved,
+            paymentMethodId: webhook.object.payment_method.id,
+            renewPeriodMonths: 1,
+            paymentProvider: PaymentProvider.YooKassa,
+            expires: addMonths(new Date(), 1),
+            tariffId,
+            subscriber: {
+              id: userId,
+              username,
+            },
+            object: object === ObjectType.user ? { userId } : { chatId: Number(id) },
+          },
+          true
+        )
     );
 
-    await telegramBot.sendMessage(
-      userId,
-      `💸 Оплата прошла успешно!\n\n✅ Ваша ${getSubscriptionObjectText({
-        subscription,
-        grammarCase: 'nom',
-        addition: 'tariffAndPrice',
-      })} активирована!`
-    ); // todo 2sub instructions
-  }
+  const tariffText = await getTariffRestText({
+    subscription,
+    db,
+    telegramBot,
+    userId,
+    chatId: Number(id),
+    price: true,
+  });
+
+  await telegramBot.sendMessage(userId, `💸 Оплата прошла успешно!\n\n${tariffText}`); // todo 2sub instructions
 }

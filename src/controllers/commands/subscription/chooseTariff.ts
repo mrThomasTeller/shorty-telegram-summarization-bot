@@ -9,7 +9,7 @@ import { makeTariffCallbackData } from './tgButtonsCallbacks.ts';
 import { type ObjectType } from './types/ObjectType.ts';
 import { type UkassaWebhookMetadata } from './types/UkassaWebhookMetadata.ts';
 import { getTariffPriceText } from '../../../data/tariffUtils.ts';
-import { getEmojiNumber } from '../../../lib/text.ts';
+import { getEmojiNumber } from '../../../lib/common/text.ts';
 
 export async function chooseTariff({
   object,

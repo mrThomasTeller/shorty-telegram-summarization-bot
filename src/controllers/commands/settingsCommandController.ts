@@ -24,6 +24,7 @@ const settingsCommandController: ChatController = ({ chat$, chatId, services }) 
             ...chatSettingsSchema.parse(chat.settings),
             ...parseResult.data,
           },
+          title: encryptIfExists(msg.chat.title),
         });
 
         await services.telegramBot.sendMessage(chatId, '✅ Настройки изменены');

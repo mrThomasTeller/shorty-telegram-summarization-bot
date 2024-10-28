@@ -3,9 +3,9 @@ import { getEnv } from '../config/envVars.ts';
 import { ChatGPTError, type ChatMessage } from 'chatgpt';
 import { type Observable, map, mergeMap, of } from 'rxjs';
 import { either, function as fp } from 'fp-ts';
-import { convertPromiseToEither } from '../lib/fp.ts';
+import { convertPromiseToEither } from '../lib/common/fp.ts';
 import _ from 'lodash';
-import { repeatWithDelay, stopWhen } from '../lib/rxOperators.ts';
+import { repeatWithDelay, stopWhen } from '../lib/common/rxOperators.ts';
 
 export type GptResultCase =
   | { type: 'responseFromGPT'; text: string }

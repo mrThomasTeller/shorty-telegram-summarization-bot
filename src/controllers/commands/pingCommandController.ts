@@ -3,7 +3,7 @@ import { getEnv } from '../../config/envVars.ts';
 import { dirname } from '@darkobits/fd-name';
 import fs from 'node:fs';
 import path from 'node:path';
-import { required } from '../../lib/lang.ts';
+import { required } from '../../lib/common/lang.ts';
 import { t } from '../../config/translations/index.ts';
 import type ChatController from '../ChatController.ts';
 

@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import type TelegramBot from 'node-telegram-bot-api';
 import { concatMap, exhaustMap, last, mergeMap, of, type Observable } from 'rxjs';
-import { matchEither } from '../../../lib/fp.ts';
-import { catchAndLogError } from '../../../lib/rxOperators.ts';
+import { matchEither } from '../../../lib/common/fp.ts';
+import { catchAndLogError } from '../../../lib/common/rxOperators.ts';
 import type Services from '../../../services/Services.ts';
 import printNews from '../../../useCases/printNews.ts';
 import type ChatController from '../../ChatController.ts';

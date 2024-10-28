@@ -17,7 +17,7 @@ import {
   scan,
   catchError,
 } from 'rxjs';
-import logger from '../config/logger.ts';
+import logger from '../../config/logger.ts';
 
 export const filterAsync = <T>(
   predicate: (arg: T) => Promise<boolean>

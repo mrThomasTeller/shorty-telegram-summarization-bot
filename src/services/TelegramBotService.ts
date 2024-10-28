@@ -6,17 +6,21 @@ export type TelegramBotSendMessageOptions = Pick<
 >;
 
 type TelegramBotService = {
-  getUsername: () => Promise<string | undefined>;
+  readonly __bot: TelegramBot;
+
+  getChatAdministrators: (chatId: number) => Promise<TelegramBot.ChatMember[]>;
+
+  getUsername: () => Promise<string>;
 
   /**
    * @returns unsubscribe function
    */
-  onAddedToGroupChat: (callback: (chatId: number) => void) => VoidFunction;
+  onAddedToGroupChat: (callback: (msg: TelegramBot.ChatMemberUpdated) => void) => VoidFunction;
 
   /**
    * @returns unsubscribe function
    */
-  onRemovedFromGroupChat: (callback: (chatId: number) => void) => VoidFunction;
+  onRemovedFromGroupChat: (callback: (msg: TelegramBot.ChatMemberUpdated) => void) => VoidFunction;
 
   /**
    * @returns unsubscribe function

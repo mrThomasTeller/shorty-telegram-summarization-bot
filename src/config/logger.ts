@@ -1,7 +1,7 @@
 import { dirname } from '@darkobits/fd-name';
 import path from 'node:path';
 import winston, { format } from 'winston';
-import { required } from '../lib/lang.ts';
+import { required } from '../lib/common/lang.ts';
 import tb from 'triple-beam';
 const { combine, timestamp, printf, colorize } = format;
 

@@ -1,6 +1,6 @@
 import { type CallbackQuery } from 'node-telegram-bot-api';
 import logger from '../../../config/logger.ts';
-import { required } from '../../../lib/lang.ts';
+import { required } from '../../../lib/common/lang.ts';
 import type DbService from '../../../services/DbService.ts';
 import type TelegramBotService from '../../../services/TelegramBotService.ts';
 import { chooseTariff, tariffChosen } from './chooseTariff.ts';

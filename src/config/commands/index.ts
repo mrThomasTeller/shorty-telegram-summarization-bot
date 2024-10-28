@@ -15,7 +15,9 @@ export const getVisibleCommands = (): Command[] =>
     (c) => c !== noneCommand && c.adminOnly !== true && c.hide !== true
   );
 
+// fixme sub клавиатура вместо этого
 const commands = {
+  [subscriptionCommand.command]: subscriptionCommand,
   [pingCommand.command]: pingCommand,
   [summarizeCommand.command]: summarizeCommand,
   [noneCommand.command]: noneCommand,
@@ -25,7 +27,6 @@ const commands = {
   [tryMessageCommand.command]: tryMessageCommand,
   [tariffCommand.command]: tariffCommand,
   [settingsCommand.command]: settingsCommand,
-  [subscriptionCommand.command]: subscriptionCommand,
 };
 
 export default commands;

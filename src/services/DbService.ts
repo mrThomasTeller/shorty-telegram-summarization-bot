@@ -8,7 +8,7 @@ import {
   type User,
 } from '@prisma/client';
 import type DbChatMessage from '../data/types/DbChatMessage.ts';
-import { type TOmit } from '../lib/typeUtils.ts';
+import { type TOmit } from '../lib/common/typeUtils.ts';
 
 export type UserCreateInput = Parameters<PrismaClient['user']['upsert']>[0]['create'];
 export type MessageCreateInput = Parameters<PrismaClient['message']['upsert']>[0]['create'] & {
@@ -76,6 +76,8 @@ type DbService = {
 
   getTariff: (id: string) => Promise<Tariff>;
 
+  getUserChats: (userId: number) => Promise<Chat[]>;
+
   getUserSubscriptions: (userId: number) => Promise<SubscriptionWithTariffAndChat[]>;
 
   hasMessage: (messageId: number, chatId: number) => Promise<boolean>;
@@ -86,7 +88,10 @@ type DbService = {
 
   statisticsRemovedFromChat: () => Promise<void>;
 
-  updateChat: (chatId: number, data: Partial<TOmit<Chat, 'id'>>) => Promise<void>;
+  updateChat: (
+    chatId: number,
+    data: Partial<TOmit<Chat, 'id' | 'title'>> & { title: Buffer | undefined }
+  ) => Promise<void>;
 
   updateSubscription: (id: bigint, data: Partial<Subscription>) => Promise<void>;
 

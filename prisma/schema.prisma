@@ -14,9 +14,10 @@ model User {
   lastName  Bytes?
   username  Bytes?
 
-  messages      Message[]
-  summaries     Summary[]
-  subscriptions Subscription[]
+  messages       Message[]
+  summaries      Summary[]
+  subscriptions  Subscription[]
+  invitedToChats Chat[]
 }
 
 model Chat {
@@ -28,10 +29,13 @@ model Chat {
   unsummarizedSymbols        Int      @default(0)
   settings                   Json     @default("{}")
   notifiedItsTimeToSummarize Boolean  @default(false)
+  invitedByUserId            BigInt?
 
   messages      Message[]
   summaries     Summary[]
   subscriptions Subscription[]
+
+  invitedByUser User? @relation(fields: [invitedByUserId], references: [id])
 }
 
 model Message {

@@ -3,7 +3,7 @@ import { max as maxTime } from 'date-fns';
 import { t } from 'i18next';
 import { match } from 'ts-pattern';
 import { getEnv } from '../config/envVars.ts';
-import { monthFromPeriodStart, thisWeekStart, yesterday } from '../lib/date.ts';
+import { monthFromPeriodStart, thisWeekStart, yesterday } from '../lib/common/date.ts';
 import type DbService from '../services/DbService.ts';
 import { type SubscriptionWithTariff } from '../services/DbService.ts';
 import { isSubscriptionActive } from './subscriptionUtils.ts';

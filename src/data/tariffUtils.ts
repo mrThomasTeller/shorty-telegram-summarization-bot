@@ -3,7 +3,7 @@ import { type Nullish } from 'utility-types';
 import config from '../config/config.ts';
 import { getEnv } from '../config/envVars.ts';
 import { t } from '../config/translations/index.ts';
-import { required } from '../lib/lang.ts';
+import { required } from '../lib/common/lang.ts';
 import type DbService from '../services/DbService.ts';
 import { type SubscriptionWithTariff } from '../services/DbService.ts';
 import type TelegramBotService from '../services/TelegramBotService.ts';

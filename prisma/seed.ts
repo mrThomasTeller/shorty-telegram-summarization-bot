@@ -3,8 +3,8 @@ import { type ServicesImpl, createServices } from '../src/createServices.ts';
 // import _ from 'lodash';
 // import examples from '../docs/summarize-examples.json';
 // import { encrypt } from '../src/data/encryption.ts';
-// import { hoursAgo } from '../src/lib/date.ts';
-// import { required } from '../src/lib/lang.ts';
+// import { hoursAgo } from '../src/lib/common/date.ts';
+// import { required } from '../src/lib/common/lang.ts';
 
 // const myId = 71346730;
 

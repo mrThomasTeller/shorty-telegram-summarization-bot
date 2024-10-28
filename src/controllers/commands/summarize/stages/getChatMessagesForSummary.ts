@@ -4,7 +4,7 @@ import { type Either } from 'fp-ts/lib/Either';
 import _ from 'lodash';
 import type TelegramBot from 'node-telegram-bot-api';
 import type DbChatMessage from '../../../../data/types/DbChatMessage.ts';
-import { yesterday } from '../../../../lib/date.ts';
+import { yesterday } from '../../../../lib/common/date.ts';
 import type Services from '../../../../services/Services.ts';
 import { type ChatMessagesForSummaryData } from '../types/ChatMessagesForSummaryData.ts';
 import { type LimitsData } from '../../../../data/types/LimitsData.ts';

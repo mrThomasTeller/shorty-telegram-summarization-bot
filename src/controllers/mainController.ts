@@ -6,14 +6,14 @@ import {
   isCommandForBot,
   parseCommand,
 } from '../data/telegramBotMessageUtils.ts';
-import { required } from '../lib/lang.ts';
+import { required } from '../lib/common/lang.ts';
 import commands from '../config/commands/index.ts';
 import getCommandController from './commands/getCommandController.ts';
 import type Command from '../config/commands/Command.ts';
 import { t } from '../config/translations/index.ts';
-import { catchError } from '../lib/async.ts';
+import { catchError } from '../lib/common/async.ts';
 import type TelegramBotService from '../services/TelegramBotService.ts';
-import { filterAsync } from '../lib/rxOperators.ts';
+import { filterAsync } from '../lib/common/rxOperators.ts';
 import type TelegramBot from 'node-telegram-bot-api';
 import type Services from '../services/Services.ts';
 import logger from '../config/logger.ts';

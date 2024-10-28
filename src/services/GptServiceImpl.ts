@@ -1,6 +1,6 @@
 import { ChatGPTAPI, type ChatMessage, type SendMessageOptions } from 'chatgpt';
 import type GptService from './GptService.ts';
-import { required } from '../lib/lang.ts';
+import { required } from '../lib/common/lang.ts';
 import { getEnv } from '../config/envVars.ts';
 import _ from 'lodash';
 
