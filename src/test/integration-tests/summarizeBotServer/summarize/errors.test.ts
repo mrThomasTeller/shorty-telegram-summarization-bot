@@ -3,15 +3,15 @@ import {
   myTgGroupId,
   createSummarizeCommandMessage,
   createTgMessages,
-} from '../../lib/tgUtils.ts';
+} from '../../lib/tgUtils';
 import { ChatGPTError } from 'chatgpt';
-import { createSummaries, mapTgMessagesToDbMessages } from '../../lib/dbUtils.ts';
-import { expectBotSentExactMessagesToTg } from '../../lib/expectations.ts';
-import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils.ts';
-import createSummarizeBotServerContext from '../createSummarizeBotServerContext.ts';
+import { createSummaries, mapTgMessagesToDbMessages } from '../../lib/dbUtils';
+import { expectBotSentExactMessagesToTg } from '../../lib/expectations';
+import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils';
+import createSummarizeBotServerContext from '../createSummarizeBotServerContext';
 import { setTimeout } from 'node:timers/promises';
-import { t } from '../../../../config/translations/index.ts';
-import { getEnv } from '../../../../config/envVars.ts';
+import { t } from '../../../../config/translations/index';
+import { getEnv } from '../../../../config/envVars';
 
 describe('summarizeBotServer summarize command errors', () => {
   it('no messages to summarize', async () => {

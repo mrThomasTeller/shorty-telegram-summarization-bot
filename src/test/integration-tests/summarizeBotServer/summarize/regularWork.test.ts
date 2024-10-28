@@ -5,21 +5,21 @@ import {
   createSummarizeCommandMessage,
   createTgMessages,
   type TgMessagesBunchDesc,
-} from '../../lib/tgUtils.ts';
+} from '../../lib/tgUtils';
 import _ from 'lodash';
-import { mapTgMessagesToDbMessages } from '../../lib/dbUtils.ts';
+import { mapTgMessagesToDbMessages } from '../../lib/dbUtils';
 import {
   expectBotSentExactMessagesToTg,
   expectBotCreatedUsers,
   expectBotCreatedDbChatMessages,
   expectBotQueriedSummaryFromGpt,
   expectBotAddedSummariesToDb,
-} from '../../lib/expectations.ts';
-import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils.ts';
-import createSummarizeBotServerContext from '../createSummarizeBotServerContext.ts';
-import { t } from '../../../../config/translations/index.ts';
-import { daysAgo, hoursAgo } from '../../../../lib/common/date.ts';
-import { messagesCountInOneSummaryQuery } from '../../lib/constants.ts';
+} from '../../lib/expectations';
+import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils';
+import createSummarizeBotServerContext from '../createSummarizeBotServerContext';
+import { t } from '../../../../config/translations/index';
+import { daysAgo, hoursAgo } from '../../../../lib/common/date';
+import { messagesCountInOneSummaryQuery } from '../../lib/constants';
 
 // todo use text length instead of messages count
 // todo implement gpt.sendMessage mock as now I don't check that gpt.sendMessage was called with correct params

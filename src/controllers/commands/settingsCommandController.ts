@@ -1,14 +1,14 @@
 import { match } from 'ts-pattern';
-import logger from '../../config/logger.ts';
-import { getSpaceSeparatedCommandParams } from '../../data/telegramBotMessageUtils.ts';
-import { chatSettingsSchema } from '../../data/types/ChatSettings.ts';
-import type ChatController from '../ChatController.ts';
-import { encryptIfExists } from '../../data/encryption.ts';
+import logger from '../../config/logger';
+import { getCommandParams } from '../../data/telegramBotMessageUtils';
+import { chatSettingsSchema } from '../../data/types/ChatSettings';
+import type ChatController from '../ChatController';
+import { encryptIfExists } from '../../data/encryption';
 
 const settingsCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$.subscribe(async (msg) => {
     try {
-      const [name = '', rawValue] = getSpaceSeparatedCommandParams(msg);
+      const [name = '', rawValue] = getCommandParams(msg);
 
       const value = match({ name, rawValue })
         .with({ name: 'notifyItsTimeToSummarize', rawValue: 'true' }, () => true)

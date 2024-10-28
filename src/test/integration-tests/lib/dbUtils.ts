@@ -1,9 +1,9 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import type DbChatMessage from '../../../data/types/DbChatMessage.ts';
-import { myTgGroupId, myTgUser, type TestTgMessage } from './tgUtils.ts';
-import { encrypt, encryptIfExists } from '../../../data/encryption.ts';
+import type DbChatMessage from '../../../data/types/DbChatMessage';
+import { myTgGroupId, myTgUser, type TestTgMessage } from './tgUtils';
+import { encrypt, encryptIfExists } from '../../../data/encryption';
 import _ from 'lodash';
-import { daysAgo, hoursAgo } from '../../../lib/date.ts';
+import { daysAgo, hoursAgo } from '../../../lib/date';
 import { type Summary } from '@prisma/client';
 
 export function createDbMessageInGroup({

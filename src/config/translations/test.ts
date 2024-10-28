@@ -1,4 +1,4 @@
-import { t } from './index.ts';
+import { t } from './index';
 
 const console = {
   log: (str: string): void => {

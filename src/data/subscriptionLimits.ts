@@ -2,13 +2,13 @@ import { type Summary } from '@prisma/client';
 import { max as maxTime } from 'date-fns';
 import { t } from 'i18next';
 import { match } from 'ts-pattern';
-import { getEnv } from '../config/envVars.ts';
-import { monthFromPeriodStart, thisWeekStart, yesterday } from '../lib/common/date.ts';
-import type DbService from '../services/DbService.ts';
-import { type SubscriptionWithTariff } from '../services/DbService.ts';
-import { isSubscriptionActive } from './subscriptionUtils.ts';
-import { getMaxSummaryParts, getMaxTextToSummarizeApproximateLength } from './tariffUtils.ts';
-import { type LimitsData } from './types/LimitsData.ts';
+import { getEnv } from '../config/envVars';
+import { monthFromPeriodStart, thisWeekStart, yesterday } from '../lib/common/date';
+import type DbService from '../services/DbService';
+import { type SubscriptionWithTariff } from '../services/DbService';
+import { isSubscriptionActive } from './subscriptionUtils';
+import { getMaxSummaryParts, getMaxTextToSummarizeApproximateLength } from './tariffUtils';
+import { type LimitsData } from './types/LimitsData';
 
 // todo stest
 export async function getLimitsData({

@@ -1,15 +1,15 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import { getEnv } from '../../../config/envVars.ts';
-import logger from '../../../config/logger.ts';
-import { escapeTelegramMarkdown as esc } from '../../../data/telegramBotMessageUtils.ts';
-import type DbService from '../../../services/DbService.ts';
-import type TelegramBotService from '../../../services/TelegramBotService.ts';
-import { ukassaService } from '../../../services/UKassaService/UKassaService.ts';
-import { makeTariffCallbackData } from './tgButtonsCallbacks.ts';
-import { type ObjectType } from './types/ObjectType.ts';
-import { type UkassaWebhookMetadata } from './types/UkassaWebhookMetadata.ts';
-import { getTariffPriceText } from '../../../data/tariffUtils.ts';
-import { getEmojiNumber } from '../../../lib/common/text.ts';
+import { getEnv } from '../../../config/envVars';
+import logger from '../../../config/logger';
+import { escapeTelegramMarkdown as esc } from '../../../data/telegramBotMessageUtils';
+import type DbService from '../../../services/DbService';
+import type TelegramBotService from '../../../services/TelegramBotService';
+import { ukassaService } from '../../../services/UKassaService/UKassaService';
+import { makeTariffUrl } from './routing';
+import { type ObjectType } from './types/ObjectType';
+import { type UkassaWebhookMetadata } from './types/UkassaWebhookMetadata';
+import { getTariffPriceText } from '../../../data/tariffUtils';
+import { getEmojiNumber } from '../../../lib/common/text';
 
 export async function chooseTariff({
   object,
@@ -25,7 +25,7 @@ export async function chooseTariff({
   user: TelegramBot.User;
 }): Promise<void> {
   const tariffs = await db.getAllTariffs();
-
+  const botName = await telegramBot.getUsername();
   const text = `**⭐ Выберите тариф:**\n
 ${tariffs
   .map(
@@ -43,7 +43,7 @@ ${tariffs
       inline_keyboard: tariffs.map((tariff, index) => [
         {
           text: `${getEmojiNumber(index + 1)} ${tariff.name}`,
-          callback_data: makeTariffCallbackData(object, id, tariff.id),
+          url: makeTariffUrl({ botName, object, id, tariffId: tariff.id }),
         },
       ]),
     },
@@ -93,7 +93,7 @@ export async function tariffChosen({
 
   await telegramBot.sendMessage(
     user.id,
-    '❗ Пожалуйста, отметьте опцию `Разрешаю автосписания` \\(`I allow debiting money automatically`\\) если не хотите вручную продлевать подписку каждый месяц\\. В этом случае подписка будет продлеваться автоматически\\.\n\n⭐ Ссылка на оплату 👇',
+    '❗ Пожалуйста, отметьте опцию `☑️ Разрешаю автосписания` \\(`I allow debiting money automatically`\\) если не хотите вручную продлевать подписку каждый месяц\\. В этом случае подписка будет продлеваться автоматически\\.\n\n⭐ Ссылка на оплату 👇',
     {
       parse_mode: 'MarkdownV2',
       reply_markup: {

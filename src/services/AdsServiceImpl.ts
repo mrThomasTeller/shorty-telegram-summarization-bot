@@ -1,6 +1,6 @@
-import { getEnv } from '../config/envVars.ts';
-import logger from '../config/logger.ts';
-import type AdsService from './AdsService.ts';
+import { getEnv } from '../config/envVars';
+import logger from '../config/logger';
+import type AdsService from './AdsService';
 
 export default class AdsServiceImpl implements AdsService {
   async showAds(chatId: number): Promise<void> {

@@ -4,12 +4,12 @@ import {
   createSummarizeCommandMessage,
   createTgMessages,
   myTgGroup2Id,
-} from '../../lib/tgUtils.ts';
-import { mapTgMessagesToDbMessages } from '../../lib/dbUtils.ts';
-import { expectBotSentExactMessagesToTg } from '../../lib/expectations.ts';
-import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils.ts';
-import createSummarizeBotServerContext from '../createSummarizeBotServerContext.ts';
-import { t } from '../../../../config/translations/index.ts';
+} from '../../lib/tgUtils';
+import { mapTgMessagesToDbMessages } from '../../lib/dbUtils';
+import { expectBotSentExactMessagesToTg } from '../../lib/expectations';
+import { gptTestSummary, createGptChatMessage } from '../../lib/gptUtils';
+import createSummarizeBotServerContext from '../createSummarizeBotServerContext';
+import { t } from '../../../../config/translations/index';
 import { setTimeout } from 'node:timers/promises';
 import _ from 'lodash';
 

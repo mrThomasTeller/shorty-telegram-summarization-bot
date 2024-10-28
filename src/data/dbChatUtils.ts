@@ -1,7 +1,7 @@
 import { type Chat } from '@prisma/client';
-import { decryptIfExists } from './encryption.ts';
-import { t } from '../config/translations/index.ts';
-import { escapeTelegramMarkdown } from './telegramBotMessageUtils.ts';
+import { decryptIfExists } from './encryption';
+import { t } from '../config/translations/index';
+import { escapeTelegramMarkdown } from './telegramBotMessageUtils';
 
 export function getGroupTitle({
   chatId,

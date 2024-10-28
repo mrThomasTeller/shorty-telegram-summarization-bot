@@ -7,8 +7,8 @@ import {
   type Tariff,
   type User,
 } from '@prisma/client';
-import type DbChatMessage from '../data/types/DbChatMessage.ts';
-import { type TOmit } from '../lib/common/typeUtils.ts';
+import type DbChatMessage from '../data/types/DbChatMessage';
+import { type TOmit } from '../lib/common/typeUtils';
 
 export type UserCreateInput = Parameters<PrismaClient['user']['upsert']>[0]['create'];
 export type MessageCreateInput = Parameters<PrismaClient['message']['upsert']>[0]['create'] & {
@@ -22,7 +22,7 @@ export type AddSubscriptionParams = {
   object?: { chatId: number } | { userId: number };
   subscriber: { id: number; username?: string };
   tariffId: string;
-  paymentMethodId?: string;
+  paymentMethodId?: string | null;
   paymentProvider: PaymentProvider;
   autoRenew: boolean;
   renewPeriodMonths: number;
@@ -74,11 +74,16 @@ type DbService = {
 
   getSummariesFrom: (chatId: number, from: Date) => Promise<Summary[]>;
 
+  getUserSubscription: (
+    userId: number,
+    chatId?: number
+  ) => Promise<SubscriptionWithTariffAndChat | null>;
+
   getTariff: (id: string) => Promise<Tariff>;
 
   getUserChats: (userId: number) => Promise<Chat[]>;
 
-  getUserSubscriptions: (userId: number) => Promise<SubscriptionWithTariffAndChat[]>;
+  getAllUserSubscriptions: (userId: number) => Promise<SubscriptionWithTariffAndChat[]>;
 
   hasMessage: (messageId: number, chatId: number) => Promise<boolean>;
 

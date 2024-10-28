@@ -1,14 +1,14 @@
 import type TelegramBot from 'node-telegram-bot-api';
 import { setTimeout } from 'node:timers/promises';
-import { getEnv } from '../../../../config/envVars.ts';
-import logger, { type LogLevel } from '../../../../config/logger.ts';
-import { t } from '../../../../config/translations/index.ts';
-import { getSummariesRestText } from '../../../../data/subscriptionLimits.ts';
-import { formatSummaryFromGpt } from '../../../../data/summaryUtils.ts';
-import { required } from '../../../../lib/common/lang.ts';
-import type Services from '../../../../services/Services.ts';
-import { type SummarizeResultCase } from '../types/SummarizeResultCase.ts';
-import { encryptIfExists } from '../../../../data/encryption.ts';
+import { getEnv } from '../../../../config/envVars';
+import logger, { type LogLevel } from '../../../../config/logger';
+import { t } from '../../../../config/translations/index';
+import { getSummariesRestText } from '../../../../data/subscriptionLimits';
+import { formatSummaryFromGpt } from '../../../../data/summaryUtils';
+import { required } from '../../../../lib/common/lang';
+import type Services from '../../../../services/Services';
+import { type SummarizeResultCase } from '../types/SummarizeResultCase';
+import { encryptIfExists } from '../../../../data/encryption';
 
 const handleSummarizeResultCase =
   (services: Services, msg: TelegramBot.Message) => async (resultCase: SummarizeResultCase) => {

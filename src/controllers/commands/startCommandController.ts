@@ -1,12 +1,12 @@
 import path from 'node:path';
-import type ChatController from '../ChatController.ts';
+import type ChatController from '../ChatController';
 import { dirname } from '@darkobits/fd-name';
 import fs from 'node:fs';
-import { required } from '../../lib/common/lang.ts';
+import { required } from '../../lib/common/lang';
 import _ from 'lodash';
 import type TelegramBotService from '../../services/TelegramBotService';
-import { escapeTelegramMarkdown } from '../../data/telegramBotMessageUtils.ts';
-import logger from '../../config/logger.ts';
+import { escapeTelegramMarkdown } from '../../data/telegramBotMessageUtils';
+import logger from '../../config/logger';
 
 const startMessageTpl = _.template(
   fs.readFileSync(path.join(required(dirname()), '../../config/texts/start.tpl'), 'utf8')

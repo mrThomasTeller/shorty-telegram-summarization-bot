@@ -1,4 +1,4 @@
-import { required } from './lang.ts';
+import { required } from './lang';
 
 export function splitText(text: string, maxLength: number): string[] {
   const parts: string[] = [];

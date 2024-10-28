@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import type DbChatMessage from './types/DbChatMessage.ts';
-import { decryptIfExists } from './encryption.ts';
+import type DbChatMessage from './types/DbChatMessage';
+import { decryptIfExists } from './encryption';
 
 export function getAuthorName(msg: DbChatMessage): string | undefined {
   const author = msg.from;

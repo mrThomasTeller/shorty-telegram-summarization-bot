@@ -1,6 +1,6 @@
-import type EntryPoint from './EntryPoint.ts';
-import { decrypt } from '../data/encryption.ts';
-import { required } from '../lib/common/lang.ts';
+import type EntryPoint from './EntryPoint';
+import { decrypt } from '../data/encryption';
+import { required } from '../lib/common/lang';
 
 const getUserId: EntryPoint = async (services, username) => {
   const users = await services.db.getAllUsers();

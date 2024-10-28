@@ -1,5 +1,5 @@
-import { t } from '../translations/index.ts';
-import type Command from './Command.ts';
+import { t } from '../translations/index';
+import type Command from './Command';
 
 const subscriptionCommand: Command = {
   command: 'subscription',

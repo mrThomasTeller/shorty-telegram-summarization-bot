@@ -1,14 +1,10 @@
-import { getEnv, setEnv } from '../../../../config/envVars.ts';
-import { t } from '../../../../config/translations/index.ts';
-import { decrypt } from '../../../../data/encryption.ts';
-import { required } from '../../../../lib/common/lang.ts';
-import { createGptChatMessage } from '../../lib/gptUtils.ts';
-import {
-  createSummarizeCommandMessage,
-  createTgMessageInGroup,
-  myTgUser,
-} from '../../lib/tgUtils.ts';
-import createSummarizeBotServerContext from '../createSummarizeBotServerContext.ts';
+import { getEnv, setEnv } from '../../../../config/envVars';
+import { t } from '../../../../config/translations/index';
+import { decrypt } from '../../../../data/encryption';
+import { required } from '../../../../lib/common/lang';
+import { createGptChatMessage } from '../../lib/gptUtils';
+import { createSummarizeCommandMessage, createTgMessageInGroup, myTgUser } from '../../lib/tgUtils';
+import createSummarizeBotServerContext from '../createSummarizeBotServerContext';
 
 describe('summarizeBotServer summarize command encryption', () => {
   const minMessagesCountToSummarize = getEnv().MIN_MESSAGES_COUNT_TO_SUMMARIZE;

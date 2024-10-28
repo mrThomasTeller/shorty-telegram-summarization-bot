@@ -1,27 +1,22 @@
+import { ucFirst } from './../../../lib/common/string';
 import { PaymentProvider } from '@prisma/client';
 import { addMonths } from 'date-fns';
 import type TelegramBot from 'node-telegram-bot-api';
-import logger from '../../../config/logger.ts';
-import {
-  getSubscriptionObjectText,
-  isSubscriptionActive,
-} from '../../../data/subscriptionUtils.ts';
-import { getCommandParams } from '../../../data/telegramBotMessageUtils.ts';
-import { required, toBigInt } from '../../../lib/common/lang.ts';
-import type DbService from '../../../services/DbService.ts';
-import type TelegramBotService from '../../../services/TelegramBotService.ts';
-import { type UKassaPaymentWebhook } from '../../../services/UKassaService/UKassaPaymentWebhook.ts';
-import { ukassaService } from '../../../services/UKassaService/UKassaService.ts';
-import type ChatController from '../../ChatController.ts';
-import { chooseObject } from './chooseObject.ts';
-import { chooseTariff } from './chooseTariff.ts';
-import { chooseSubscriptionToChange } from './editSubscription.ts';
-import { tgButtonCallback } from './tgButtonsCallbacks.ts';
-import { ObjectType } from './types/ObjectType.ts';
-import { type UkassaWebhookMetadata } from './types/UkassaWebhookMetadata.ts';
-import { getTariffRestText } from '../../../data/tariffUtils.ts';
-import { SubscriptionWithTariffAndChat } from '../../../services/DbService.ts';
 import { match } from 'ts-pattern';
+import logger from '../../../config/logger';
+import { getSubscriptionObjectText, isSubscriptionActive } from '../../../data/subscriptionUtils';
+import { getTariffRestText } from '../../../data/tariffUtils';
+import { required } from '../../../lib/common/lang';
+import type DbService from '../../../services/DbService';
+import type TelegramBotService from '../../../services/TelegramBotService';
+import { type UKassaPaymentWebhook } from '../../../services/UKassaService/UKassaPaymentWebhook';
+import { ukassaService } from '../../../services/UKassaService/UKassaService';
+import type ChatController from '../../ChatController';
+import { chooseObject } from './chooseObject';
+import { makeObjectUrl, route } from './routing';
+import { ObjectType } from './types/ObjectType';
+import { type UkassaWebhookMetadata } from './types/UkassaWebhookMetadata';
+import { blockedMessagesService } from '../../../lib/BlockedMessagesService';
 
 let subscribed = false;
 
@@ -37,62 +32,11 @@ const subscriptionCommandController: ChatController = ({
   services: { db, telegramBot },
 }) => {
   chat$.subscribe(async (msg) => {
-    try {
-      console.log('subscriptionCommandController msg', msg.text);
-
-      if (msg.chat.type !== 'private') {
-        return await subscribeFromGroupChat(telegramBot, msg);
-      }
-
-      const user = required(msg.from, 'User is required');
-      const subscriptions = await db.getUserSubscriptions(user.id);
-
-      const hasActiveBoostySubscription = subscriptions.some(
-        (s) => s.paymentProvider === 'Boosty' && isSubscriptionActive(s)
-      );
-      if (hasActiveBoostySubscription) {
-        // fixme cover
-        return await forBoostySubscription(telegramBot, msg.chat.id);
-      }
-
-      const activeSubscriptions = subscriptions.filter(
-        (s) => s.paymentProvider !== 'Boosty' && isSubscriptionActive(s)
-      );
-      const userSubscription = activeSubscriptions.find((s) => s.userId != null);
-      const groupsSubscriptions = activeSubscriptions.filter((s) => s.chatId != null);
-
-      const groupId = toBigInt(getCommandParams(msg));
-      if (groupId == null) {
-        return await chooseObject({ userSubscription, groupsSubscriptions, telegramBot, user, db });
-      }
-
-      if (activeSubscriptions.length === 0) {
-        return await chooseTariff({
-          object: ObjectType.group,
-          id: groupId,
-          db,
-          telegramBot,
-          user,
-        });
-      }
-
-      // fixme cover
-      await chooseSubscriptionToChange({
-        telegramBot,
-        user,
-        groupId,
-        userSubscription,
-        groupsSubscriptions,
-        db,
-      });
-    } catch (error) {
-      logger.error('Error in subscriptionCommandController', error);
-    }
+    await handleMessage(db, telegramBot, msg);
   });
 
   if (!subscribed) {
     subscribed = true;
-    telegramBot.onCallbackQuery((query) => tgButtonCallback(query, db, telegramBot));
     // todo tsub on error
     ukassaService.onPaymentSucceeded<UkassaWebhookMetadata>((webhook) =>
       paymentSucceeded(webhook, db, telegramBot)
@@ -102,33 +46,102 @@ const subscriptionCommandController: ChatController = ({
 
 export default subscriptionCommandController;
 
+async function handleMessage(
+  db: DbService,
+  telegramBot: TelegramBotService,
+  msg: TelegramBot.Message
+): Promise<void> {
+  try {
+    if (msg.chat.type !== 'private') {
+      return await subscribeFromGroupChat(db, telegramBot, msg);
+    }
+
+    const routed = await route(msg, db, telegramBot);
+    if (routed) return;
+
+    const user = required(msg.from, 'User is required');
+    const subscriptions = await db.getAllUserSubscriptions(user.id);
+
+    const hasActiveBoostySubscription = subscriptions.some(
+      (s) => s.paymentProvider === 'Boosty' && isSubscriptionActive(s)
+    );
+    if (hasActiveBoostySubscription) {
+      return await forBoostySubscription(telegramBot, msg.chat.id);
+    }
+
+    const activeSubscriptions = subscriptions.filter(
+      (s) => s.paymentProvider !== 'Boosty' && isSubscriptionActive(s)
+    );
+    const userSubscription = activeSubscriptions.find((s) => s.userId != null);
+    const groupsSubscriptions = activeSubscriptions.filter((s) => s.chatId != null);
+
+    return await chooseObject({ userSubscription, groupsSubscriptions, telegramBot, user, db });
+  } catch (error) {
+    if (isBlockedError(error)) {
+      blockedMessagesService.push(msg.chat.id, msg);
+    } else {
+      logger.error('Error in subscriptionCommandController', error);
+    }
+  }
+}
+
 async function subscribeFromGroupChat(
+  db: DbService,
   telegramBot: TelegramBotService,
   msg: TelegramBot.Message
 ): Promise<void> {
   const botName = await telegramBot.getUsername();
-  await telegramBot.sendMessage(msg.chat.id, 'Нажмите на кнопку ниже, чтобы оформить подписку 😉', {
-    reply_markup: {
-      inline_keyboard: [
-        [
-          {
-            text: '⭐ Оформить подписку',
-            url: `https://t.me/${botName}?start=subscription=${msg.chat.id}`,
-          },
-        ],
-      ],
-    },
-  });
+  const subscription = msg.from && (await db.getUserSubscription(msg.from.id, msg.chat.id));
+
+  // eslint-disable-next-line unicorn/prefer-ternary
+  if (subscription) {
+    await telegramBot.sendMessage(
+      msg.chat.id,
+      'Нажмите на кнопку ниже, чтобы редактировать подписку 😉',
+      {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: '⭐ Редактировать подписку',
+                url: makeObjectUrl({
+                  botName,
+                  object: ObjectType.subscription,
+                  id: subscription.id,
+                }),
+              },
+            ],
+          ],
+        },
+      }
+    );
+  } else {
+    await telegramBot.sendMessage(
+      msg.chat.id,
+      'Нажмите на кнопку ниже, чтобы оформить подписку 😉',
+      {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: '⭐ Оформить подписку',
+                url: makeObjectUrl({ botName, object: ObjectType.group, id: msg.chat.id }),
+              },
+            ],
+          ],
+        },
+      }
+    );
+  }
 }
 
 async function forBoostySubscription(
   telegramBot: TelegramBotService,
   chatId: number
 ): Promise<void> {
-  // fixme cover
   await telegramBot.sendMessage(
     chatId,
-    '❗ У вас есть активные подписки на Boosty. В будущем мы перестанем принимать оплату через Boosty. Чтобы переоформить подписку и иметь возможность управлять ей через Telegram обратитесь в поддержку @shorty_support_bot. В этом случае вы получите бонусный бесплатный месяц!'
+    '❗ У вас есть активные подписки на Boosty. В будущем мы перестанем принимать оплату через Boosty.\n\n⭐️ Чтобы переоформить подписку и иметь возможность управлять ей через Telegram обратитесь в поддержку @shorty_support_bot. В этом случае вы получите бонусный бесплатный месяц!'
   );
 }
 
@@ -138,17 +151,22 @@ async function paymentSucceeded(
   telegramBot: TelegramBotService
 ): Promise<void> {
   const { object, id, tariffId, userId, username } = webhook.object.metadata;
+  const paymentMethod = webhook.object.payment_method;
+
+  const paymentData = {
+    paymentProvider: PaymentProvider.YooKassa,
+    paymentMethodId: paymentMethod.saved ? paymentMethod.id : null,
+    autoRenew: paymentMethod.saved,
+  };
 
   const subscription = await match(object)
     .with(ObjectType.subscription, async () => {
       // todo 2sub брать только разницу в деньгах
       await db.updateSubscription(BigInt(id), {
+        ...paymentData,
         expires: addMonths(new Date(), 1),
         renewPeriodMonths: 1,
         tariffId,
-        paymentProvider: PaymentProvider.YooKassa,
-        paymentMethodId: webhook.object.payment_method.id,
-        autoRenew: webhook.object.payment_method.saved,
       });
 
       return await db.getSubscription(BigInt(id));
@@ -157,10 +175,8 @@ async function paymentSucceeded(
       async () =>
         await db.addSubscription(
           {
-            autoRenew: webhook.object.payment_method.saved,
-            paymentMethodId: webhook.object.payment_method.id,
+            ...paymentData,
             renewPeriodMonths: 1,
-            paymentProvider: PaymentProvider.YooKassa,
             expires: addMonths(new Date(), 1),
             tariffId,
             subscriber: {
@@ -173,6 +189,8 @@ async function paymentSucceeded(
         )
     );
 
+  const subObjectText = getSubscriptionObjectText({ subscription, addition: 'none' });
+
   const tariffText = await getTariffRestText({
     subscription,
     db,
@@ -182,5 +200,17 @@ async function paymentSucceeded(
     price: true,
   });
 
-  await telegramBot.sendMessage(userId, `💸 Оплата прошла успешно!\n\n${tariffText}`); // todo 2sub instructions
+  await telegramBot.sendMessage(
+    userId,
+    `💸 Оплата прошла успешно!\n\n💼 ${ucFirst(subObjectText)}\n${tariffText}`
+  ); // todo 2sub instructions
 }
+
+const isBlockedError = (error: unknown): boolean =>
+  error instanceof Error &&
+  'response' in error &&
+  typeof error.response === 'object' &&
+  error.response != null &&
+  'statusCode' in error.response &&
+  typeof error.response.statusCode === 'number' &&
+  error.response.statusCode === 403;

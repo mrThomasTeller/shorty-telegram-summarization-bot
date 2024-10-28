@@ -1,4 +1,4 @@
-import { type ObjectType } from './ObjectType.ts';
+import { type ObjectType } from './ObjectType';
 
 export type UkassaWebhookMetadata = {
   object: ObjectType;

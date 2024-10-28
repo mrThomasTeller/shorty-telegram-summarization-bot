@@ -1,15 +1,15 @@
 import _ from 'lodash';
 import type TelegramBot from 'node-telegram-bot-api';
 import { concatMap, exhaustMap, last, mergeMap, of, type Observable } from 'rxjs';
-import { matchEither } from '../../../lib/common/fp.ts';
-import { catchAndLogError } from '../../../lib/common/rxOperators.ts';
-import type Services from '../../../services/Services.ts';
-import printNews from '../../../useCases/printNews.ts';
-import type ChatController from '../../ChatController.ts';
-import { getChatMessagesForSummary } from './stages/getChatMessagesForSummary.ts';
-import { getLimitsData } from '../../../data/subscriptionLimits.ts';
-import handleSummarizeResultCase from './stages/handleSummarizeResultCase.ts';
-import queryGptOrReturnError$ from './stages/queryGptOrReturnError$.ts';
+import { matchEither } from '../../../lib/common/fp';
+import { catchAndLogError } from '../../../lib/common/rxOperators';
+import type Services from '../../../services/Services';
+import printNews from '../../../useCases/printNews';
+import type ChatController from '../../ChatController';
+import { getChatMessagesForSummary } from './stages/getChatMessagesForSummary';
+import { getLimitsData } from '../../../data/subscriptionLimits';
+import handleSummarizeResultCase from './stages/handleSummarizeResultCase';
+import queryGptOrReturnError$ from './stages/queryGptOrReturnError$';
 
 const summarizeCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$.pipe(exhaustMap(handleSingleSummarizeRequest$(chatId, services))).subscribe(_.noop);

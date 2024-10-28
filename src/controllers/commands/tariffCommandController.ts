@@ -1,6 +1,6 @@
-import logger from '../../config/logger.ts';
-import { getTariffRestText } from '../../data/tariffUtils.ts';
-import type ChatController from '../ChatController.ts';
+import logger from '../../config/logger';
+import { getTariffRestText } from '../../data/tariffUtils';
+import type ChatController from '../ChatController';
 
 const tariffCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$.subscribe(async (msg) => {

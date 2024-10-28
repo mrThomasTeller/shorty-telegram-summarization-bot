@@ -1,3 +1,5 @@
+// fixme tsub ссылки на подписку должны вести на конкретную подписку
+
 export default {
   recovery: {
     message:

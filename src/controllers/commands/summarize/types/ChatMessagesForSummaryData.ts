@@ -1,5 +1,5 @@
-import type DbChatMessage from '../../../../data/types/DbChatMessage.ts';
-import { type LimitsData } from '../../../../data/types/LimitsData.ts';
+import type DbChatMessage from '../../../../data/types/DbChatMessage';
+import { type LimitsData } from '../../../../data/types/LimitsData';
 
 export type ChatMessagesForSummaryData = LimitsData & {
   messages: DbChatMessage[];

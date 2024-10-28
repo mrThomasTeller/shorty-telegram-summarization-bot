@@ -1,4 +1,4 @@
-import { t } from '../translations/index.ts';
+import { t } from '../translations/index';
 import type Command from './Command';
 
 const pingCommand: Command = {

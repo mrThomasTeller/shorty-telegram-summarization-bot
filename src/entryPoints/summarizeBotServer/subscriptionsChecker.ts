@@ -1,16 +1,16 @@
 import { PaymentProvider } from '@prisma/client';
 import { addMonths } from 'date-fns';
 import { setTimeout } from 'node:timers/promises';
-import config from '../../config/config.ts';
-import { getEnv } from '../../config/envVars.ts';
-import { getSubscriptionObjectText } from '../../data/subscriptionUtils.ts';
-import { required } from '../../lib/common/lang.ts';
-import { ucFirst } from '../../lib/common/string.ts';
-import type DbService from '../../services/DbService.ts';
-import { type SubscriptionWithTariffAndChat } from '../../services/DbService.ts';
-import type TelegramBotService from '../../services/TelegramBotService.ts';
-import { ukassaService } from '../../services/UKassaService/UKassaService.ts';
-import type EntryPoint from '../EntryPoint.ts';
+import config from '../../config/config';
+import { getEnv } from '../../config/envVars';
+import { getSubscriptionObjectText } from '../../data/subscriptionUtils';
+import { required } from '../../lib/common/lang';
+import { ucFirst } from '../../lib/common/string';
+import type DbService from '../../services/DbService';
+import { type SubscriptionWithTariffAndChat } from '../../services/DbService';
+import type TelegramBotService from '../../services/TelegramBotService';
+import { ukassaService } from '../../services/UKassaService/UKassaService';
+import type EntryPoint from '../EntryPoint';
 
 export const subscriptionsChecker: EntryPoint = async ({ db, telegramBot }) => {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -20,6 +20,7 @@ export const subscriptionsChecker: EntryPoint = async ({ db, telegramBot }) => {
   }
 };
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 async function checkSubscriptions({
   db,
   telegramBot,

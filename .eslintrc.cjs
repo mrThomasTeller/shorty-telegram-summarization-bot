@@ -34,13 +34,6 @@ module.exports = {
     ],
     'max-lines': 'error',
     'max-params': ['error', 3],
-    'import/extensions': [
-      'error',
-      'ignorePackages',
-      {
-        ts: 'always',
-      },
-    ],
     'n/no-callback-literal': 0,
     'no-extra-boolean-cast': 0,
 

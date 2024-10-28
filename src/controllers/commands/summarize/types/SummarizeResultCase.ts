@@ -1,5 +1,5 @@
-import { type GptResultCase } from '../../../../api/gpt.ts';
-import { type SubscriptionWithTariff } from '../../../../services/DbService.ts';
+import { type GptResultCase } from '../../../../api/gpt';
+import { type SubscriptionWithTariff } from '../../../../services/DbService';
 
 export type SummarizeResultCase =
   | GptResultCase

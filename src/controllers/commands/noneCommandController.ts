@@ -1,19 +1,19 @@
 import { type Chat } from '@prisma/client';
 import type TelegramBot from 'node-telegram-bot-api';
-import logger from '../../config/logger.ts';
+import logger from '../../config/logger';
 import {
   convertTgMessageToDbMessageInput,
   convertTgUserToDbUserInput,
-} from '../../data/convertors.ts';
-import { getFormattedMessage } from '../../data/dbChatMessageUtils.ts';
-import { getMaxTextToSummarizeApproximateLength } from '../../data/tariffUtils.ts';
-import { chatSettingsSchema } from '../../data/types/ChatSettings.ts';
-import type DbChatMessage from '../../data/types/DbChatMessage.ts';
-import { rejectAsync } from '../../lib/common/rxOperators.ts';
-import type DbService from '../../services/DbService.ts';
-import type ChatController from '../ChatController.ts';
-import { isSubscriptionActive } from '../../data/subscriptionUtils.ts';
-import { encryptIfExists } from '../../data/encryption.ts';
+} from '../../data/convertors';
+import { getFormattedMessage } from '../../data/dbChatMessageUtils';
+import { getMaxTextToSummarizeApproximateLength } from '../../data/tariffUtils';
+import { chatSettingsSchema } from '../../data/types/ChatSettings';
+import type DbChatMessage from '../../data/types/DbChatMessage';
+import { rejectAsync } from '../../lib/common/rxOperators';
+import type DbService from '../../services/DbService';
+import type ChatController from '../ChatController';
+import { isSubscriptionActive } from '../../data/subscriptionUtils';
+import { encryptIfExists } from '../../data/encryption';
 
 const noneCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$

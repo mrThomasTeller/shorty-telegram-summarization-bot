@@ -1,12 +1,12 @@
 import { type Subscription } from '@prisma/client';
 import * as dateFns from 'date-fns';
-import config from '../../config/config.ts';
-import { getEnv } from '../../config/envVars.ts';
-import logger from '../../config/logger.ts';
-import { monthFromPeriodStart } from '../../lib/common/date.ts';
-import type DbService from '../../services/DbService.ts';
-import type TelegramBotService from '../../services/TelegramBotService.ts';
-import type EntryPoint from '../EntryPoint.ts';
+import config from '../../config/config';
+import { getEnv } from '../../config/envVars';
+import logger from '../../config/logger';
+import { monthFromPeriodStart } from '../../lib/common/date';
+import type DbService from '../../services/DbService';
+import type TelegramBotService from '../../services/TelegramBotService';
+import type EntryPoint from '../EntryPoint';
 
 const subscriptionsExpirationNotifier: EntryPoint = async ({ db, telegramBot }) => {
   logger.info('Notifier started');

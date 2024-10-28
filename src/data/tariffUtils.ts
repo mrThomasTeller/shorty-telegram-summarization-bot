@@ -1,14 +1,14 @@
 import { type Tariff } from '@prisma/client';
 import { type Nullish } from 'utility-types';
-import config from '../config/config.ts';
-import { getEnv } from '../config/envVars.ts';
-import { t } from '../config/translations/index.ts';
-import { required } from '../lib/common/lang.ts';
-import type DbService from '../services/DbService.ts';
-import { type SubscriptionWithTariff } from '../services/DbService.ts';
-import type TelegramBotService from '../services/TelegramBotService.ts';
-import { getLimitsData, getSummariesRestText } from './subscriptionLimits.ts';
-import { getSubscriptionExpiresText } from './subscriptionUtils.ts';
+import config from '../config/config';
+import { getEnv } from '../config/envVars';
+import { t } from '../config/translations/index';
+import { required } from '../lib/common/lang';
+import type DbService from '../services/DbService';
+import { type SubscriptionWithTariff } from '../services/DbService';
+import type TelegramBotService from '../services/TelegramBotService';
+import { getLimitsData, getSummariesRestText } from './subscriptionLimits';
+import { getSubscriptionExpiresText } from './subscriptionUtils';
 
 export const getMaxSummaryParts = (tariff: Tariff | Nullish): number =>
   getEnv().MAX_SUMMARY_PARTS * (tariff?.messagesMultiplier ?? 1);

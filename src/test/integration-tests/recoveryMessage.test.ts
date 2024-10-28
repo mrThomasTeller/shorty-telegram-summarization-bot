@@ -1,9 +1,9 @@
 import { type Chat } from '@prisma/client';
-import { t } from '../../config/translations/index.ts';
-import recoveryMessage from '../../entryPoints/recoveryMessage.ts';
-import { type TOmit } from '../../lib/typeUtils.ts';
-import { loggerMock } from '../env.ts';
-import createContext from './lib/createContext.ts';
+import { t } from '../../config/translations/index';
+import recoveryMessage from '../../entryPoints/recoveryMessage';
+import { type TOmit } from '../../lib/typeUtils';
+import { loggerMock } from '../env';
+import createContext from './lib/createContext';
 
 describe('recoveryMessage', () => {
   it('respond to messages from non-white chats with maintenance message', async () => {

@@ -1,5 +1,5 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import { encryptIfExists } from '../data/encryption.ts';
+import { encryptIfExists } from '../data/encryption';
 import type DbService from '../services/DbService';
 import type TelegramBotService from '../services/TelegramBotService';
 

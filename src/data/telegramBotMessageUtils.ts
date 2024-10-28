@@ -1,5 +1,5 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import summarizeCommand from '../config/commands/summarize.ts';
+import summarizeCommand from '../config/commands/summarize';
 
 export type ParsedCommand = {
   command: string;
@@ -19,7 +19,7 @@ export function parseCommand(message: TelegramBot.Message): ParsedCommand | unde
   return undefined;
 }
 
-export const getCommandParams = (msg: TelegramBot.Message): string => {
+export const getCommandParameter = (msg: TelegramBot.Message): string => {
   const [_command, params] = transformStartCommandRedirect(msg)
     .trim()
     .split(/[\n ](.*)/s)
@@ -27,8 +27,8 @@ export const getCommandParams = (msg: TelegramBot.Message): string => {
   return params ?? '';
 };
 
-export const getSpaceSeparatedCommandParams = (msg: TelegramBot.Message): string[] =>
-  getCommandParams(msg)
+export const getCommandParams = (msg: TelegramBot.Message): string[] =>
+  getCommandParameter(msg)
     .split(/\s+/g)
     .map((s) => s.trim());
 

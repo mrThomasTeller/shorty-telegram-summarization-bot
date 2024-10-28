@@ -1,13 +1,13 @@
 import { type PrismaClient } from '@prisma/client';
-import type AdsService from './services/AdsService.ts';
-import AdsServiceImpl from './services/AdsServiceImpl.ts';
-import type DbService from './services/DbService.ts';
-import DbServiceImpl from './services/DbServiceImpl.ts';
-import type GptService from './services/GptService.ts';
-import GptServiceImpl from './services/GptServiceImpl.ts';
-import type Services from './services/Services.ts';
-import type TelegramBotService from './services/TelegramBotService.ts';
-import TelegramBotServiceImpl from './services/TelegramBotServiceImpl.ts';
+import type AdsService from './services/AdsService';
+import AdsServiceImpl from './services/AdsServiceImpl';
+import type DbService from './services/DbService';
+import DbServiceImpl from './services/DbServiceImpl';
+import type GptService from './services/GptService';
+import GptServiceImpl from './services/GptServiceImpl';
+import type Services from './services/Services';
+import type TelegramBotService from './services/TelegramBotService';
+import TelegramBotServiceImpl from './services/TelegramBotServiceImpl';
 
 export class ServicesImpl implements Services {
   public get prisma(): PrismaClient {

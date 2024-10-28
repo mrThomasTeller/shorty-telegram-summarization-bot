@@ -1,9 +1,9 @@
-import { getEnv, getWhiteChatsList, setWhiteChatsList } from '../../../config/envVars.ts';
-import { t } from '../../../config/translations/index.ts';
-import { createTgMessageInGroup, otherTgUser, myTgGroupId } from '../lib/tgUtils.ts';
-import createSummarizeBotServerContext from './createSummarizeBotServerContext.ts';
-import { renderHelpMessage } from '../../../controllers/commands/helpCommandController.ts';
-import { botName } from '../lib/constants.ts';
+import { getEnv, getWhiteChatsList, setWhiteChatsList } from '../../../config/envVars';
+import { t } from '../../../config/translations/index';
+import { createTgMessageInGroup, otherTgUser, myTgGroupId } from '../lib/tgUtils';
+import createSummarizeBotServerContext from './createSummarizeBotServerContext';
+import { renderHelpMessage } from '../../../controllers/commands/helpCommandController';
+import { botName } from '../lib/constants';
 
 describe('summarizeBotServer common', () => {
   it('respond to messages from non-white chats with maintenance message', async () => {

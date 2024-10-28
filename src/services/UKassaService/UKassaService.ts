@@ -1,10 +1,10 @@
 import axios from 'axios';
 import { randomUUID } from 'node:crypto';
-import { getEnv } from '../../config/envVars.ts';
-import { type UKassaPaymentWebhook } from './UKassaPaymentWebhook.ts';
+import { getEnv } from '../../config/envVars';
+import { type UKassaPaymentWebhook } from './UKassaPaymentWebhook';
 import cors from 'cors';
 import express from 'express';
-import logger from '../../config/logger.ts';
+import logger from '../../config/logger';
 
 type Metadata = UKassaPaymentWebhook['object']['metadata'];
 

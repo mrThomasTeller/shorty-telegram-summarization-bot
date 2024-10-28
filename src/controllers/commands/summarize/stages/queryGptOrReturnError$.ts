@@ -10,17 +10,17 @@ import {
   type Observable,
   type UnaryFunction,
 } from 'rxjs';
-import { sendMessageToGptWithRetries$ } from '../../../../api/gpt.ts';
-import { getEnv } from '../../../../config/envVars.ts';
-import { t } from '../../../../config/translations/index.ts';
-import type DbChatMessage from '../../../../data/types/DbChatMessage.ts';
-import { getFormattedMessage } from '../../../../data/dbChatMessageUtils.ts';
-import { getPartsAndPointsCountForText } from '../../../../data/summaryUtils.ts';
-import { endWithAfter, insertBefore } from '../../../../lib/common/rxOperators.ts';
-import { reEnumerateText } from '../../../../lib/common/text.ts';
-import type Services from '../../../../services/Services.ts';
-import { type ChatMessagesForSummaryData } from '../types/ChatMessagesForSummaryData.ts';
-import { type SummarizeResultCase } from '../types/SummarizeResultCase.ts';
+import { sendMessageToGptWithRetries$ } from '../../../../api/gpt';
+import { getEnv } from '../../../../config/envVars';
+import { t } from '../../../../config/translations/index';
+import type DbChatMessage from '../../../../data/types/DbChatMessage';
+import { getFormattedMessage } from '../../../../data/dbChatMessageUtils';
+import { getPartsAndPointsCountForText } from '../../../../data/summaryUtils';
+import { endWithAfter, insertBefore } from '../../../../lib/common/rxOperators';
+import { reEnumerateText } from '../../../../lib/common/text';
+import type Services from '../../../../services/Services';
+import { type ChatMessagesForSummaryData } from '../types/ChatMessagesForSummaryData';
+import { type SummarizeResultCase } from '../types/SummarizeResultCase';
 
 const queryGptOrReturnError$ = _.curry(
   (

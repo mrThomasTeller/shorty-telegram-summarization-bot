@@ -1,19 +1,19 @@
 import _ from 'lodash';
 import type TelegramBot from 'node-telegram-bot-api';
 import { type GroupedObservable, Observable, filter, groupBy, pipe } from 'rxjs';
-import { getVisibleCommands } from '../config/commands/index.ts';
-import { getEnv } from '../config/envVars.ts';
-import logger from '../config/logger.ts';
-import { sendHelpMessage } from '../controllers/commands/helpCommandController.ts';
-import mainController from '../controllers/mainController.ts';
-import type Services from '../services/Services.ts';
-import type TelegramBotService from '../services/TelegramBotService.ts';
-import type EntryPoint from './EntryPoint.ts';
-import subscriptionsExpirationNotifier from './summarizeBotServer/subscriptionsExpirationNotifier.ts';
-import { ukassaService } from '../services/UKassaService/UKassaService.ts';
-import { subscriptionsChecker } from './summarizeBotServer/subscriptionsChecker.ts';
-import { encryptIfExists } from '../data/encryption.ts';
-import { convertTgUserToDbUserInput } from '../data/convertors.ts';
+import { getVisibleCommands } from '../config/commands/index';
+import { getEnv } from '../config/envVars';
+import logger from '../config/logger';
+import { sendHelpMessage } from '../controllers/commands/helpCommandController';
+import mainController from '../controllers/mainController';
+import type Services from '../services/Services';
+import type TelegramBotService from '../services/TelegramBotService';
+import type EntryPoint from './EntryPoint';
+import subscriptionsExpirationNotifier from './summarizeBotServer/subscriptionsExpirationNotifier';
+import { ukassaService } from '../services/UKassaService/UKassaService';
+import { subscriptionsChecker } from './summarizeBotServer/subscriptionsChecker';
+import { encryptIfExists } from '../data/encryption';
+import { convertTgUserToDbUserInput } from '../data/convertors';
 
 // todo refactor this function
 const summarizeBotServer: EntryPoint = async (services) => {

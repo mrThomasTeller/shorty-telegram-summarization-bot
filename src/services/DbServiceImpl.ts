@@ -8,17 +8,17 @@ import {
   type User,
 } from '@prisma/client';
 import _ from 'lodash';
-import type DbChatMessage from '../data/types/DbChatMessage.ts';
-import { todayMidday } from '../lib/common/date.ts';
-import { type TOmit } from '../lib/common/typeUtils.ts';
-import type DbService from './DbService.ts';
+import type DbChatMessage from '../data/types/DbChatMessage';
+import { todayMidday } from '../lib/common/date';
+import { type TOmit } from '../lib/common/typeUtils';
+import type DbService from './DbService';
 import {
   type SubscriptionWithTariffAndChat,
   type AddSubscriptionParams,
   type MessageCreateInput,
   type SubscriptionWithTariff,
   type UserCreateInput,
-} from './DbService.ts';
+} from './DbService';
 
 export default class DbServiceImpl implements DbService {
   readonly prisma: PrismaClient;
@@ -108,7 +108,7 @@ export default class DbServiceImpl implements DbService {
     });
   }
 
-  getUserSubscriptions(userId: number): Promise<SubscriptionWithTariffAndChat[]> {
+  getAllUserSubscriptions(userId: number): Promise<SubscriptionWithTariffAndChat[]> {
     return this.prisma.subscription.findMany({
       where: { subscriberUserId: userId },
       include: { tariff: true, chat: true },
@@ -244,6 +244,19 @@ export default class DbServiceImpl implements DbService {
   async getSubscription(id: bigint): Promise<SubscriptionWithTariffAndChat> {
     return await this.prisma.subscription.findUniqueOrThrow({
       where: { id },
+      include: { tariff: true, chat: true },
+    });
+  }
+
+  async getUserSubscription(
+    userId: number,
+    chatId?: number
+  ): Promise<SubscriptionWithTariffAndChat | null> {
+    return await this.prisma.subscription.findFirst({
+      where: {
+        subscriberUserId: userId,
+        ...(chatId == null ? { userId } : { chatId }),
+      },
       include: { tariff: true, chat: true },
     });
   }
