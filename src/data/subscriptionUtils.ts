@@ -13,7 +13,7 @@ import { escapeTelegramMarkdown } from './telegramBotMessageUtils';
 import { ucFirst } from '../lib/common/string';
 
 export const isSubscriptionActive = (subscription: SubscriptionWithTariff): boolean =>
-  subscription.expires > new Date();
+  subscription.expires > new Date() && !subscription.deactivated;
 
 export const getSortedActiveSubscriptions = (
   subscriptions: SubscriptionWithTariff[]

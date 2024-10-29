@@ -13,12 +13,11 @@ import { type UKassaPaymentWebhook } from '../../../services/UKassaService/UKass
 import { ukassaService } from '../../../services/UKassaService/UKassaService';
 import type ChatController from '../../ChatController';
 import { chooseObject } from './chooseObject';
-import { makeObjectUrl, route } from './routing';
+import { makeEditSubscriptionUrl, makeObjectUrl, route } from './routing';
 import { ObjectType } from './types/ObjectType';
 import { type UkassaWebhookMetadata } from './types/UkassaWebhookMetadata';
-import { blockedMessagesService } from '../../../lib/BlockedMessagesService';
-
-let subscribed = false;
+import { blockedMessagesService } from '../../../services/BlockedMessagesService';
+import { EditSubscriptionAction } from './types/EditSubscriptionAction';
 
 // todo tsub check already subscribed
 // todo 2sub subscriptions periods
@@ -33,14 +32,12 @@ const subscriptionCommandController: ChatController = ({
   chat$.subscribe(async (msg) => {
     await handleMessage(db, telegramBot, msg);
   });
+};
 
-  if (!subscribed) {
-    subscribed = true;
-    // todo tsub on error
-    ukassaService.onPaymentSucceeded<UkassaWebhookMetadata>((webhook) =>
-      paymentSucceeded(webhook, db, telegramBot)
-    );
-  }
+subscriptionCommandController.onStart = async ({ db, telegramBot }) => {
+  ukassaService.onPaymentSucceeded<UkassaWebhookMetadata>((webhook) =>
+    paymentSucceeded(webhook, db, telegramBot)
+  );
 };
 
 export default subscriptionCommandController;
@@ -68,11 +65,11 @@ async function handleMessage(
       return await forBoostySubscription(telegramBot, msg.chat.id);
     }
 
-    const activeSubscriptions = subscriptions.filter(
-      (s) => s.paymentProvider !== 'Boosty' && isSubscriptionActive(s)
+    const unexpiredSubscriptions = subscriptions.filter(
+      (s) => s.paymentProvider !== 'Boosty' && s.expires > new Date()
     );
-    const userSubscription = activeSubscriptions.find((s) => s.userId != null);
-    const groupsSubscriptions = activeSubscriptions.filter((s) => s.chatId != null);
+    const userSubscription = unexpiredSubscriptions.find((s) => s.userId != null);
+    const groupsSubscriptions = unexpiredSubscriptions.filter((s) => s.chatId != null);
 
     return await chooseObject({ userSubscription, groupsSubscriptions, telegramBot, user, db });
   } catch (error) {
@@ -144,18 +141,20 @@ async function forBoostySubscription(
   );
 }
 
+// todo tsub обработать ошибки снятия
 async function paymentSucceeded(
   webhook: UKassaPaymentWebhook<UkassaWebhookMetadata>,
   db: DbService,
   telegramBot: TelegramBotService
 ): Promise<void> {
-  const { object, id, tariffId, userId, username } = webhook.object.metadata;
+  const { object, id, tariffId, userId, username, autoRenew } = webhook.object.metadata;
   const paymentMethod = webhook.object.payment_method;
 
   const paymentData = {
     paymentProvider: PaymentProvider.YooKassa,
     paymentMethodId: paymentMethod.saved ? paymentMethod.id : null,
     autoRenew: paymentMethod.saved,
+    payedAt: new Date(),
   };
 
   const subscription = await match(object)
@@ -164,8 +163,10 @@ async function paymentSucceeded(
       await db.updateSubscription(BigInt(id), {
         ...paymentData,
         expires: addMonths(new Date(), 1),
+        deactivated: false,
         renewPeriodMonths: 1,
         tariffId,
+        disableSubscriptionCheck: false,
       });
 
       return await db.getSubscription(BigInt(id));
@@ -188,6 +189,10 @@ async function paymentSucceeded(
         )
     );
 
+  const mainText = autoRenew
+    ? 'Автопродление вашей подписки прошло успешно!'
+    : 'Оплата прошла успешно!';
+
   const subObjectText = getSubscriptionObjectText({ subscription, addition: 'none' });
 
   const tariffText = await getTariffRestText({
@@ -199,9 +204,29 @@ async function paymentSucceeded(
     price: true,
   });
 
+  const botName = await telegramBot.getUsername();
+
   await telegramBot.sendMessage(
     userId,
-    `💸 Оплата прошла успешно!\n\n💼 ${ucFirst(subObjectText)}\n${tariffText}`
+    `💸 ${mainText}\n\n💼 ${ucFirst(subObjectText)}\n${tariffText}`,
+    autoRenew
+      ? {
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: '🚫 Отключить автопродление',
+                  url: makeEditSubscriptionUrl({
+                    botName,
+                    subscriptionId: BigInt(id),
+                    action: EditSubscriptionAction.unsubscribe,
+                  }),
+                },
+              ],
+            ],
+          },
+        }
+      : undefined
   ); // todo 2sub instructions
 }
 

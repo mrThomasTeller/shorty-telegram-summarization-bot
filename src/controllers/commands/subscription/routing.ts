@@ -9,6 +9,8 @@ import { doEditSubscription, editSubscription } from './editSubscription';
 import { type EditSubscriptionAction } from './types/EditSubscriptionAction';
 import { ObjectType } from './types/ObjectType';
 
+// todo 2sub переделать роутинг
+
 const objectKey = 'object';
 export const makeObjectUrl = ({
   botName,

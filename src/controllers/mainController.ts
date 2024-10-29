@@ -9,7 +9,7 @@ import { t } from '../config/translations/index';
 import { convertTgUserToDbUserInput } from '../data/convertors';
 import { encryptIfExists } from '../data/encryption';
 import { type ParsedCommand, isCommandForBot, parseCommand } from '../data/telegramBotMessageUtils';
-import { blockedMessagesService } from '../lib/BlockedMessagesService';
+import { blockedMessagesService } from '../services/BlockedMessagesService';
 import { catchError } from '../lib/common/async';
 import { required } from '../lib/common/lang';
 import { filterAsync } from '../lib/common/rxOperators';
@@ -38,6 +38,12 @@ const mainController: ChatController = ({ chat$, chatId, services }) => {
       groupBy(getObserveCaseForMessage(whiteChatsList))
     )
     .subscribe(observeCommandsOrSendMaintenanceMessages(chatId, services));
+};
+
+mainController.onStart = (services) => {
+  for (const controller of Object.values(commands)) {
+    getCommandController(controller).onStart?.(services);
+  }
 };
 
 function getParsedOrBlockedCommand(msg: TelegramBot.Message): MessageAndParsedCommand {

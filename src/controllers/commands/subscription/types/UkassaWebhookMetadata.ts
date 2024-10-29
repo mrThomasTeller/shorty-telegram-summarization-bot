@@ -7,4 +7,5 @@ export type UkassaWebhookMetadata = {
   userId: number;
   username: string | undefined;
   secret: string;
+  autoRenew?: boolean;
 };

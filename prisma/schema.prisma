@@ -80,6 +80,7 @@ model Tariff {
   subscriptions Subscription[]
 }
 
+// todo 2sub сделать статусы подписки
 model Subscription {
   id                       BigInt          @id @default(autoincrement())
   tariffId                 String
@@ -98,6 +99,7 @@ model Subscription {
   expires                  DateTime        @default(now())
   disableSubscriptionCheck Boolean         @default(false)
   triesToRenew             Int             @default(0)
+  deactivated              Boolean         @default(false)
 
   tariff Tariff @relation(fields: [tariffId], references: [id], onUpdate: Cascade)
   chat   Chat?  @relation(fields: [chatId], references: [id])

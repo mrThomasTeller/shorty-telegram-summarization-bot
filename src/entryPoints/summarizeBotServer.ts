@@ -28,6 +28,8 @@ const summarizeBotServer: EntryPoint = async (services) => {
   services.telegramBot.onAddedToGroupChat(addedToGroupChatHandler(services));
   services.telegramBot.onRemovedFromGroupChat(removedFromGroupChatHandler(services));
 
+  mainController.onStart?.(services);
+
   createTgMessagesObservable(services.telegramBot)
     .pipe(groupNonEmptyMessagesByChatId)
     .subscribe(observeChatWithMainController(services));

@@ -218,7 +218,13 @@ export async function doEditSubscription({
     }
 
     case EditSubscriptionAction.unsubscribeConfirmed: {
-      await db.updateSubscription(subscriptionId, { autoRenew: false });
+      await db.updateSubscription(subscriptionId, {
+        autoRenew: false,
+        triesToRenew: 0,
+        deactivated: false,
+        expires: subscription.deactivated ? new Date() : subscription.expires,
+        disableSubscriptionCheck: !subscription.deactivated,
+      });
       await telegramBot.sendMessage(
         user.id,
         '✅ Вы успешно отключили автопродление. Вы всегда можете опять включить его введя команду /subscription в этом чате.'
@@ -247,7 +253,7 @@ export async function doEditSubscription({
           }
         );
       } else {
-        await db.updateSubscription(subscriptionId, { autoRenew: true });
+        await db.updateSubscription(subscriptionId, { autoRenew: true, triesToRenew: 0 });
         await telegramBot.sendMessage(
           user.id,
           `✅ Автопродление подписки возобновлено. Следующее списание произойдет ${getSubscriptionExpireFormattedDate(

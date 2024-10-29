@@ -8,6 +8,9 @@ type ChatControllerPrams = {
   services: Services;
 };
 
-type ChatController = (params: ChatControllerPrams) => void;
+type ChatController = {
+  (params: ChatControllerPrams): void;
+  onStart?(services: Services): void;
+};
 
 export default ChatController;

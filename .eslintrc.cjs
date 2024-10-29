@@ -79,6 +79,7 @@ module.exports = {
     '@typescript-eslint/switch-exhaustiveness-check': 'error',
     '@typescript-eslint/array-type': ['error', { default: 'array' }],
     '@typescript-eslint/no-confusing-void-expression': 0,
+    '@typescript-eslint/method-signature-style': 0,
 
     // unicorn
     'unicorn/prevent-abbreviations': 0,

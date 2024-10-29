@@ -47,6 +47,7 @@ ${tariffs
   await telegramBot.sendMessage(user.id, text, { parse_mode: 'MarkdownV2' });
 }
 
+// todo если здесь появится промежуточный шаг нужно проверить все места, которые сюда ведут
 export async function tariffChosen({
   object,
   id,

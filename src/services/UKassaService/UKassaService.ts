@@ -8,6 +8,12 @@ import logger from '../../config/logger';
 
 type Metadata = UKassaPaymentWebhook['object']['metadata'];
 
+export class UKassaPaymentCanceledError extends Error {
+  constructor() {
+    super('UKassa payment was canceled');
+  }
+}
+
 export class UKassaService {
   private readonly paymentSucceededCallbacks: ((
     webhook: UKassaPaymentWebhook<NonNullable<Metadata>>
@@ -44,6 +50,7 @@ export class UKassaService {
       description,
       metadata,
       payment_method_id: paymentMethodId,
+      // save_payment_method: true,
     };
 
     const response = await axios.post('https://api.yookassa.ru/v3/payments', data, {
@@ -56,6 +63,13 @@ export class UKassaService {
         password: getEnv().UKASSA_SECRET_KEY,
       },
     });
+
+    console.log('createPayment', response);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (response.data.status === 'canceled') {
+      throw new UKassaPaymentCanceledError();
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     return response.data?.confirmation?.confirmation_url as string | undefined;
