@@ -23,7 +23,6 @@ let subscribed = false;
 // todo tsub check already subscribed
 // todo 2sub subscriptions periods
 // todo 2sub discounts for long periods
-// todo tsub buttons emojies
 // todo 2sub возможность докупать пакеты выжимок
 // todo tsub мне нужна помощь
 // todo 2sub кнопка назад

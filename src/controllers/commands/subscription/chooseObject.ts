@@ -46,6 +46,7 @@ export async function chooseObject({
       : `✚ [Оформить новую подписку](${makeObjectUrl({
           botName,
           object: ObjectType.user,
+          id: user.id,
         })}) на \`себя\` \\(вы сможете делать краткие выжимки в любом чате, в котором есть Shorty\\)`,
 
     ...groupsSubscriptions

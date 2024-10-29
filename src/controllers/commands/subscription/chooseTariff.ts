@@ -1,6 +1,7 @@
 import type TelegramBot from 'node-telegram-bot-api';
 import { getEnv } from '../../../config/envVars';
 import logger from '../../../config/logger';
+import { getTariffPriceText } from '../../../data/tariffUtils';
 import { escapeTelegramMarkdown as esc } from '../../../data/telegramBotMessageUtils';
 import type DbService from '../../../services/DbService';
 import type TelegramBotService from '../../../services/TelegramBotService';
@@ -8,8 +9,7 @@ import { ukassaService } from '../../../services/UKassaService/UKassaService';
 import { makeTariffUrl } from './routing';
 import { type ObjectType } from './types/ObjectType';
 import { type UkassaWebhookMetadata } from './types/UkassaWebhookMetadata';
-import { getTariffPriceText } from '../../../data/tariffUtils';
-import { getEmojiNumber } from '../../../lib/common/text';
+import { checkAccessToObject } from './common';
 
 export async function chooseTariff({
   object,
@@ -26,28 +26,25 @@ export async function chooseTariff({
 }): Promise<void> {
   const tariffs = await db.getAllTariffs();
   const botName = await telegramBot.getUsername();
-  const text = `**⭐ Выберите тариф:**\n
+
+  const text = `**⭐ Выберите тариф:**
+
 ${tariffs
-  .map(
-    (tariff, index) =>
-      `**${getEmojiNumber(index + 1)} \`${esc(tariff.name)}\` \\(${getTariffPriceText(
-        tariff
-        // eslint-disable-next-line sonarjs/no-nested-template-literals
-      )}\\)**${Boolean(tariff.description) ? `\n_${esc(tariff.description)}_` : ''}`
-  )
+  .map((tariff) => {
+    const tariffLinkText = `💼 ${esc(tariff.name)} \\(${getTariffPriceText(tariff)}\\)`;
+    const tariffUrl = makeTariffUrl({
+      botName,
+      object,
+      id,
+      tariffId: tariff.id,
+    });
+    const description = Boolean(tariff.description) ? '\n_' + esc(tariff.description) + '_' : '';
+
+    return `[${tariffLinkText}](${tariffUrl})${description}`;
+  })
   .join('\n\n')}`;
 
-  await telegramBot.sendMessage(user.id, text, {
-    parse_mode: 'MarkdownV2',
-    reply_markup: {
-      inline_keyboard: tariffs.map((tariff, index) => [
-        {
-          text: `${getEmojiNumber(index + 1)} ${tariff.name}`,
-          url: makeTariffUrl({ botName, object, id, tariffId: tariff.id }),
-        },
-      ]),
-    },
-  });
+  await telegramBot.sendMessage(user.id, text, { parse_mode: 'MarkdownV2' });
 }
 
 export async function tariffChosen({
@@ -75,6 +72,8 @@ export async function tariffChosen({
 
   // todo 2sub remove loading
   await telegramBot.sendMessage(user.id, '⏳ Подождите…');
+
+  await checkAccessToObject({ db, user, object, id });
 
   const botName = await telegramBot.getUsername();
   const paymentUrl = await ukassaService.createPayment<UkassaWebhookMetadata>({

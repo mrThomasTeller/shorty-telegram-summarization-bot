@@ -16,6 +16,7 @@ import { chooseTariff } from './chooseTariff';
 import { makeEditSubscriptionUrl } from './routing';
 import { EditSubscriptionAction } from './types/EditSubscriptionAction';
 import { ObjectType } from './types/ObjectType';
+import { checkAccessToObject } from './common';
 
 export async function editSubscription({
   id,
@@ -28,7 +29,9 @@ export async function editSubscription({
   telegramBot: TelegramBotService;
   user: TelegramBot.User;
 }): Promise<void> {
+  await checkAccessToObject({ db, user, object: ObjectType.subscription, id });
   const subscription = await db.getSubscription(id);
+
   const individualSubscription = await db.getUserSubscription(user.id);
   const hasIndividualSubscription =
     individualSubscription != null && isSubscriptionActive(individualSubscription);
@@ -135,6 +138,7 @@ export async function doEditSubscription({
   user: TelegramBot.User;
 }): Promise<void> {
   const subscription = await db.getSubscription(subscriptionId);
+  await checkAccessToObject({ db, user, object: ObjectType.subscription, id: subscriptionId });
 
   switch (action) {
     case EditSubscriptionAction.changeTariff: {
@@ -171,6 +175,7 @@ export async function doEditSubscription({
       break;
     }
 
+    // fixme tsub спросить, точно ли?
     case EditSubscriptionAction.changeToMe: {
       await db.updateSubscription(subscriptionId, { chatId: null, userId: BigInt(user.id) });
       await telegramBot.sendMessage(user.id, '✅ Подписка переключена на вас');

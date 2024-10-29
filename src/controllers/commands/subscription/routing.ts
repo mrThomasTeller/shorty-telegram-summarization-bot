@@ -1,5 +1,4 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import logger from '../../../config/logger';
 import { getCommandParameter, getPrivateCommandUrl } from '../../../data/telegramBotMessageUtils';
 import { required } from '../../../lib/common/lang';
 import type DbService from '../../../services/DbService';
@@ -10,7 +9,7 @@ import { doEditSubscription, editSubscription } from './editSubscription';
 import { type EditSubscriptionAction } from './types/EditSubscriptionAction';
 import { ObjectType } from './types/ObjectType';
 
-const objectKey = `object`;
+const objectKey = 'object';
 export const makeObjectUrl = ({
   botName,
   object,
@@ -26,7 +25,7 @@ const parseObjectParams = (data: string) => ({
   id: BigInt(required(data.split(' ')[2], 'id is required in callback data')) || undefined,
 });
 
-const tariffKey = `tariff`;
+const tariffKey = 'tariff';
 export const makeTariffUrl = ({
   botName,
   object,
@@ -46,7 +45,7 @@ const parseTariffParams = (data: string) => ({
   tariffId: required(data.split(' ')[3], 'tariffId is required in callback data'),
 });
 
-const editSubscriptionKey = `edit`;
+const editSubscriptionKey = 'edit';
 export const makeEditSubscriptionUrl = ({
   botName,
   subscriptionId,
