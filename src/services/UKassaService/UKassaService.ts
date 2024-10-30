@@ -27,12 +27,14 @@ export class UKassaService {
     returnUrl,
     metadata,
     paymentMethodId,
+    savePaymentMethod,
   }: {
     price: number;
     description: string;
     returnUrl?: string;
     metadata: TMetadata;
     paymentMethodId?: string;
+    savePaymentMethod?: boolean;
   }): Promise<string | undefined> {
     const data = {
       amount: {
@@ -50,7 +52,7 @@ export class UKassaService {
       description,
       metadata,
       payment_method_id: paymentMethodId,
-      // save_payment_method: true,
+      save_payment_method: savePaymentMethod,
     };
 
     const response = await axios.post('https://api.yookassa.ru/v3/payments', data, {

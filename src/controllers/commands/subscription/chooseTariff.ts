@@ -108,6 +108,7 @@ export async function tariffChosen({
     price: tariff.price,
     description: `Shorty: подписка на тариф "${tariff.name}". Период оплаты: 1 месяц.`,
     returnUrl: `https://t.me/${botName}`,
+    savePaymentMethod: true,
     metadata: {
       object,
       id: Number(id),
@@ -120,11 +121,10 @@ export async function tariffChosen({
 
   await telegramBot.sendMessage(
     user.id,
-    '❗ Пожалуйста, отметьте опцию `☑️ Разрешаю автосписания` \\(`I allow debiting money automatically`\\) если не хотите вручную продлевать подписку каждый месяц\\. В этом случае подписка будет продлеваться автоматически\\.\n\n⭐ Ссылка на оплату 👇',
+    'Оплата происходит через сервис ЮKassa. После оформления подписки необходимая сумма будет списываться автоматически каждый месяц. Вы можете отключить автосписание в любой момент введя здесь команду /subscription, при этом подписка будет действовать до конца оплаченного периода.\n\n👇 Ссылка на оплату 👇',
     {
-      parse_mode: 'MarkdownV2',
       reply_markup: {
-        inline_keyboard: [[{ text: 'Оплатить через сервис ЮKassa', url: paymentUrl }]],
+        inline_keyboard: [[{ text: '⭐️ Оплатить подписку', url: paymentUrl }]],
       },
     }
   );

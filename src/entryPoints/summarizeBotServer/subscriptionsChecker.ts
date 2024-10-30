@@ -52,17 +52,17 @@ async function checkSubscriptions({
     }
 
     // eslint-disable-next-line unicorn/prefer-ternary
-    if (subscription.autoRenew) {
-      await handleAutoRenewSubscription({
+    if (subscription.paymentMethodId == null) {
+      await handleExpiredSubscription({
         subscription,
-        tariffs,
         db,
         telegramBot,
         botName,
       });
     } else {
-      await handleExpiredSubscription({
+      await handleAutoRenewSubscription({
         subscription,
+        tariffs,
         db,
         telegramBot,
         botName,

@@ -27,19 +27,11 @@ export default class DbServiceImpl implements DbService {
     this.prisma = new PrismaClient();
   }
 
-  async addSubscription(
-    { object, subscriber, ...data }: AddSubscriptionParams,
-    deleteOld = false
-  ): Promise<SubscriptionWithTariffAndChat> {
-    if (deleteOld) {
-      await this.prisma.subscription.deleteMany({
-        where: {
-          subscriberUserId: subscriber.id,
-          ...object,
-        },
-      });
-    }
-
+  async addSubscription({
+    object,
+    subscriber,
+    ...data
+  }: AddSubscriptionParams): Promise<SubscriptionWithTariffAndChat> {
     return await this.prisma.subscription.create({
       data: {
         subscriberUserId: subscriber.id,

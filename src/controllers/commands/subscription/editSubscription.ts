@@ -1,4 +1,3 @@
-import { escapeTelegramMarkdown } from '../../../data/telegramBotMessageUtils';
 /* eslint-disable max-lines */
 import type TelegramBot from 'node-telegram-bot-api';
 import {
@@ -13,10 +12,10 @@ import { ucFirst } from '../../../lib/common/string';
 import type DbService from '../../../services/DbService';
 import type TelegramBotService from '../../../services/TelegramBotService';
 import { chooseTariff } from './chooseTariff';
+import { checkAccessToObject } from './common';
 import { makeEditSubscriptionUrl } from './routing';
 import { EditSubscriptionAction } from './types/EditSubscriptionAction';
 import { ObjectType } from './types/ObjectType';
-import { checkAccessToObject } from './common';
 
 export async function editSubscription({
   id,
@@ -99,21 +98,21 @@ export async function editSubscription({
               },
             ],
           [
-            subscription.autoRenew
+            subscription.paymentMethodId == null
               ? {
-                  text: '🚫 Отключить автопродление',
-                  url: makeEditSubscriptionUrl({
-                    botName,
-                    subscriptionId: id,
-                    action: EditSubscriptionAction.unsubscribe,
-                  }),
-                }
-              : {
                   text: '🔔 Включить автопродление',
                   url: makeEditSubscriptionUrl({
                     botName,
                     subscriptionId: id,
                     action: EditSubscriptionAction.resubscribe,
+                  }),
+                }
+              : {
+                  text: '🚫 Отключить автопродление',
+                  url: makeEditSubscriptionUrl({
+                    botName,
+                    subscriptionId: id,
+                    action: EditSubscriptionAction.unsubscribe,
                   }),
                 },
           ],
@@ -186,7 +185,7 @@ export async function doEditSubscription({
       const botName = await telegramBot.getUsername();
       await telegramBot.sendMessage(
         user.id,
-        `❓ Вы уверены, что хотите отключить автопродление подписки? Подписка будет действовать до ${getSubscriptionExpireFormattedDate(
+        `❓ Вы уверены, что хотите отключить автопродление подписки? Если захотите включить его снова вам нужно будет дождаться истечения текущей подписки и после этого оформить новую. Текущая подписка действует до ${getSubscriptionExpireFormattedDate(
           subscription
         )}.`,
         {
@@ -219,16 +218,13 @@ export async function doEditSubscription({
 
     case EditSubscriptionAction.unsubscribeConfirmed: {
       await db.updateSubscription(subscriptionId, {
-        autoRenew: false,
         triesToRenew: 0,
         deactivated: false,
+        paymentMethodId: null,
         expires: subscription.deactivated ? new Date() : subscription.expires,
         disableSubscriptionCheck: !subscription.deactivated,
       });
-      await telegramBot.sendMessage(
-        user.id,
-        '✅ Вы успешно отключили автопродление. Вы всегда можете опять включить его введя команду /subscription в этом чате.'
-      );
+      await telegramBot.sendMessage(user.id, '✅ Вы успешно отключили автопродление подписки');
       break;
     }
 
@@ -238,29 +234,12 @@ export async function doEditSubscription({
     }
 
     case EditSubscriptionAction.resubscribe: {
-      if (subscription.paymentMethodId == null) {
-        await telegramBot.sendMessage(
-          user.id,
-          `😔 К сожалению, вы не отметили опцию "☑️ Разрешаю автосписания" при оплате подписки
+      await telegramBot.sendMessage(
+        user.id,
+        `👉 Для того, чтобы включить автопродление вам нужно дождаться истечения текущей подписки и после этого оформить новую
 
-👉 Для того, чтобы включить автопродление вам нужно дождаться истечения текущей подписки и после этого оформить новую\\. Когда будете оформлять её обязательно отметьте опцию "☑️ Разрешаю автосписания" во время оплаты\\.
-
-⏰  ${escapeTelegramMarkdown(
-            getSubscriptionExpiresText(subscription)
-          )}\\. Я напомню вам об этом\\.`,
-          {
-            parse_mode: 'MarkdownV2',
-          }
-        );
-      } else {
-        await db.updateSubscription(subscriptionId, { autoRenew: true, triesToRenew: 0 });
-        await telegramBot.sendMessage(
-          user.id,
-          `✅ Автопродление подписки возобновлено. Следующее списание произойдет ${getSubscriptionExpireFormattedDate(
-            subscription
-          )}.`
-        );
-      }
+⏰  ${getSubscriptionExpiresText(subscription)}. Я напомню вам когда она закончится.`
+      );
       break;
     }
   }

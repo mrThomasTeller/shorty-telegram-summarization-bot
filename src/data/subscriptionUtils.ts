@@ -34,9 +34,9 @@ const getSubscriptionPriority = (subscription: SubscriptionWithTariff): number =
 export const getSubscriptionExpiresText = (subscription: Subscription): string => {
   const formattedDate = getSubscriptionExpireFormattedDate(subscription);
 
-  return subscription.autoRenew
-    ? `Автосписание по вашей подписке произойдет ${formattedDate}`
-    : `Ваша подписка действует до ${formattedDate}`;
+  return subscription.paymentMethodId == null
+    ? `Ваша подписка действует до ${formattedDate}`
+    : `Автосписание по вашей подписке произойдет ${formattedDate}`;
 };
 
 export function getSubscriptionObjectText({

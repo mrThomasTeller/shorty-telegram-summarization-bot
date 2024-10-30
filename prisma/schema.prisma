@@ -91,7 +91,6 @@ model Subscription {
   subscriberUserName       String?
   paymentProvider          PaymentProvider @default(Boosty)
   paymentMethodId          String?
-  autoRenew                Boolean         @default(false)
   renewPeriodMonths        Int             @default(1)
   createdAt                DateTime        @default(now())
   payedAt                  DateTime        @default(now())

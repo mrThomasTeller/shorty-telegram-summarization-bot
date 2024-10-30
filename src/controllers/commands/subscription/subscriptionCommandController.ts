@@ -1,4 +1,4 @@
-import { PaymentProvider } from '@prisma/client';
+import { PaymentProvider, type Subscription } from '@prisma/client';
 import { addMonths } from 'date-fns';
 import type TelegramBot from 'node-telegram-bot-api';
 import { match } from 'ts-pattern';
@@ -25,6 +25,8 @@ import { type UkassaWebhookMetadata } from './types/UkassaWebhookMetadata';
 // todo 2sub возможность докупать пакеты выжимок
 // todo tsub мне нужна помощь
 // todo 2sub кнопка назад
+// fixme дать возможность только админам чата управлять подписками
+// fixme настроить скоупы для команд
 const subscriptionCommandController: ChatController = ({
   chat$,
   services: { db, telegramBot },
@@ -125,9 +127,8 @@ async function paymentSucceeded(
   const paymentData = {
     paymentProvider: PaymentProvider.YooKassa,
     paymentMethodId: paymentMethod.saved ? paymentMethod.id : null,
-    autoRenew: paymentMethod.saved,
     payedAt: new Date(),
-  };
+  } satisfies Partial<Subscription>;
 
   const subscription = await match(object)
     .with(ObjectType.subscription, async () => {
@@ -143,23 +144,28 @@ async function paymentSucceeded(
 
       return await db.getSubscription(BigInt(id));
     })
-    .otherwise(
-      async () =>
-        await db.addSubscription(
-          {
-            ...paymentData,
-            renewPeriodMonths: 1,
-            expires: addMonths(new Date(), 1),
-            tariffId,
-            subscriber: {
-              id: userId,
-              username,
-            },
-            object: object === ObjectType.user ? { userId } : { chatId: Number(id) },
-          },
-          true
-        )
-    );
+    .otherwise(async () => {
+      const oldSubscription = await db.getUserSubscription(
+        userId,
+        object === ObjectType.group ? Number(id) : undefined
+      );
+
+      if (oldSubscription) {
+        await db.deleteSubscription(BigInt(id));
+      }
+
+      return await db.addSubscription({
+        ...paymentData,
+        renewPeriodMonths: 1,
+        expires: addMonths(new Date(), 1),
+        tariffId,
+        subscriber: {
+          id: userId,
+          username,
+        },
+        object: object === ObjectType.user ? { userId } : { chatId: Number(id) },
+      });
+    });
 
   const mainText = autoRenew
     ? 'Автопродление вашей подписки прошло успешно!'

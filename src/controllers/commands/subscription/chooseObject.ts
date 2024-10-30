@@ -52,6 +52,8 @@ export async function subscribeToGroup({
   }
 }
 
+// todo 2sub запросить группу
+// todo 2sub посмотреть что такое switch_inline_query
 export async function chooseObject({
   userSubscription,
   groupsSubscriptions,

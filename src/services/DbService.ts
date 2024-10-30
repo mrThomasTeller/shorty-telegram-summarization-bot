@@ -24,17 +24,13 @@ export type AddSubscriptionParams = {
   tariffId: string;
   paymentMethodId?: string | null;
   paymentProvider: PaymentProvider;
-  autoRenew: boolean;
   renewPeriodMonths: number;
   expires: Date;
 };
 
 // todo разделить на несколько сервисов
 type DbService = {
-  addSubscription: (
-    params: AddSubscriptionParams,
-    deleteOld?: boolean
-  ) => Promise<SubscriptionWithTariffAndChat>;
+  addSubscription: (params: AddSubscriptionParams) => Promise<SubscriptionWithTariffAndChat>;
 
   countSummariesFrom: (params: {
     chatId?: number;
