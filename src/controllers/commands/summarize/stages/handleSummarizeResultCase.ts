@@ -9,8 +9,7 @@ import { getSummariesRestText } from '../../../../data/subscriptionLimits';
 import { formatSummaryFromGpt } from '../../../../data/summaryUtils';
 import { required } from '../../../../lib/common/lang';
 import type Services from '../../../../services/Services';
-import { makeGroupUrl, makeObjectUrl } from '../../subscription/routing';
-import { ObjectType } from '../../subscription/types/ObjectType';
+import { makeGroupUrl } from '../../subscription/routing';
 import { type SummarizeResultCase } from '../types/SummarizeResultCase';
 
 const handleSummarizeResultCase =
@@ -119,7 +118,6 @@ function getBotMessageForSummarizeResultCase(
           : 'summarize.errors.maxSummariesExceeded.free',
         {
           count: getEnv().MAX_SUMMARIES_PER_WEEK,
-          // fixme cover
           subscriptionUrl: makeGroupUrl({ botName, id: BigInt(msg.chat.id) }),
         }
       );
@@ -131,7 +129,6 @@ function getBotMessageForSummarizeResultCase(
           inline_keyboard: [
             [
               {
-                // fixme cover
                 text: '⚡️ Увеличить лимит',
                 url: makeGroupUrl({ botName, id: BigInt(msg.chat.id) }),
               },

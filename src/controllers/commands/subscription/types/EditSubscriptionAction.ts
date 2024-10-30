@@ -6,4 +6,6 @@ export enum EditSubscriptionAction {
   unsubscribeConfirmed = 'uc',
   unsubscribeDeclined = 'ud',
   resubscribe = 'r',
+  changeToMeConfirmed = 'changeToMeConfirmed',
+  changeToMeDeclined = 'changeToMeDeclined',
 }

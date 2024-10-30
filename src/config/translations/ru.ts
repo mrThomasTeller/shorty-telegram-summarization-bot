@@ -67,8 +67,11 @@ export default {
   shared: {
     rest: {
       free: '🔋 У вас $t(terms.last, {"count": {{free}}}) {{free}} из {{freeTotal}} $t(terms.freeSummary_gen, {"count": {{freeTotal}}}) на этой неделе (<a href="{{subscriptionUrl}}">⚡️ увеличить лимит</a>)',
-      premium: '🔋 У вас осталось {{premium}} премиум выжимок на месяц',
+      premium:
+        '🔋 У вас осталось {{premium}} $t(terms.premiumSummary, {"count": {{premium}}}) на месяц',
       premiumEnded:
+        '🔋 У вас закончились премиум выжимки на месяц. Также $t(terms.last, {"count": {{free}}}) {{free}} из {{freeTotal}} $t(terms.freeSummary_gen, {"count": {{freeTotal}}}) на этой неделе.\n\n<a href="{{subscriptionUrl}}">⚡️ увеличить лимит</a>',
+      allEnded:
         '🔋 У вас закончились премиум выжимки на месяц. Подождите следующей недели, чтобы получить бесплатные выжимки, или <a href="{{subscriptionUrl}}">⚡️ переходите на более высокий тариф</a>',
     },
     freeSummariesCount: '{{count}} $t(terms.freeSummary_gen, {"count": {{count}}})',

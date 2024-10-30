@@ -14,6 +14,7 @@ import { chooseTariff } from './chooseTariff';
 import { checkAccessToObject } from './common';
 import { makeObjectUrl } from './routing';
 import { ObjectType } from './types/ObjectType';
+import { helpKeyboard } from './help';
 
 export async function subscribeToGroup({
   telegramBot,
@@ -144,6 +145,9 @@ export async function chooseObject({
 👤 Индивидуальная подписка даёт вам возможность делать краткие выжимки в любом чате \\(в котором есть Shorty\\)
 👥 Подписка на \`групповой чат\` даёт возможность любому участнику этого чата делать в нём краткие выжимки\n\n` +
       rows.filter(Boolean).join('\n\n'),
-    { parse_mode: 'MarkdownV2' }
+    {
+      parse_mode: 'MarkdownV2',
+      ...helpKeyboard(botName),
+    }
   );
 }

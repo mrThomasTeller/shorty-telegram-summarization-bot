@@ -16,6 +16,8 @@ import { checkAccessToObject } from './common';
 import { makeEditSubscriptionUrl } from './routing';
 import { EditSubscriptionAction } from './types/EditSubscriptionAction';
 import { ObjectType } from './types/ObjectType';
+import { getEnv } from '../../../config/envVars';
+import { helpKeyboard, helpKeyboardButton } from './help';
 
 export async function editSubscription({
   id,
@@ -116,6 +118,7 @@ export async function editSubscription({
                   }),
                 },
           ],
+          helpKeyboardButton(botName),
         ].filter(Boolean),
       },
     }
@@ -154,7 +157,9 @@ export async function doEditSubscription({
     case EditSubscriptionAction.changeGroup: {
       await telegramBot.sendMessage(
         user.id,
-        `😔 В данный момент это невозможно сделать автоматически. Пожалуйста, обратитесь в поддержку: @shorty_support_bot`
+        `😔 В данный момент это невозможно сделать автоматически. Пожалуйста, обратитесь в поддержку: @${
+          getEnv().SUPPORT_BOT_NAME
+        }`
       );
       // if (groupId == null) {
       //   await subscribeFromGroupInstructions(telegramBot, user.id, 'changeGroup');
@@ -174,10 +179,50 @@ export async function doEditSubscription({
       break;
     }
 
-    // fixme tsub спросить, точно ли?
     case EditSubscriptionAction.changeToMe: {
+      const botName = await telegramBot.getUsername();
+      await telegramBot.sendMessage(
+        user.id,
+        `❓ Вы уверены, что хотите переключить подписку на себя? Чтобы переключить её обратно вам необходимо будет написать в поддержку: @${
+          getEnv().SUPPORT_BOT_NAME
+        }`,
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: 'Да, переключить',
+                  url: makeEditSubscriptionUrl({
+                    botName,
+                    subscriptionId,
+                    action: EditSubscriptionAction.changeToMeConfirmed,
+                  }),
+                },
+                {
+                  text: 'Отмена',
+                  url: makeEditSubscriptionUrl({
+                    botName,
+                    subscriptionId,
+                    action: EditSubscriptionAction.changeToMeDeclined,
+                  }),
+                },
+              ],
+              helpKeyboardButton(botName),
+            ],
+          },
+        }
+      );
+      break;
+    }
+
+    case EditSubscriptionAction.changeToMeConfirmed: {
       await db.updateSubscription(subscriptionId, { chatId: null, userId: BigInt(user.id) });
       await telegramBot.sendMessage(user.id, '✅ Подписка переключена на вас');
+      break;
+    }
+
+    case EditSubscriptionAction.changeToMeDeclined: {
+      await telegramBot.sendMessage(user.id, '🚫 Действие отменено');
       break;
     }
 
@@ -209,6 +254,7 @@ export async function doEditSubscription({
                   }),
                 },
               ],
+              helpKeyboardButton(botName),
             ],
           },
         }
@@ -234,11 +280,13 @@ export async function doEditSubscription({
     }
 
     case EditSubscriptionAction.resubscribe: {
+      const botName = await telegramBot.getUsername();
       await telegramBot.sendMessage(
         user.id,
         `👉 Для того, чтобы включить автопродление вам нужно дождаться истечения текущей подписки и после этого оформить новую
 
-⏰  ${getSubscriptionExpiresText(subscription)}. Я напомню вам когда она закончится.`
+⏰  ${getSubscriptionExpiresText(subscription)}. Я напомню вам когда она закончится.`,
+        helpKeyboard(botName)
       );
       break;
     }

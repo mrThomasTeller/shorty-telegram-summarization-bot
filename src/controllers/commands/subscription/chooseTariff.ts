@@ -15,6 +15,7 @@ import { type UkassaWebhookMetadata } from './types/UkassaWebhookMetadata';
 import { checkAccessToObject } from './common';
 import { getSubscriptionObjectText } from '../../../data/subscriptionUtils';
 import { ucFirst } from '../../../lib/common/string';
+import { helpKeyboard, helpKeyboardButton } from './help';
 
 export async function chooseTariff({
   object,
@@ -71,7 +72,10 @@ ${tariffs
   })
   .join('\n\n')}`;
 
-  await telegramBot.sendMessage(user.id, text, { parse_mode: 'MarkdownV2' });
+  await telegramBot.sendMessage(user.id, text, {
+    parse_mode: 'MarkdownV2',
+    ...helpKeyboard(botName),
+  });
 }
 
 // todo если здесь появится промежуточный шаг нужно проверить все места, которые сюда ведут
@@ -124,7 +128,10 @@ export async function tariffChosen({
     'Оплата происходит через сервис ЮKassa. После оформления подписки необходимая сумма будет списываться автоматически каждый месяц. Вы можете отключить автосписание в любой момент введя здесь команду /subscription, при этом подписка будет действовать до конца оплаченного периода.\n\n👇 Ссылка на оплату 👇',
     {
       reply_markup: {
-        inline_keyboard: [[{ text: '⭐️ Оплатить подписку', url: paymentUrl }]],
+        inline_keyboard: [
+          [{ text: '⭐️ Оплатить подписку', url: paymentUrl }],
+          helpKeyboardButton(botName),
+        ],
       },
     }
   );

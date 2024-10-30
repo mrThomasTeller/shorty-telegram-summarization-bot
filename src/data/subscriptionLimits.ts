@@ -133,15 +133,12 @@ export const getSummariesRestText = (
     subscriptionUrl: makeGroupUrl({ botName, id: BigInt(chatId) }),
   });
 
-// fixme cover
 const getRestTranslationKey = (
   limits: Pick<LimitsData, 'freeSummariesRest' | 'premiumSummariesRest' | 'subscription'>
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 ) =>
   match(limits)
     .with({ subscription: undefined }, () => 'shared.rest.free' as const)
-    .with(
-      { freeSummariesRest: 0, premiumSummariesRest: 0 },
-      () => 'shared.rest.premiumEnded' as const
-    )
+    .with({ freeSummariesRest: 0, premiumSummariesRest: 0 }, () => 'shared.rest.allEnded' as const)
+    .with({ premiumSummariesRest: 0 }, () => 'shared.rest.premiumEnded' as const)
     .otherwise(() => 'shared.rest.premium' as const);

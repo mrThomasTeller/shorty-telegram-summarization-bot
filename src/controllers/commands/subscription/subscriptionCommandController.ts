@@ -18,15 +18,17 @@ import { makeEditSubscriptionUrl, makeGroupUrl, route } from './routing';
 import { EditSubscriptionAction } from './types/EditSubscriptionAction';
 import { ObjectType } from './types/ObjectType';
 import { type UkassaWebhookMetadata } from './types/UkassaWebhookMetadata';
+import { getEnv } from '../../../config/envVars';
+import { helpKeyboardButton } from './help';
 
-// todo tsub check already subscribed
+// todo 2sub check already subscribed
 // todo 2sub subscriptions periods
 // todo 2sub discounts for long periods
 // todo 2sub возможность докупать пакеты выжимок
-// todo tsub мне нужна помощь
 // todo 2sub кнопка назад
-// fixme дать возможность только админам чата управлять подписками
-// fixme настроить скоупы для команд
+// todo 2sub дать возможность только админам чата управлять подписками
+// todo 2sub настроить скоупы для команд
+// todo 2sub на одну группу только одна подписка
 const subscriptionCommandController: ChatController = ({
   chat$,
   services: { db, telegramBot },
@@ -112,7 +114,9 @@ async function forBoostySubscription(
 ): Promise<void> {
   await telegramBot.sendMessage(
     chatId,
-    '❗ У вас есть активные подписки на Boosty. В будущем мы перестанем принимать оплату через Boosty.\n\n⭐️ Чтобы переоформить подписку и иметь возможность управлять ей через Telegram обратитесь в поддержку @shorty_support_bot. В этом случае вы получите бонусный бесплатный месяц!'
+    `❗ У вас есть активные подписки на Boosty. В будущем мы перестанем принимать оплату через Boosty.\n\n⭐️ Чтобы переоформить подписку и иметь возможность управлять ей через Telegram обратитесь в поддержку @${
+      getEnv().SUPPORT_BOT_NAME
+    }. В этом случае вы получите бонусный бесплатный месяц!`
   );
 }
 
@@ -201,6 +205,7 @@ async function paymentSucceeded(
                   }),
                 },
               ],
+              helpKeyboardButton(botName),
             ],
           },
         }

@@ -2,6 +2,7 @@ import { type User } from 'node-telegram-bot-api';
 import type DbService from '../../../services/DbService';
 import type TelegramBotService from '../../../services/TelegramBotService';
 import { ObjectType } from './types/ObjectType';
+import { helpKeyboardButton } from './help';
 
 // todo 2sub пользователю потом придётся заново выбирать группу с которой переключить подписку
 // надо упростить этот процесс
@@ -35,6 +36,7 @@ export async function subscribeFromGroupInstructions(
               url: `https://t.me/${botName}?startgroup=true`,
             },
           ],
+          helpKeyboardButton(botName),
         ],
       },
     }

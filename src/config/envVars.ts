@@ -26,6 +26,7 @@ type Env = {
   SERVER_NAME: string;
   UKASSA_WEBHOOK_SECRET_PATH: string;
   UKASSA_WEBHOOK_SECRET_KEY: string;
+  SUPPORT_BOT_NAME: string;
 };
 
 export function getEnv(): Env {
@@ -55,6 +56,7 @@ export function getEnv(): Env {
     SERVER_NAME: required(process.env.SERVER_NAME),
     UKASSA_WEBHOOK_SECRET_PATH: required(process.env.UKASSA_WEBHOOK_SECRET_PATH),
     UKASSA_WEBHOOK_SECRET_KEY: required(process.env.UKASSA_WEBHOOK_SECRET_KEY),
+    SUPPORT_BOT_NAME: required(process.env.SUPPORT_BOT_NAME),
   };
 }
 

@@ -16,7 +16,6 @@ export const getChatMessagesForSummary = _.curry(
     msg: TelegramBot.Message,
     limits: LimitsData
   ): Promise<Either<SummarizeResultCase, ChatMessagesForSummaryData>> => {
-    // fixme cover
     const summariesRest =
       limits.premiumSummariesRest > 0 ? limits.premiumSummariesRest : limits.freeSummariesRest;
 
@@ -26,7 +25,7 @@ export const getChatMessagesForSummary = _.curry(
 
     const startSummaryFrom = maxTime([limits.lastSummaryDate ?? yesterday(), yesterday()]);
 
-    // fixme если сообщения были отброшены нужно уведомить пользователя
+    // todo если сообщения были отброшены нужно уведомить пользователя
     const allMessages = await services.db.getChatMessages(msg.chat.id, startSummaryFrom);
     const messages = dropOverflowedMessages(
       allMessages,

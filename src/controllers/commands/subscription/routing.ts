@@ -9,6 +9,7 @@ import { doEditSubscription, editSubscription } from './editSubscription';
 import { type EditSubscriptionAction } from './types/EditSubscriptionAction';
 import { ObjectType } from './types/ObjectType';
 import { subscribeToGroup } from './chooseObject';
+import { help } from './help';
 
 // todo 2sub переделать роутинг
 
@@ -86,6 +87,10 @@ const parseEditSubscriptionData = (data: string) => ({
     BigInt(required(data.split(' ')[3], 'groupId is required in callback data')) || undefined,
 });
 
+const helpKey = 'help';
+export const makeHelpUrl = ({ botName }: { botName: string }): string =>
+  getPrivateCommandUrl(botName, 'subscription', helpKey);
+
 export async function route(
   msg: TelegramBot.Message,
   db: DbService,
@@ -152,6 +157,11 @@ export async function route(
         telegramBot,
         user,
       });
+      return true;
+    }
+
+    case helpKey: {
+      await help(telegramBot, user.id);
       return true;
     }
 
