@@ -8,8 +8,17 @@ import { subscribeFromGroupInstructions } from './common';
 import { doEditSubscription, editSubscription } from './editSubscription';
 import { type EditSubscriptionAction } from './types/EditSubscriptionAction';
 import { ObjectType } from './types/ObjectType';
+import { subscribeToGroup } from './chooseObject';
 
 // todo 2sub переделать роутинг
+
+const groupKey = 'group';
+export const makeGroupUrl = ({ botName, id }: { botName: string; id: bigint }): string =>
+  getPrivateCommandUrl(botName, 'subscription', `${groupKey}=${id}`);
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+const parseGroupParams = (data: string) => ({
+  id: BigInt(required(data.split(' ')[1], 'id is required in callback data')),
+});
 
 const objectKey = 'object';
 export const makeObjectUrl = ({
@@ -92,6 +101,16 @@ export async function route(
   const key = command.split(' ')[0];
 
   switch (key) {
+    case groupKey: {
+      await subscribeToGroup({
+        ...parseGroupParams(command),
+        db,
+        telegramBot,
+        user,
+      });
+      return true;
+    }
+
     case objectKey: {
       const params = {
         ...parseObjectParams(command),

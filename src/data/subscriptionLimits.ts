@@ -9,6 +9,7 @@ import { type SubscriptionWithTariff } from '../services/DbService';
 import { isSubscriptionActive } from './subscriptionUtils';
 import { getMaxSummaryParts, getMaxTextToSummarizeApproximateLength } from './tariffUtils';
 import { type LimitsData } from './types/LimitsData';
+import { makeGroupUrl } from '../controllers/commands/subscription/routing';
 
 // todo stest
 export async function getLimitsData({
@@ -129,8 +130,10 @@ export const getSummariesRestText = (
     premium: limits.premiumSummariesRest,
     botName,
     chatId,
+    subscriptionUrl: makeGroupUrl({ botName, id: BigInt(chatId) }),
   });
 
+// fixme cover
 const getRestTranslationKey = (
   limits: Pick<LimitsData, 'freeSummariesRest' | 'premiumSummariesRest' | 'subscription'>
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

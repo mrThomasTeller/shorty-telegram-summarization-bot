@@ -1,14 +1,17 @@
 import type TelegramBot from 'node-telegram-bot-api';
+import { type InlineKeyboardMarkup } from 'node-telegram-bot-api';
 import { setTimeout } from 'node:timers/promises';
 import { getEnv } from '../../../../config/envVars';
 import logger, { type LogLevel } from '../../../../config/logger';
 import { t } from '../../../../config/translations/index';
+import { encryptIfExists } from '../../../../data/encryption';
 import { getSummariesRestText } from '../../../../data/subscriptionLimits';
 import { formatSummaryFromGpt } from '../../../../data/summaryUtils';
 import { required } from '../../../../lib/common/lang';
 import type Services from '../../../../services/Services';
+import { makeGroupUrl, makeObjectUrl } from '../../subscription/routing';
+import { ObjectType } from '../../subscription/types/ObjectType';
 import { type SummarizeResultCase } from '../types/SummarizeResultCase';
-import { encryptIfExists } from '../../../../data/encryption';
 
 const handleSummarizeResultCase =
   (services: Services, msg: TelegramBot.Message) => async (resultCase: SummarizeResultCase) => {
@@ -33,15 +36,10 @@ const handleSummarizeResultCase =
     const botName = required(await services.telegramBot.getUsername(), 'Bot name is required');
     const text = getBotMessageForSummarizeResultCase(resultCase, msg, botName);
 
-    await services.telegramBot.sendMessage(
-      msg.chat.id,
-      text,
-      resultCase.type === 'responseFromGPT'
-        ? undefined
-        : {
-            parse_mode: 'HTML',
-          }
-    );
+    await services.telegramBot.sendMessage(msg.chat.id, typeof text === 'string' ? text : text[0], {
+      parse_mode: resultCase.type === 'responseFromGPT' ? undefined : 'HTML',
+      reply_markup: Array.isArray(text) ? text[1] : undefined,
+    });
 
     if (resultCase.type === 'ads') {
       await setTimeout(getEnv().TIME_TO_SHOW_ADS);
@@ -79,7 +77,7 @@ function getBotMessageForSummarizeResultCase(
   resultCase: SummarizeResultCase,
   msg: TelegramBot.Message,
   botName: string
-): string {
+): string | [string, InlineKeyboardMarkup] {
   switch (resultCase.type) {
     case 'startSummary': {
       return t('summarize.message.start');
@@ -121,16 +119,26 @@ function getBotMessageForSummarizeResultCase(
           : 'summarize.errors.maxSummariesExceeded.free',
         {
           count: getEnv().MAX_SUMMARIES_PER_WEEK,
-          botName,
-          chatId: msg.chat.id,
+          // fixme cover
+          subscriptionUrl: makeGroupUrl({ botName, id: BigInt(msg.chat.id) }),
         }
       );
     }
     case 'tooManySummaryParts': {
-      return t('summarize.message.tooManyMessages', {
-        botName,
-        chatId: msg.chat.id,
-      });
+      return [
+        t('summarize.message.tooManyMessages'),
+        {
+          inline_keyboard: [
+            [
+              {
+                // fixme cover
+                text: '⚡️ Увеличить лимит',
+                url: makeGroupUrl({ botName, id: BigInt(msg.chat.id) }),
+              },
+            ],
+          ],
+        },
+      ];
     }
     case 'ads': {
       return t('summarize.message.dontShowAds');

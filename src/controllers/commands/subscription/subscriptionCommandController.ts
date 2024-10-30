@@ -1,4 +1,3 @@
-import { ucFirst } from './../../../lib/common/string';
 import { PaymentProvider } from '@prisma/client';
 import { addMonths } from 'date-fns';
 import type TelegramBot from 'node-telegram-bot-api';
@@ -7,17 +6,18 @@ import logger from '../../../config/logger';
 import { getSubscriptionObjectText, isSubscriptionActive } from '../../../data/subscriptionUtils';
 import { getTariffRestText } from '../../../data/tariffUtils';
 import { required } from '../../../lib/common/lang';
+import { blockedMessagesService } from '../../../services/BlockedMessagesService';
 import type DbService from '../../../services/DbService';
 import type TelegramBotService from '../../../services/TelegramBotService';
 import { type UKassaPaymentWebhook } from '../../../services/UKassaService/UKassaPaymentWebhook';
 import { ukassaService } from '../../../services/UKassaService/UKassaService';
 import type ChatController from '../../ChatController';
+import { ucFirst } from './../../../lib/common/string';
 import { chooseObject } from './chooseObject';
-import { makeEditSubscriptionUrl, makeObjectUrl, route } from './routing';
+import { makeEditSubscriptionUrl, makeGroupUrl, route } from './routing';
+import { EditSubscriptionAction } from './types/EditSubscriptionAction';
 import { ObjectType } from './types/ObjectType';
 import { type UkassaWebhookMetadata } from './types/UkassaWebhookMetadata';
-import { blockedMessagesService } from '../../../services/BlockedMessagesService';
-import { EditSubscriptionAction } from './types/EditSubscriptionAction';
 
 // todo tsub check already subscribed
 // todo 2sub subscriptions periods
@@ -88,47 +88,20 @@ async function subscribeFromGroupChat(
 ): Promise<void> {
   const botName = await telegramBot.getUsername();
   const subscription = msg.from && (await db.getUserSubscription(msg.from.id, msg.chat.id));
+  const verb = subscription ? 'редактировать' : 'оформить';
 
-  // eslint-disable-next-line unicorn/prefer-ternary
-  if (subscription) {
-    await telegramBot.sendMessage(
-      msg.chat.id,
-      'Нажмите на кнопку ниже, чтобы редактировать подписку 😉',
-      {
-        reply_markup: {
-          inline_keyboard: [
-            [
-              {
-                text: '⭐ Редактировать подписку',
-                url: makeObjectUrl({
-                  botName,
-                  object: ObjectType.subscription,
-                  id: subscription.id,
-                }),
-              },
-            ],
-          ],
-        },
-      }
-    );
-  } else {
-    await telegramBot.sendMessage(
-      msg.chat.id,
-      'Нажмите на кнопку ниже, чтобы оформить подписку 😉',
-      {
-        reply_markup: {
-          inline_keyboard: [
-            [
-              {
-                text: '⭐ Оформить подписку',
-                url: makeObjectUrl({ botName, object: ObjectType.group, id: msg.chat.id }),
-              },
-            ],
-          ],
-        },
-      }
-    );
-  }
+  await telegramBot.sendMessage(msg.chat.id, `Нажмите на кнопку ниже, чтобы ${verb} подписку 😉`, {
+    reply_markup: {
+      inline_keyboard: [
+        [
+          {
+            text: `⭐ ${ucFirst(verb)} подписку`,
+            url: makeGroupUrl({ botName, id: BigInt(msg.chat.id) }),
+          },
+        ],
+      ],
+    },
+  });
 }
 
 async function forBoostySubscription(
@@ -141,7 +114,6 @@ async function forBoostySubscription(
   );
 }
 
-// todo tsub обработать ошибки снятия
 async function paymentSucceeded(
   webhook: UKassaPaymentWebhook<UkassaWebhookMetadata>,
   db: DbService,
@@ -193,7 +165,7 @@ async function paymentSucceeded(
     ? 'Автопродление вашей подписки прошло успешно!'
     : 'Оплата прошла успешно!';
 
-  const subObjectText = getSubscriptionObjectText({ subscription, addition: 'none' });
+  const subObjectText = getSubscriptionObjectText({ subscription, tariffText: 'none' });
 
   const tariffText = await getTariffRestText({
     subscription,

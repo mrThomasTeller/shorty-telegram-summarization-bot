@@ -64,8 +64,6 @@ export class UKassaService {
       },
     });
 
-    console.log('createPayment', response);
-
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (response.data.status === 'canceled') {
       throw new UKassaPaymentCanceledError();

@@ -41,7 +41,7 @@ export async function getTariffRestText({
   return limitsData.subscription
     ? t('tariff.premium', {
         name: limitsData.subscription.tariff.name,
-        price: price ? ` (${getTariffPriceText(limitsData.subscription.tariff)})` : '',
+        price: price ? ` (${getTariffText({ tariff: limitsData.subscription.tariff })})` : '',
         rest: restText,
         expires: getSubscriptionExpiresText(limitsData.subscription),
         thanks: thanks ? t('tariff.thanks') : '',
@@ -50,6 +50,24 @@ export async function getTariffRestText({
     : t('tariff.free', { rest: restText });
 }
 
-export const getTariffPriceText = (tariff: Tariff): string => `${formatPrice(tariff.price)} / мес`;
+export type TariffTextFormat = 'name' | 'price' | 'nameAndPrice';
+
+export const getTariffText = ({
+  tariff,
+  format = 'price',
+  separator = ', ',
+}: {
+  tariff: Tariff;
+  format?: TariffTextFormat;
+  separator?: string;
+}): string =>
+  [
+    format === 'name' || format === 'nameAndPrice' ? tariff.name : undefined,
+    format === 'price' || format === 'nameAndPrice'
+      ? `${formatPrice(tariff.price)} / мес`
+      : undefined,
+  ]
+    .filter(Boolean)
+    .join(separator);
 
 const formatPrice = (price: number): string => `${Math.floor(price / 100)}₽`;

@@ -1,16 +1,15 @@
-import type { Subscription } from '@prisma/client';
+import type { Subscription, Tariff } from '@prisma/client';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { t } from '../config/translations/index';
+import { required } from '../lib/common/lang';
 import {
   type SubscriptionWithTariff,
   type SubscriptionWithTariffAndChat,
 } from './../services/DbService';
 import { getGroupTitle } from './dbChatUtils';
-import { required } from '../lib/common/lang';
-import { getTariffPriceText } from './tariffUtils';
-import { t } from '../config/translations/index';
+import { getTariffText, type TariffTextFormat } from './tariffUtils';
 import { escapeTelegramMarkdown } from './telegramBotMessageUtils';
-import { ucFirst } from '../lib/common/string';
 
 export const isSubscriptionActive = (subscription: SubscriptionWithTariff): boolean =>
   subscription.expires > new Date() && !subscription.deactivated;
@@ -44,47 +43,48 @@ export function getSubscriptionObjectText({
   subscription,
   grammarCase = 'nom',
   objectGrammarCase = 'acc',
-  addition = 'tariff',
+  tariffText = 'name',
   markdown = false,
   subscriptionTerm = true,
-  objectEmoji = false,
-  ucFirstObject = false,
 }: {
-  subscription: SubscriptionWithTariffAndChat;
+  subscription: Pick<SubscriptionWithTariffAndChat, 'userId' | 'chatId' | 'chat'> & {
+    tariff?: Tariff;
+  };
   grammarCase?: 'nom' | 'acc';
   objectGrammarCase?: 'nom' | 'acc';
-  addition?: 'tariffAndPrice' | 'tariff' | 'none';
+  tariffText?: TariffTextFormat | 'none';
   markdown?: boolean;
   subscriptionTerm?: boolean;
-  objectEmoji?: boolean;
-  ucFirstObject?: boolean;
 }): string {
-  const emojiText = objectEmoji ? (subscription.userId == null ? '👤 ' : '👥 ') : '';
-
   const subscriptionTermText = subscriptionTerm
-    ? t(`terms.subscription_${grammarCase}_one`) + ' на '
+    ? subscription.chatId == null
+      ? t(`terms.individual_subscription_${grammarCase}_one`)
+      : t(`terms.subscription_${grammarCase}_one`) + ' на '
     : '';
 
-  const object_ = Boolean(subscription.userId)
-    ? markdown
-      ? '`себя`'
-      : 'себя'
-    : getGroupTitle({
-        chatId: required(subscription.chatId, 'chatId is required'),
-        chat: subscription.chat,
-        grammarCase: objectGrammarCase,
-        alwaysAddGroupTerm: true,
-        markdown,
-      });
-  const object = ucFirstObject ? ucFirst(object_) : object_;
+  const object =
+    subscription.chatId == null
+      ? ''
+      : getGroupTitle({
+          chatId: required(subscription.chatId, 'chatId is required'),
+          chat: subscription.chat,
+          grammarCase: objectGrammarCase,
+          alwaysAddGroupTerm: true,
+          markdown,
+        });
 
-  const price = addition === 'tariffAndPrice' ? `, ${getTariffPriceText(subscription.tariff)}` : '';
-  const additionalText_ = addition === 'none' ? '' : ` (${subscription.tariff.name}${price})`;
+  const additionalText_ =
+    tariffText !== 'none' && subscription.tariff
+      ? ` (${getTariffText({
+          tariff: subscription.tariff,
+          format: tariffText,
+        })})`
+      : '';
   const additionalText = markdown
     ? `_${escapeTelegramMarkdown(additionalText_)}_`
     : additionalText_;
 
-  return `${subscriptionTermText}${emojiText}${object}${additionalText}`;
+  return `${subscriptionTermText}${object}${additionalText}`;
 }
 
 export const getSubscriptionExpireFormattedDate = (subscription: Subscription): string =>

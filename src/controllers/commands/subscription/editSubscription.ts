@@ -40,7 +40,7 @@ export async function editSubscription({
     getSubscriptionObjectText({
       subscription,
       grammarCase: 'nom',
-      addition: 'none',
+      tariffText: 'none',
     })
   );
 

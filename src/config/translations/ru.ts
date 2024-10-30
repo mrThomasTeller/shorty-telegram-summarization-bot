@@ -1,5 +1,3 @@
-// fixme tsub ссылки на подписку должны вести на конкретную подписку
-
 export default {
   recovery: {
     message:
@@ -33,7 +31,7 @@ export default {
       start: '⚙️ Собираю сообщения за последний день...',
       header: '🔡 Краткая выжимка:',
       tooManyMessages:
-        'Сообщений накопилось очень много 🤯 Я смогу сделать выжимку только из самых последних. <a href="https://t.me/{{botName}}?start=subscription={{chatId}}">⚡️ Увеличить лимит</a>',
+        'Сообщений накопилось очень много 🤯 Я смогу сделать выжимку только из самых последних',
       end: '😌 Это всё',
       dontShowAds:
         '🚫 <a href="https://boosty.to/artyom.bakharev/posts/7ace6829-b612-448f-8b0e-583c8aad964e">⚡️ Не хочу видеть рекламу!</a>',
@@ -47,9 +45,9 @@ export default {
       fewMessages:
         '🙄 Слишком мало сообщений для создания выжимки. Нужно хотя бы {{count}}. Вы пообщайтесь, а потом позовите меня 😉',
       maxSummariesExceeded: {
-        free: '🤯 Вы можете делать не более {{count}} $t(terms.summary_gen, {"count": {{count}}}) в неделю. Приходите на следующей неделе или <a href="https://t.me/{{botName}}?start=subscription={{chatId}}">⚡️ оформите подписку</a> 😉',
+        free: '🤯 Вы можете делать не более {{count}} $t(terms.summary_gen, {"count": {{count}}}) в неделю. Приходите на следующей неделе или <a href="{{subscriptionUrl}}">⚡️ оформите подписку</a> 😉',
         premium:
-          '🤯 Бесплатные и премиум выжимки кончились. Приходите на следующей неделе, чтобы получить бесплатные выжимки, или <a href="https://t.me/{{botName}}?start=subscription={{chatId}}">⚡️ оформите более высокий тариф</a> 😉',
+          '🤯 Бесплатные и премиум выжимки кончились. Приходите на следующей неделе, чтобы получить бесплатные выжимки, или <a href="{{subscriptionUrl}}">⚡️ оформите более высокий тариф</a> 😉',
       },
     },
     debug: {
@@ -68,10 +66,10 @@ export default {
 
   shared: {
     rest: {
-      free: '🔋 У вас $t(terms.last, {"count": {{free}}}) {{free}} из {{freeTotal}} $t(terms.freeSummary_gen, {"count": {{freeTotal}}}) на этой неделе (<a href="https://t.me/{{botName}}?start=subscription={{chatId}}">⚡️ увеличить лимит</a>)',
+      free: '🔋 У вас $t(terms.last, {"count": {{free}}}) {{free}} из {{freeTotal}} $t(terms.freeSummary_gen, {"count": {{freeTotal}}}) на этой неделе (<a href="{{subscriptionUrl}}">⚡️ увеличить лимит</a>)',
       premium: '🔋 У вас осталось {{premium}} премиум выжимок на месяц',
       premiumEnded:
-        '🔋 У вас закончились премиум выжимки на месяц. Подождите следующей недели, чтобы получить бесплатные выжимки, или <a href="https://t.me/{{botName}}?start=subscription={{chatId}}">⚡️ переходите на более высокий тариф</a>',
+        '🔋 У вас закончились премиум выжимки на месяц. Подождите следующей недели, чтобы получить бесплатные выжимки, или <a href="{{subscriptionUrl}}">⚡️ переходите на более высокий тариф</a>',
     },
     freeSummariesCount: '{{count}} $t(terms.freeSummary_gen, {"count": {{count}}})',
   },
@@ -95,6 +93,8 @@ export default {
     group_nom: 'группа',
     group_acc: 'группу',
     group_gen: 'группы',
+    individual_subscription_nom_one: 'индивидуальная подписка',
+    individual_subscription_acc_one: 'индивидуальную подписку',
     last_one: 'осталась',
     last: 'осталось',
     premiumSummary_few: 'премиум выжимки',

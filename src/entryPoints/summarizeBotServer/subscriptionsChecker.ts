@@ -1,5 +1,6 @@
-import { PaymentProvider } from '@prisma/client';
+import { PaymentProvider, type Tariff } from '@prisma/client';
 import { addDays } from 'date-fns';
+import { type InlineKeyboardButton } from 'node-telegram-bot-api';
 import { setTimeout } from 'node:timers/promises';
 import config from '../../config/config';
 import { getEnv } from '../../config/envVars';
@@ -34,8 +35,6 @@ export const subscriptionsChecker: EntryPoint = async ({ db, telegramBot }) => {
   }
 };
 
-// todo 2sub не присылать уведомления ночью (expires ставить на утро?)
-// для тестирования неуспешного автопродления карта 5555555555554642
 async function checkSubscriptions({
   db,
   telegramBot,
@@ -48,142 +47,222 @@ async function checkSubscriptions({
   const botName = await telegramBot.getUsername();
 
   for (const subscription of subscriptions) {
-    if (
-      subscription.paymentProvider === PaymentProvider.YooKassa &&
-      subscription.expires < new Date() &&
-      !subscription.disableSubscriptionCheck
-    ) {
-      if (subscription.autoRenew) {
-        // renew
-        try {
-          const tariff = required(
-            tariffs.find((t) => t.id === subscription.tariffId),
-            'Tariff not found'
-          );
+    if (!shouldProcessSubscription(subscription)) {
+      continue;
+    }
 
-          await ukassaService.createPayment<UkassaWebhookMetadata>({
-            description: `Автоматическое списание платежа за подписку на Shorty. Тариф: ${tariff.name}. Период оплаты: 1 месяц.`,
-            metadata: {
-              secret: getEnv().UKASSA_WEBHOOK_SECRET_KEY,
-              tariffId: tariff.id,
-              userId: Number(subscription.subscriberUserId),
-              username: subscription.subscriberUserName ?? undefined,
-              object: ObjectType.subscription,
-              id: Number(subscription.id),
-              autoRenew: true,
-            },
-            price: tariff.price,
-            paymentMethodId: subscription.paymentMethodId ?? undefined,
-          });
-        } catch (error) {
-          if (!(error instanceof UKassaPaymentCanceledError)) {
-            throw error;
-          }
-
-          const triesToRenew = subscription.triesToRenew + 1;
-          if (triesToRenew >= config.subscriptions.maxTriesToRenew) {
-            await db.updateSubscription(subscription.id, {
-              disableSubscriptionCheck: true,
-              triesToRenew: 0,
-            });
-
-            await telegramBot.sendMessage(
-              Number(subscription.subscriberUserId),
-              `⚠️ ${getEndSubscriptionText(
-                subscription
-              )} Не получилось автоматически продлить подписку.`,
-              {
-                reply_markup: {
-                  inline_keyboard: [
-                    [
-                      {
-                        text: '⭐️ Продлить вручную',
-                        url: makeTariffUrl({
-                          botName,
-                          object: ObjectType.subscription,
-                          id: subscription.id,
-                          tariffId: subscription.tariffId,
-                        }),
-                      },
-                    ],
-                  ],
-                },
-              }
-            );
-          } else {
-            await db.updateSubscription(subscription.id, {
-              triesToRenew,
-              deactivated: true,
-              expires: addDays(new Date(), 1),
-            });
-
-            await telegramBot.sendMessage(
-              Number(subscription.subscriberUserId),
-              `⚠️ ${getEndSubscriptionText(
-                subscription
-              )} Не получилось автоматически продлить подписку.
-
-⏰ Попробую ещё раз завтра.`,
-              {
-                reply_markup: {
-                  inline_keyboard: [
-                    [
-                      {
-                        text: '⭐️ Продлить вручную',
-                        url: makeTariffUrl({
-                          botName,
-                          object: ObjectType.subscription,
-                          id: subscription.id,
-                          tariffId: subscription.tariffId,
-                        }),
-                      },
-                    ],
-                    [
-                      {
-                        text: '🚫 Отключить автопродление',
-                        url: makeEditSubscriptionUrl({
-                          botName,
-                          subscriptionId: subscription.id,
-                          action: EditSubscriptionAction.unsubscribe,
-                        }),
-                      },
-                    ],
-                  ],
-                },
-              }
-            );
-          }
-        }
-      } else {
-        await telegramBot.sendMessage(
-          Number(subscription.subscriberUserId),
-          `⚠️ ${getEndSubscriptionText(subscription)}`,
-          {
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: '⭐️ Продлить подписку',
-                    url: makeTariffUrl({
-                      botName,
-                      object: ObjectType.subscription,
-                      id: subscription.id,
-                      tariffId: subscription.tariffId,
-                    }),
-                  },
-                ],
-              ],
-            },
-          }
-        );
-
-        await db.updateSubscription(subscription.id, {
-          disableSubscriptionCheck: true,
-        });
-      }
+    // eslint-disable-next-line unicorn/prefer-ternary
+    if (subscription.autoRenew) {
+      await handleAutoRenewSubscription({
+        subscription,
+        tariffs,
+        db,
+        telegramBot,
+        botName,
+      });
+    } else {
+      await handleExpiredSubscription({
+        subscription,
+        db,
+        telegramBot,
+        botName,
+      });
     }
   }
 }
+
+function shouldProcessSubscription(subscription: SubscriptionWithTariffAndChat): boolean {
+  return (
+    subscription.paymentProvider === PaymentProvider.YooKassa &&
+    subscription.expires < new Date() &&
+    !subscription.disableSubscriptionCheck
+  );
+}
+
+async function handleAutoRenewSubscription({
+  subscription,
+  tariffs,
+  db,
+  telegramBot,
+  botName,
+}: {
+  subscription: SubscriptionWithTariffAndChat;
+  tariffs: Tariff[];
+  db: DbService;
+  telegramBot: TelegramBotService;
+  botName: string;
+}): Promise<void> {
+  try {
+    await renewSubscription(subscription, tariffs);
+  } catch (error) {
+    if (!(error instanceof UKassaPaymentCanceledError)) {
+      throw error;
+    }
+    await handleFailedRenewal({ subscription, db, telegramBot, botName });
+  }
+}
+
+async function renewSubscription(
+  subscription: SubscriptionWithTariffAndChat,
+  tariffs: Tariff[]
+): Promise<void> {
+  const tariff = required(
+    tariffs.find((t) => t.id === subscription.tariffId),
+    'Tariff not found'
+  );
+
+  await ukassaService.createPayment<UkassaWebhookMetadata>({
+    description: `Автоматическое списание платежа за подписку на Shorty. Тариф: ${tariff.name}. Период оплаты: 1 месяц.`,
+    metadata: {
+      secret: getEnv().UKASSA_WEBHOOK_SECRET_KEY,
+      tariffId: tariff.id,
+      userId: Number(subscription.subscriberUserId),
+      username: subscription.subscriberUserName ?? undefined,
+      object: ObjectType.subscription,
+      id: Number(subscription.id),
+      autoRenew: true,
+    },
+    price: tariff.price,
+    paymentMethodId: subscription.paymentMethodId ?? undefined,
+  });
+}
+
+async function handleFailedRenewal({
+  subscription,
+  db,
+  telegramBot,
+  botName,
+}: {
+  subscription: SubscriptionWithTariffAndChat;
+  db: DbService;
+  telegramBot: TelegramBotService;
+  botName: string;
+}): Promise<void> {
+  const triesToRenew = subscription.triesToRenew + 1;
+
+  // eslint-disable-next-line unicorn/prefer-ternary
+  if (triesToRenew >= config.subscriptions.maxTriesToRenew) {
+    await handleMaxRetriesReached({ subscription, db, telegramBot, botName });
+  } else {
+    await handleRetryScheduled({ subscription, db, telegramBot, botName, triesToRenew });
+  }
+}
+
+async function handleMaxRetriesReached({
+  subscription,
+  db,
+  telegramBot,
+  botName,
+}: {
+  subscription: SubscriptionWithTariffAndChat;
+  db: DbService;
+  telegramBot: TelegramBotService;
+  botName: string;
+}): Promise<void> {
+  await db.updateSubscription(subscription.id, {
+    disableSubscriptionCheck: true,
+    triesToRenew: 0,
+  });
+
+  await telegramBot.sendMessage(
+    Number(subscription.subscriberUserId),
+    `⚠️ ${getEndSubscriptionText(subscription)} Не получилось автоматически продлить подписку.`,
+    {
+      reply_markup: {
+        inline_keyboard: [[renewSubscriptionButton('⭐️ Продлить вручную', botName, subscription)]],
+      },
+    }
+  );
+}
+
+async function handleRetryScheduled({
+  subscription,
+  db,
+  telegramBot,
+  botName,
+  triesToRenew,
+}: {
+  subscription: SubscriptionWithTariffAndChat;
+  db: DbService;
+  telegramBot: TelegramBotService;
+  botName: string;
+  triesToRenew: number;
+}): Promise<void> {
+  await db.updateSubscription(subscription.id, {
+    triesToRenew,
+    deactivated: true,
+    expires: addDays(new Date(), 1),
+  });
+
+  await telegramBot.sendMessage(
+    Number(subscription.subscriberUserId),
+    `⚠️ ${getEndSubscriptionText(
+      subscription
+    )} Не получилось автоматически продлить подписку.\n\n⏰ Попробую ещё раз завтра.`,
+    {
+      reply_markup: {
+        inline_keyboard: [
+          [renewSubscriptionButton('⭐️ Продлить вручную', botName, subscription)],
+          [unsubscribeButton(botName, subscription)],
+        ],
+      },
+    }
+  );
+}
+
+async function handleExpiredSubscription({
+  subscription,
+  db,
+  telegramBot,
+  botName,
+}: {
+  subscription: SubscriptionWithTariffAndChat;
+  db: DbService;
+  telegramBot: TelegramBotService;
+  botName: string;
+}): Promise<void> {
+  await telegramBot.sendMessage(
+    Number(subscription.subscriberUserId),
+    `⚠️ ${getEndSubscriptionText(subscription)}`,
+    {
+      reply_markup: {
+        inline_keyboard: [
+          [renewSubscriptionButton('⭐️ Продлить подписку', botName, subscription)],
+        ],
+      },
+    }
+  );
+
+  await db.updateSubscription(subscription.id, {
+    disableSubscriptionCheck: true,
+  });
+}
+
+const renewSubscriptionButton = (
+  text: string,
+  botName: string,
+  subscription: SubscriptionWithTariffAndChat
+): InlineKeyboardButton => ({
+  text,
+  url: makeTariffUrl({
+    botName,
+    object: ObjectType.subscription,
+    id: subscription.id,
+    tariffId: subscription.tariffId,
+  }),
+});
+
+const unsubscribeButton = (
+  botName: string,
+  subscription: SubscriptionWithTariffAndChat
+): InlineKeyboardButton => ({
+  text: '🚫 Отключить автопродление',
+  url: makeEditSubscriptionUrl({
+    botName,
+    subscriptionId: subscription.id,
+    action: EditSubscriptionAction.unsubscribe,
+  }),
+});
 
 const getEndSubscriptionText = (subscription: SubscriptionWithTariffAndChat): string =>
   `Ваша ${getSubscriptionObjectText({ subscription })} закончилась.`;

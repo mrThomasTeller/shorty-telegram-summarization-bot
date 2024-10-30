@@ -1,15 +1,20 @@
 import type TelegramBot from 'node-telegram-bot-api';
 import { getEnv } from '../../../config/envVars';
 import logger from '../../../config/logger';
-import { getTariffPriceText } from '../../../data/tariffUtils';
-import { escapeTelegramMarkdown as esc } from '../../../data/telegramBotMessageUtils';
+import { getTariffText } from '../../../data/tariffUtils';
+import {
+  escapeTelegramMarkdown as esc,
+  escapeTelegramMarkdown,
+} from '../../../data/telegramBotMessageUtils';
 import type DbService from '../../../services/DbService';
 import type TelegramBotService from '../../../services/TelegramBotService';
 import { ukassaService } from '../../../services/UKassaService/UKassaService';
 import { makeTariffUrl } from './routing';
-import { type ObjectType } from './types/ObjectType';
+import { ObjectType } from './types/ObjectType';
 import { type UkassaWebhookMetadata } from './types/UkassaWebhookMetadata';
 import { checkAccessToObject } from './common';
+import { getSubscriptionObjectText } from '../../../data/subscriptionUtils';
+import { ucFirst } from '../../../lib/common/string';
 
 export async function chooseTariff({
   object,
@@ -24,14 +29,36 @@ export async function chooseTariff({
   telegramBot: TelegramBotService;
   user: TelegramBot.User;
 }): Promise<void> {
+  await checkAccessToObject({ db, user, object, id });
+
   const tariffs = await db.getAllTariffs();
   const botName = await telegramBot.getUsername();
+  const subscription = object === ObjectType.subscription ? await db.getSubscription(id) : null;
 
-  const text = `**⭐ Выберите тариф:**
+  const objectEmoji = object === ObjectType.group || subscription?.chatId != null ? '👥' : '👤';
+  const objectText = getSubscriptionObjectText({
+    subscription: subscription ?? {
+      userId: object === ObjectType.subscription ? BigInt(user.id) : null,
+      chatId: object === ObjectType.group ? id : null,
+      chat: object === ObjectType.group ? await db.getChat(Number(id)) : null,
+    },
+  });
+
+  const text = `${objectEmoji} ${escapeTelegramMarkdown(
+    subscription ? ucFirst(objectText) : 'Новая ' + objectText
+  )}
+
+**⭐ Выберите ${subscription ? 'новый ' : ''}тариф:**
 
 ${tariffs
   .map((tariff) => {
-    const tariffLinkText = `💼 ${esc(tariff.name)} \\(${getTariffPriceText(tariff)}\\)`;
+    const tariffLinkText = `💼 ${esc(
+      getTariffText({
+        tariff,
+        format: 'nameAndPrice',
+        separator: ' (',
+      })
+    )}\\)`;
     const tariffUrl = makeTariffUrl({
       botName,
       object,
