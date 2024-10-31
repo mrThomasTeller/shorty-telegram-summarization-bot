@@ -125,92 +125,96 @@ async function paymentSucceeded(
   db: DbService,
   telegramBot: TelegramBotService
 ): Promise<void> {
-  const { object, id, tariffId, userId, username, autoRenew } = webhook.object.metadata;
-  const paymentMethod = webhook.object.payment_method;
+  try {
+    const { object, id, tariffId, userId, username, autoRenew } = webhook.object.metadata;
+    const paymentMethod = webhook.object.payment_method;
 
-  const paymentData = {
-    paymentProvider: PaymentProvider.YooKassa,
-    paymentMethodId: paymentMethod.saved ? paymentMethod.id : null,
-    payedAt: new Date(),
-  } satisfies Partial<Subscription>;
+    const paymentData = {
+      paymentProvider: PaymentProvider.YooKassa,
+      paymentMethodId: paymentMethod.saved ? paymentMethod.id : null,
+      payedAt: new Date(),
+    } satisfies Partial<Subscription>;
 
-  const subscription = await match(object)
-    .with(ObjectType.subscription, async () => {
-      // todo 2sub брать только разницу в деньгах
-      await db.updateSubscription(BigInt(id), {
-        ...paymentData,
-        expires: addMonths(new Date(), 1),
-        deactivated: false,
-        renewPeriodMonths: 1,
-        tariffId,
-        disableSubscriptionCheck: false,
+    const subscription = await match(object)
+      .with(ObjectType.subscription, async () => {
+        // todo 2sub брать только разницу в деньгах
+        await db.updateSubscription(BigInt(id), {
+          ...paymentData,
+          expires: addMonths(new Date(), 1),
+          deactivated: false,
+          renewPeriodMonths: 1,
+          tariffId,
+          disableSubscriptionCheck: false,
+        });
+
+        return await db.getSubscription(BigInt(id));
+      })
+      .otherwise(async () => {
+        const oldSubscription = await db.getUserSubscription(
+          userId,
+          object === ObjectType.group ? Number(id) : undefined
+        );
+
+        if (oldSubscription) {
+          await db.deleteSubscription(oldSubscription.id);
+        }
+
+        return await db.addSubscription({
+          ...paymentData,
+          renewPeriodMonths: 1,
+          expires: addMonths(new Date(), 1),
+          tariffId,
+          subscriber: {
+            id: userId,
+            username,
+          },
+          object: object === ObjectType.user ? { userId } : { chatId: Number(id) },
+        });
       });
 
-      return await db.getSubscription(BigInt(id));
-    })
-    .otherwise(async () => {
-      const oldSubscription = await db.getUserSubscription(
-        userId,
-        object === ObjectType.group ? Number(id) : undefined
-      );
+    const mainText = autoRenew
+      ? 'Автопродление вашей подписки прошло успешно!'
+      : 'Оплата прошла успешно!';
 
-      if (oldSubscription) {
-        await db.deleteSubscription(oldSubscription.id);
-      }
+    const subObjectText = getSubscriptionObjectText({ subscription, tariffText: 'none' });
 
-      return await db.addSubscription({
-        ...paymentData,
-        renewPeriodMonths: 1,
-        expires: addMonths(new Date(), 1),
-        tariffId,
-        subscriber: {
-          id: userId,
-          username,
-        },
-        object: object === ObjectType.user ? { userId } : { chatId: Number(id) },
-      });
+    const tariffText = await getTariffRestText({
+      subscription,
+      db,
+      telegramBot,
+      userId,
+      chatId: Number(id),
+      price: true,
     });
 
-  const mainText = autoRenew
-    ? 'Автопродление вашей подписки прошло успешно!'
-    : 'Оплата прошла успешно!';
+    const botName = await telegramBot.getUsername();
 
-  const subObjectText = getSubscriptionObjectText({ subscription, tariffText: 'none' });
-
-  const tariffText = await getTariffRestText({
-    subscription,
-    db,
-    telegramBot,
-    userId,
-    chatId: Number(id),
-    price: true,
-  });
-
-  const botName = await telegramBot.getUsername();
-
-  await telegramBot.sendMessage(
-    userId,
-    `💸 ${mainText}\n\n💼 ${ucFirst(subObjectText)}\n${tariffText}`,
-    autoRenew
-      ? {
-          reply_markup: {
-            inline_keyboard: [
-              [
-                {
-                  text: '🚫 Отключить автопродление',
-                  url: makeEditSubscriptionUrl({
-                    botName,
-                    subscriptionId: BigInt(id),
-                    action: EditSubscriptionAction.unsubscribe,
-                  }),
-                },
+    await telegramBot.sendMessage(
+      userId,
+      `💸 ${mainText}\n\n💼 ${ucFirst(subObjectText)}\n${tariffText}`,
+      autoRenew
+        ? {
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: '🚫 Отключить автопродление',
+                    url: makeEditSubscriptionUrl({
+                      botName,
+                      subscriptionId: BigInt(id),
+                      action: EditSubscriptionAction.unsubscribe,
+                    }),
+                  },
+                ],
+                helpKeyboardButton(botName),
               ],
-              helpKeyboardButton(botName),
-            ],
-          },
-        }
-      : undefined
-  ); // todo 2sub instructions
+            },
+          }
+        : undefined
+    ); // todo 2sub instructions
+  } catch (error) {
+    logger.error('Error in paymentSucceeded', error);
+  }
 }
 
 const isBlockedError = (error: unknown): boolean =>
