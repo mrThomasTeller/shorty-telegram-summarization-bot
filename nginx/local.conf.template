@@ -6,7 +6,7 @@ server {
 
     location / {
         # host.docker.internal - localhost на маке. На других ОС нужно будет поменять
-        proxy_pass http://host.docker.internal:3333;
+        proxy_pass http://host.docker.internal:$WEBSERVER_PORT;
         proxy_read_timeout 5s;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;

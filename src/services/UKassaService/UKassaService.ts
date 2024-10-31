@@ -91,7 +91,6 @@ export class UKassaService {
     };
   }
 
-  // fixme https, url
   startWebServer(): void {
     if (this.webServerStarted) return;
     this.webServerStarted = true;
@@ -105,10 +104,11 @@ export class UKassaService {
     app.use(express.urlencoded({ extended: false }));
     app.use(express.text());
 
-    // app.post('/test', (req, res) => {
-    //   console.log(req.body);
-    //   res.send('Hello World!');
-    // });
+    if (getEnv().NODE_ENV === 'development') {
+      app.get('/test', (req, res) => {
+        res.send('Hello World!');
+      });
+    }
 
     app.post(getEnv().UKASSA_WEBHOOK_SECRET_PATH, (req, res) => {
       try {

@@ -15,7 +15,8 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
-    project: ['tsconfig.json'],
+    project: ['./tsconfig.json'],
+    ignorePatterns: ['./src/test/integration-tests/**/*'],
   },
   rules: {
     // native
