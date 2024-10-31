@@ -24,6 +24,9 @@ app-log:
 all-logs:
 	docker compose logs -f --timestamps
 
+get-ssl-cert:
+	docker compose -f docker-compose.get-ssl-cert.yml up --build
+
 prepare:
 	bash ./disable_history.sh
 

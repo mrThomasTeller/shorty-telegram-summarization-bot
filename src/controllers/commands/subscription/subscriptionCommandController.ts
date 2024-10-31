@@ -155,7 +155,7 @@ async function paymentSucceeded(
       );
 
       if (oldSubscription) {
-        await db.deleteSubscription(BigInt(id));
+        await db.deleteSubscription(oldSubscription.id);
       }
 
       return await db.addSubscription({
