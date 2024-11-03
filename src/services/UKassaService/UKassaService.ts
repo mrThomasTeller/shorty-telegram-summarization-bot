@@ -121,6 +121,8 @@ export class UKassaService {
             callback(webhook as UKassaPaymentWebhook<NonNullable<Metadata>>);
           }
         }
+
+        res.status(200).send('OK');
       } catch (error) {
         logger.error('Error in WebServer', error);
         res.status(500).send('Internal server error');

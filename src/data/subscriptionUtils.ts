@@ -87,5 +87,6 @@ export function getSubscriptionObjectText({
   return `${subscriptionTermText}${object}${additionalText}`;
 }
 
+// fixme: timezone
 export const getSubscriptionExpireFormattedDate = (subscription: Subscription): string =>
   `${format(new Date(subscription.expires), 'dd.MM.yyyy HH:mm', { locale: ru })} по МСК`;
