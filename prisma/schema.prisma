@@ -30,6 +30,7 @@ model Chat {
   settings                   Json     @default("{}")
   notifiedItsTimeToSummarize Boolean  @default(false)
   invitedByUserId            BigInt?
+  replyKeyboardShown         Boolean  @default(false)
 
   messages      Message[]
   summaries     Summary[]

@@ -6,14 +6,14 @@ export default {
     cantSendMessageError: 'Не могу отправить сообщение: {{message}}',
   },
   commands: {
-    'summarize.description': 'Сделать выжимку сообщений за последний день',
-    'ping.description': 'Проверить, что бот живой',
-    'help.description': 'Получить помощь по работе бота',
-    'start.description': 'Начать работу с ботом',
-    'tariff.description': 'Узнать текущий тариф',
-    'subscription.description': 'Приобрести или изменить платную подписку',
+    'summarize.description': '📝 Выжимка сообщений',
+    'ping.description': '🏓 Бот живой?',
+    'help.description': '❓ Помощь',
+    'start.description': '🚀 Начать работу с ботом',
+    'tariff.description': '💼 Текущий тариф',
+    'subscription.description': '⭐️ Платная подписка',
     settings: {
-      description: 'Изменить настройки',
+      description: '⚙️ Настройки чата',
     },
   },
   server: {

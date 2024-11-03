@@ -1,14 +1,21 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { getEnv } from '../config/envVars';
+import { required } from '../lib/common/lang';
+import type DbService from './DbService';
 import type TelegramBotService from './TelegramBotService';
 import { type TelegramBotSendMessageOptions } from './TelegramBotService';
-import { required } from '../lib/common/lang';
+import { isPrivateChat } from '../data/telegramChatUtils';
 
 export default class TelegramBotServiceImpl implements TelegramBotService {
   readonly __bot: TelegramBot;
+  private me?: TelegramBot.User;
 
-  constructor() {
+  constructor(private readonly db: DbService) {
     this.__bot = new TelegramBot(getEnv().TELEGRAM_BOT_TOKEN, { polling: true });
+  }
+
+  async getMe(): Promise<TelegramBot.User> {
+    return (this.me ??= await this.__bot.getMe());
   }
 
   async getChatAdministrators(chatId: number): Promise<TelegramBot.ChatMember[]> {
@@ -16,8 +23,18 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
   }
 
   async getUsername(): Promise<string> {
-    const me = await this.__bot.getMe();
+    const me = await this.getMe();
     return required(me.username, 'bot username is required');
+  }
+
+  async isInChat(chatId: number): Promise<boolean> {
+    try {
+      const me = await this.getMe();
+      const chat = await this.__bot.getChatMember(chatId, me.id);
+      return chat.status !== 'left' && chat.status !== 'kicked' && chat.status !== 'restricted';
+    } catch {
+      return false;
+    }
   }
 
   onAddedToGroupChat(callback: (msg: TelegramBot.ChatMemberUpdated) => void): VoidFunction {
@@ -37,9 +54,8 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
   }
 
   onAnyMessage(callback: (msg: TelegramBot.Message) => void): VoidFunction {
-    const regexp = /.*/;
-    this.__bot.onText(regexp, callback);
-    return () => this.__bot.removeTextListener(regexp);
+    this.__bot.on('message', callback);
+    return () => this.__bot.removeListener('message', callback);
   }
 
   onCallbackQuery(callback: (query: TelegramBot.CallbackQuery) => void): VoidFunction {
@@ -69,7 +85,40 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
     text: string,
     options?: TelegramBotSendMessageOptions
   ): Promise<void> {
-    await this.__bot.sendMessage(chatId, text, { ...options, disable_web_page_preview: true });
+    const replyMarkup = options?.reply_markup;
+
+    // удаляем клавиатуру, если она была показана
+    if (isPrivateChat(chatId)) {
+      const chat = await this.db.getChat(chatId);
+      if (
+        chat?.replyKeyboardShown &&
+        replyMarkup &&
+        ('inline_keyboard' in replyMarkup || 'force_reply' in replyMarkup)
+      ) {
+        const [, msg] = await Promise.all([
+          this.db.updateChat(chatId, { title: undefined, replyKeyboardShown: false }),
+          this.__bot.sendMessage(chatId, '.', {
+            reply_markup: {
+              remove_keyboard: true,
+            },
+          }),
+        ]);
+        await this.__bot.deleteMessage(chatId, msg.message_id);
+      }
+    }
+
+    await Promise.all([
+      this.__bot.sendMessage(chatId, text, {
+        ...options,
+        disable_web_page_preview: true,
+        reply_markup: replyMarkup ?? {
+          remove_keyboard: true,
+        },
+      }),
+      replyMarkup &&
+        'keyboard' in replyMarkup &&
+        this.db.updateChat(chatId, { title: undefined, replyKeyboardShown: true }),
+    ]);
   }
 
   async setMyCommands(commands: TelegramBot.BotCommand[]): Promise<void> {

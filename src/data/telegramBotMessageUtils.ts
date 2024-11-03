@@ -50,7 +50,9 @@ export const escapeTelegramMarkdown = (text: string): string =>
   );
 
 export const getPrivateCommandUrl = (botName: string, command: string, ...args: string[]): string =>
-  `https://t.me/${botName}?start=${command}${args.map((arg) => '=' + arg).join('')}`;
+  `https://t.me/${botName}?start=${command}${encodeURIComponent(
+    args.map((arg) => '=' + arg).join('')
+  )}`;
 
 const transformStartCommandRedirect = (message: TelegramBot.Message): string =>
   message.chat.type === 'private' && message.text?.startsWith('/start ') === true

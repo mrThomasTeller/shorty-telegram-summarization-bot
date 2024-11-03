@@ -4,12 +4,12 @@ import { required } from '../../../lib/common/lang';
 import type DbService from '../../../services/DbService';
 import type TelegramBotService from '../../../services/TelegramBotService';
 import { chooseTariff, tariffChosen } from './chooseTariff';
-import { subscribeFromGroupInstructions } from './common';
 import { doEditSubscription, editSubscription } from './editSubscription';
 import { type EditSubscriptionAction } from './types/EditSubscriptionAction';
 import { ObjectType } from './types/ObjectType';
 import { subscribeToGroup } from './chooseObject';
 import { help } from './help';
+import { chooseGroup } from './chooseGroup';
 
 // todo 2sub переделать роутинг
 
@@ -130,7 +130,7 @@ export async function route(
           id: required(params.id, 'subscription id is required'),
         });
       } else if (params.object === ObjectType.group && params.id == null) {
-        await subscribeFromGroupInstructions(telegramBot, user.id, 'subscribe');
+        await chooseGroup({ db, telegramBot, userId: user.id });
       } else {
         await chooseTariff({
           ...params,

@@ -75,7 +75,7 @@ async function handleMessage(
     const userSubscription = unexpiredSubscriptions.find((s) => s.userId != null);
     const groupsSubscriptions = unexpiredSubscriptions.filter((s) => s.chatId != null);
 
-    return await chooseObject({ userSubscription, groupsSubscriptions, telegramBot, user, db });
+    return await chooseObject({ userSubscription, groupsSubscriptions, telegramBot, user });
   } catch (error) {
     if (isBlockedError(error)) {
       blockedMessagesService.push(msg.chat.id, msg);
@@ -90,8 +90,18 @@ async function subscribeFromGroupChat(
   telegramBot: TelegramBotService,
   msg: TelegramBot.Message
 ): Promise<void> {
+  const admins = await telegramBot.getChatAdministrators(msg.chat.id);
+  const user = required(msg.from, 'User is required');
+  if (!admins.some((admin) => admin.user.id === user.id)) {
+    await telegramBot.sendMessage(
+      msg.chat.id,
+      '⚠️ Только администратор чата может оформить подписку!'
+    );
+    return;
+  }
+
   const botName = await telegramBot.getUsername();
-  const subscription = msg.from && (await db.getUserSubscription(msg.from.id, msg.chat.id));
+  const subscription = await db.getUserSubscription(user.id, msg.chat.id);
   const verb = subscription ? 'редактировать' : 'оформить';
 
   await telegramBot.sendMessage(msg.chat.id, `Нажмите на кнопку ниже, чтобы ${verb} подписку 😉`, {
@@ -120,6 +130,7 @@ async function forBoostySubscription(
   );
 }
 
+// todo 2sub удалять лишние сообщения "/start"
 async function paymentSucceeded(
   webhook: UKassaPaymentWebhook<UkassaWebhookMetadata>,
   db: DbService,

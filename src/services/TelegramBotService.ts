@@ -10,7 +10,11 @@ type TelegramBotService = {
 
   getChatAdministrators: (chatId: number) => Promise<TelegramBot.ChatMember[]>;
 
+  getMe: () => Promise<TelegramBot.User>;
+
   getUsername: () => Promise<string>;
+
+  isInChat: (chatId: number) => Promise<boolean>;
 
   /**
    * @returns unsubscribe function

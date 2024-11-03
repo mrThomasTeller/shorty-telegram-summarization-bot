@@ -30,7 +30,7 @@ export class ServicesImpl implements Services {
 
   private _telegramBot?: TelegramBotService;
   get telegramBot(): TelegramBotService {
-    return (this._telegramBot ??= new TelegramBotServiceImpl());
+    return (this._telegramBot ??= new TelegramBotServiceImpl(this.db));
   }
 
   private _gpt?: GptService;

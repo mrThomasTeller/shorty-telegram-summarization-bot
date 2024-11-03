@@ -81,7 +81,9 @@ function createTgMessagesObservable(
 ): Observable<TelegramBot.Message> {
   return new Observable((subscriber) =>
     telegramBotService.onAnyMessage((msg) => {
-      subscriber.next(msg);
+      if (Boolean(msg.text)) {
+        subscriber.next(msg);
+      }
     })
   );
 }

@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import {
   PrismaClient,
   type Chat,
@@ -13,10 +12,10 @@ import { todayMidday } from '../lib/common/date';
 import { type TOmit } from '../lib/common/typeUtils';
 import type DbService from './DbService';
 import {
-  type SubscriptionWithTariffAndChat,
   type AddSubscriptionParams,
   type MessageCreateInput,
   type SubscriptionWithTariff,
+  type SubscriptionWithTariffAndChat,
   type UserCreateInput,
 } from './DbService';
 
@@ -82,22 +81,6 @@ export default class DbServiceImpl implements DbService {
     });
 
     return _.sortBy(summaries, 'date');
-  }
-
-  getUserChats(userId: number): Promise<Chat[]> {
-    return this.prisma.chat.findMany({
-      where: {
-        OR: [
-          {
-            invitedByUserId: BigInt(userId),
-          },
-          {
-            messages: { some: { userId } },
-          },
-        ],
-        isMember: true,
-      },
-    });
   }
 
   getAllUserSubscriptions(userId: number): Promise<SubscriptionWithTariffAndChat[]> {

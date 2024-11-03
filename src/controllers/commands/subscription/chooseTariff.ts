@@ -30,7 +30,7 @@ export async function chooseTariff({
   telegramBot: TelegramBotService;
   user: TelegramBot.User;
 }): Promise<void> {
-  await checkAccessToObject({ db, user, object, id });
+  await checkAccessToObject({ db, telegramBot, user, object, id });
 
   const tariffs = await db.getAllTariffs();
   const botName = await telegramBot.getUsername();
@@ -105,7 +105,7 @@ export async function tariffChosen({
   // todo 2sub remove loading
   await telegramBot.sendMessage(user.id, '⏳ Подождите…');
 
-  await checkAccessToObject({ db, user, object, id });
+  await checkAccessToObject({ db, telegramBot, user, object, id });
 
   const botName = await telegramBot.getUsername();
   const paymentUrl = await ukassaService.createPayment<UkassaWebhookMetadata>({

@@ -17,16 +17,16 @@ export const getVisibleCommands = (): Command[] =>
 
 // todo 2sub клавиатура вместо этого
 const commands = {
-  [subscriptionCommand.command]: subscriptionCommand,
-  [pingCommand.command]: pingCommand,
   [summarizeCommand.command]: summarizeCommand,
-  [noneCommand.command]: noneCommand,
+  [subscriptionCommand.command]: subscriptionCommand,
   [helpCommand.command]: helpCommand,
+  [tariffCommand.command]: tariffCommand,
   [startCommand.command]: startCommand,
+  [noneCommand.command]: noneCommand,
   [scheduleNewsCommand.command]: scheduleNewsCommand,
   [tryMessageCommand.command]: tryMessageCommand,
-  [tariffCommand.command]: tariffCommand,
   [settingsCommand.command]: settingsCommand,
+  [pingCommand.command]: pingCommand,
 };
 
 export default commands;

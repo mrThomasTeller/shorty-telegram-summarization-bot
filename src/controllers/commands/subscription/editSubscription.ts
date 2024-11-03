@@ -30,7 +30,7 @@ export async function editSubscription({
   telegramBot: TelegramBotService;
   user: TelegramBot.User;
 }): Promise<void> {
-  await checkAccessToObject({ db, user, object: ObjectType.subscription, id });
+  await checkAccessToObject({ db, telegramBot, user, object: ObjectType.subscription, id });
   const subscription = await db.getSubscription(id);
 
   const individualSubscription = await db.getUserSubscription(user.id);
@@ -140,7 +140,13 @@ export async function doEditSubscription({
   user: TelegramBot.User;
 }): Promise<void> {
   const subscription = await db.getSubscription(subscriptionId);
-  await checkAccessToObject({ db, user, object: ObjectType.subscription, id: subscriptionId });
+  await checkAccessToObject({
+    db,
+    telegramBot,
+    user,
+    object: ObjectType.subscription,
+    id: subscriptionId,
+  });
 
   switch (action) {
     case EditSubscriptionAction.changeTariff: {
@@ -191,7 +197,7 @@ export async function doEditSubscription({
             inline_keyboard: [
               [
                 {
-                  text: 'Да, переключить',
+                  text: '✅ Да, переключить',
                   url: makeEditSubscriptionUrl({
                     botName,
                     subscriptionId,
@@ -199,7 +205,7 @@ export async function doEditSubscription({
                   }),
                 },
                 {
-                  text: 'Отмена',
+                  text: '🚫 Отмена',
                   url: makeEditSubscriptionUrl({
                     botName,
                     subscriptionId,
@@ -238,7 +244,7 @@ export async function doEditSubscription({
             inline_keyboard: [
               [
                 {
-                  text: 'Да, отключить',
+                  text: '✅ Да, отключить',
                   url: makeEditSubscriptionUrl({
                     botName,
                     subscriptionId,
@@ -246,7 +252,7 @@ export async function doEditSubscription({
                   }),
                 },
                 {
-                  text: 'Отмена',
+                  text: '🚫 Отмена',
                   url: makeEditSubscriptionUrl({
                     botName,
                     subscriptionId,

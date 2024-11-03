@@ -77,8 +77,6 @@ type DbService = {
 
   getTariff: (id: string) => Promise<Tariff>;
 
-  getUserChats: (userId: number) => Promise<Chat[]>;
-
   getAllUserSubscriptions: (userId: number) => Promise<SubscriptionWithTariffAndChat[]>;
 
   hasMessage: (messageId: number, chatId: number) => Promise<boolean>;

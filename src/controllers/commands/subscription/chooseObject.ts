@@ -27,7 +27,7 @@ export async function subscribeToGroup({
   id: bigint;
   db: DbService;
 }): Promise<void> {
-  await checkAccessToObject({ db, user, object: ObjectType.group, id });
+  await checkAccessToObject({ db, telegramBot, user, object: ObjectType.group, id });
   const subscription = await db.getUserSubscription(user.id, Number(id));
 
   if (subscription) {
@@ -46,8 +46,7 @@ export async function subscribeToGroup({
       groupsSubscriptions: [],
       telegramBot,
       user,
-      db,
-      userChats: [required(chat, 'chat is required')],
+      addChats: [required(chat, 'chat is required')],
       disableNewGroup: true,
     });
   }
@@ -60,22 +59,18 @@ export async function chooseObject({
   groupsSubscriptions,
   telegramBot,
   user,
-  db,
-  userChats: userChats_,
+  addChats,
   disableNewGroup,
 }: {
   userSubscription: SubscriptionWithTariffAndChat | undefined;
   groupsSubscriptions: SubscriptionWithTariffAndChat[];
   telegramBot: TelegramBotService;
   user: TelegramBot.User;
-  db: DbService;
-  userChats?: Chat[];
+  addChats?: Chat[];
   disableNewGroup?: boolean;
 }): Promise<void> {
-  const userChats = userChats_ ?? (await db.getUserChats(user.id));
-
-  const userChatsWithoutSubscriptions = _.differenceWith(
-    userChats,
+  const chatsWithoutSubscriptions = _.differenceWith(
+    addChats,
     groupsSubscriptions,
     (a, b) => a.id === b.chatId
   );
@@ -112,7 +107,7 @@ export async function chooseObject({
           })}`
       )
       .sort((a, b) => strCompare(a, b)),
-    ...userChatsWithoutSubscriptions
+    ...chatsWithoutSubscriptions
       .slice(0, 10)
       .map(
         (chat) =>
@@ -132,10 +127,10 @@ export async function chooseObject({
 
     disableNewGroup
       ? undefined
-      : `👥 ✚ [Оформить новую подписку](${makeObjectUrl({
+      : `👥 ✚ [Оформить подписку](${makeObjectUrl({
           botName,
           object: ObjectType.group,
-        })}) на другую группу`,
+        })}) на новую группу`,
   ];
 
   await telegramBot.sendMessage(

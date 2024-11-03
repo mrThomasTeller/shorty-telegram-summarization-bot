@@ -1,6 +1,6 @@
 {
   "name": "shorty-chat-bot",
-  "version": "1.0.4-beta.62",
+  "version": "1.0.4-beta.63",
   "description": "",
   "main": "src/start.ts",
   "type": "module",
@@ -28,7 +28,7 @@
     "check:verify": "bun check:ts && bun check:lint",
     "dev:format": "prettier . --ignore-unknown --write",
     "dev:debug": "bun --inspect src/start.ts summarizeBotServer",
-    "dev:watch": "nodemon -x 'bun src/start.ts summarizeBotServer' --ext ts,js,json,jsx,tpl",
+    "dev:watch": "nodemon -x 'bun src/start.ts summarizeBotServer' --ext ts,js,json,jsx,tpl,env",
     "dev:majestic": "npx majestic",
     "db:create-migration": "prisma migrate dev --name",
     "db:create-empty-migration": "npx prisma migrate dev --create-only",
