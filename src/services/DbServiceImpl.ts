@@ -282,7 +282,7 @@ export default class DbServiceImpl implements DbService {
     return chat === null
       ? {
           chat: await this.prisma.chat.create({
-            data: { id: chatId, isMember: true },
+            data: { id: chatId, isMember: true, title },
           }),
           created: true,
         }
