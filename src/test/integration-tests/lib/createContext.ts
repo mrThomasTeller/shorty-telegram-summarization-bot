@@ -1,17 +1,17 @@
 import { mock } from 'jest-mock-extended';
-import type TelegramBotService from '../../../services/TelegramBotService.ts';
+import type TelegramBotService from '../../../services/TelegramBotService';
 import type TelegramBot from 'node-telegram-bot-api';
-import type DbService from '../../../services/DbService.ts';
-import type GptService from '../../../services/GptService.ts';
+import type DbService from '../../../services/DbService';
+import type GptService from '../../../services/GptService';
 import { setTimeout } from 'node:timers/promises';
-import type DbChatMessage from '../../../data/types/DbChatMessage.ts';
+import type DbChatMessage from '../../../data/types/DbChatMessage';
 import fp_ from 'lodash/fp.js';
 import { type User, type Summary } from '@prisma/client';
-import { type MessageCreateInput } from '../../../services/DbService.ts';
-import { myTgUser, otherTgUser } from './tgUtils.ts';
-import { encrypt, encryptIfExists } from '../../../data/encryption.ts';
-import { botName } from './constants.ts';
-import type AdsService from '../../../services/AdsService.ts';
+import { type MessageCreateInput } from '../../../services/DbService';
+import { myTgUser, otherTgUser } from './tgUtils';
+import { encrypt, encryptIfExists } from '../../../data/encryption';
+import { botName } from './constants';
+import type AdsService from '../../../services/AdsService';
 
 export type TestContext = ReturnType<typeof createContext>;
 
@@ -53,7 +53,7 @@ function createDbServiceMock() {
     false,
   ]);
 
-  service.getOrCreateChat.mockImplementation(async (chatId) => ({
+  service.upsertChat.mockImplementation(async (chatId) => ({
     chat: {
       id: BigInt(chatId),
       isMember: true,
@@ -62,6 +62,7 @@ function createDbServiceMock() {
       unsummarizedSymbols: 0,
       notifiedItsTimeToSummarize: false,
       settings: {},
+      title: encrypt(String(chatId)),
     },
     created: false,
   }));

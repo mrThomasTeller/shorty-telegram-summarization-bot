@@ -1,17 +1,19 @@
 import { type Chat } from '@prisma/client';
 import type TelegramBot from 'node-telegram-bot-api';
-import logger from '../../config/logger.ts';
+import logger from '../../config/logger';
 import {
   convertTgMessageToDbMessageInput,
   convertTgUserToDbUserInput,
-} from '../../data/convertors.ts';
-import { getFormattedMessage } from '../../data/dbChatMessageUtils.ts';
-import { getMaxTextToSummarizeApproximateLength } from '../../data/tariffUtils.ts';
-import { chatSettingsSchema } from '../../data/types/ChatSettings.ts';
-import type DbChatMessage from '../../data/types/DbChatMessage.ts';
-import { rejectAsync } from '../../lib/rxOperators.ts';
-import type DbService from '../../services/DbService.ts';
-import type ChatController from '../ChatController.ts';
+} from '../../data/convertors';
+import { getFormattedMessage } from '../../data/dbChatMessageUtils';
+import { getMaxTextToSummarizeApproximateLength } from '../../data/tariffUtils';
+import { chatSettingsSchema } from '../../data/types/ChatSettings';
+import type DbChatMessage from '../../data/types/DbChatMessage';
+import { rejectAsync } from '../../lib/common/rxOperators';
+import type DbService from '../../services/DbService';
+import type ChatController from '../ChatController';
+import { isSubscriptionActive } from '../../data/subscriptionUtils';
+import { encryptIfExists } from '../../data/encryption';
 
 const noneCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$
@@ -22,7 +24,8 @@ const noneCommandController: ChatController = ({ chat$, chatId, services }) => {
 
         const settings = chatSettingsSchema.parse(chat.settings);
         if (settings.notifyItsTimeToSummarize === true && !chat.notifiedItsTimeToSummarize) {
-          const subscription = await services.db.getSubscription(chatId, msg.from?.id);
+          const subscriptions = await services.db.getSubscriptions(chatId);
+          const subscription = subscriptions.find((s) => isSubscriptionActive(s));
           const maxTextToSummarizeApproximateLength = getMaxTextToSummarizeApproximateLength(
             subscription?.tariff
           );
@@ -33,7 +36,10 @@ const noneCommandController: ChatController = ({ chat$, chatId, services }) => {
               `⚠️ В вашем чате накопилось уже много сообщений, пора делать выжимку! 😉 Нажмите сюда: /summarize@${await services.telegramBot.getUsername()}`
             );
 
-            await services.db.updateChat(msg.chat.id, { notifiedItsTimeToSummarize: true });
+            await services.db.updateChat(msg.chat.id, {
+              notifiedItsTimeToSummarize: true,
+              title: encryptIfExists(msg.chat.title),
+            });
           }
         }
       } catch (error) {
@@ -52,7 +58,10 @@ async function addMessageToDb(
     msg.from && (await db.getOrCreateUser(convertTgUserToDbUserInput(msg.from)));
   const user = userCreationResult?.[0];
 
-  const { chat, created: chatCreated } = await db.getOrCreateChat(msg.chat.id);
+  const { chat, created: chatCreated } = await db.upsertChat(
+    msg.chat.id,
+    encryptIfExists(msg.chat.title)
+  );
   if (chatCreated) {
     logger.info(`New chat created: ${msg.chat.id}`);
   }
@@ -62,7 +71,10 @@ async function addMessageToDb(
   const formattedMessage = getFormattedMessage(message);
   if (formattedMessage != null && formattedMessage.length > 0) {
     const newUnsummarizedSymbols = chat.unsummarizedSymbols + formattedMessage.length;
-    await db.updateChat(msg.chat.id, { unsummarizedSymbols: newUnsummarizedSymbols });
+    await db.updateChat(msg.chat.id, {
+      unsummarizedSymbols: newUnsummarizedSymbols,
+      title: encryptIfExists(msg.chat.title),
+    });
     chat.unsummarizedSymbols = newUnsummarizedSymbols;
   }
 

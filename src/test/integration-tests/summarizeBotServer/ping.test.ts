@@ -1,7 +1,7 @@
-import { getPingResponseMessage } from '../../../controllers/commands/pingCommandController.ts';
-import { createTgMessageInGroup, myTgGroupId, myTgUser } from '../lib/tgUtils.ts';
-import createSummarizeBotServerContext from './createSummarizeBotServerContext.ts';
-import { botName } from '../lib/constants.ts';
+import { getPingResponseMessage } from '../../../controllers/commands/pingCommandController';
+import { createTgMessageInGroup, myTgGroupId, myTgUser } from '../lib/tgUtils';
+import createSummarizeBotServerContext from './createSummarizeBotServerContext';
+import { botName } from '../lib/constants';
 
 describe('summarizeBotServer ping command', () => {
   it('is correct', async () => {

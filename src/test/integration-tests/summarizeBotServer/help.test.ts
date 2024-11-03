@@ -1,7 +1,7 @@
-import { createTgMessageInGroup, myTgGroupId } from '../lib/tgUtils.ts';
-import createSummarizeBotServerContext from './createSummarizeBotServerContext.ts';
-import { renderHelpMessage } from '../../../controllers/commands/helpCommandController.ts';
-import { botName } from '../lib/constants.ts';
+import { createTgMessageInGroup, myTgGroupId } from '../lib/tgUtils';
+import createSummarizeBotServerContext from './createSummarizeBotServerContext';
+import { renderHelpMessage } from '../../../controllers/commands/helpCommandController';
+import { botName } from '../lib/constants';
 
 describe('summarizeBotServer help command', () => {
   it('is correct', async () => {

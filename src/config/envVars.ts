@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { required } from '../lib/lang.ts';
+import { required } from '../lib/common/lang';
 
 type Env = {
   TELEGRAM_BOT_TOKEN: string;
@@ -18,6 +18,15 @@ type Env = {
   TIME_TO_SHOW_ADS: number;
   SHOW_ADS: boolean | number;
   MAINTENANCE_MESSAGE: string | undefined;
+  DEV_SHOW_ALL_TG_MESSAGES: boolean;
+  UKASSA_SHOP_ID: string;
+  UKASSA_SECRET_KEY: string;
+  WEBSERVER_PORT: string;
+  EMAIL_FOR_SSL_NOTIFICATIONS: string;
+  SERVER_NAME: string;
+  UKASSA_WEBHOOK_SECRET_PATH: string;
+  UKASSA_WEBHOOK_SECRET_KEY: string;
+  SUPPORT_BOT_NAME: string;
 };
 
 export function getEnv(): Env {
@@ -39,6 +48,15 @@ export function getEnv(): Env {
     TIME_TO_SHOW_ADS: Number(required(process.env.TIME_TO_SHOW_ADS)),
     SHOW_ADS: showAds === 'true' ? true : showAds === 'false' ? false : Number(showAds),
     MAINTENANCE_MESSAGE: process.env.MAINTENANCE_MESSAGE,
+    DEV_SHOW_ALL_TG_MESSAGES: process.env.DEV_SHOW_ALL_TG_MESSAGES === 'true',
+    UKASSA_SHOP_ID: required(process.env.UKASSA_SHOP_ID),
+    UKASSA_SECRET_KEY: required(process.env.UKASSA_SECRET_KEY),
+    WEBSERVER_PORT: required(process.env.WEBSERVER_PORT),
+    EMAIL_FOR_SSL_NOTIFICATIONS: required(process.env.EMAIL_FOR_SSL_NOTIFICATIONS),
+    SERVER_NAME: required(process.env.SERVER_NAME),
+    UKASSA_WEBHOOK_SECRET_PATH: required(process.env.UKASSA_WEBHOOK_SECRET_PATH),
+    UKASSA_WEBHOOK_SECRET_KEY: required(process.env.UKASSA_WEBHOOK_SECRET_KEY),
+    SUPPORT_BOT_NAME: required(process.env.SUPPORT_BOT_NAME),
   };
 }
 

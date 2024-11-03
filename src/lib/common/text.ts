@@ -1,4 +1,4 @@
-import { required } from './lang.ts';
+import { required } from './lang';
 
 export function splitText(text: string, maxLength: number): string[] {
   const parts: string[] = [];
@@ -44,3 +44,8 @@ export function reEnumerateText(text: string, fromNumber: number): string {
   // Join the updated lines back together
   return updatedLines.join('\n');
 }
+
+const emojiNumbers = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+
+export const getEmojiNumber = (number: number): string =>
+  emojiNumbers[number - 1] ?? number.toString();

@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { getEnv } from '../config/envVars.ts';
+import { getEnv } from '../config/envVars';
 
 /**
  * @example

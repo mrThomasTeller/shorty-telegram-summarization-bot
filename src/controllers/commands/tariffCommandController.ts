@@ -1,17 +1,20 @@
-import { getEnv } from '../../config/envVars.ts';
-import logger from '../../config/logger.ts';
-import { t } from '../../config/translations/index.ts';
-import type ChatController from '../ChatController.ts';
+import logger from '../../config/logger';
+import { getTariffRestText } from '../../data/tariffUtils';
+import type ChatController from '../ChatController';
 
 const tariffCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$.subscribe(async (msg) => {
     try {
-      const subscription = await services.db.getSubscription(chatId, msg.from?.id);
-      const message = subscription
-        ? t('tariff.premium', { name: subscription.tariff.name })
-        : t('tariff.free', { count: getEnv().MAX_SUMMARIES_PER_WEEK });
-
-      await services.telegramBot.sendMessage(chatId, message);
+      const text = await getTariffRestText({
+        db: services.db,
+        userId: msg.from?.id,
+        chatId,
+        thanks: true,
+        telegramBot: services.telegramBot,
+      });
+      await services.telegramBot.sendMessage(chatId, text, {
+        parse_mode: 'HTML',
+      });
     } catch (error) {
       logger.error('Error in tariffCommandController', error);
     }

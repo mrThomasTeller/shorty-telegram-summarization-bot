@@ -1,5 +1,5 @@
-import { createServices } from './createServices.ts';
-import type EntryPoint from './entryPoints/EntryPoint.ts';
+import { createServices } from './createServices';
+import type EntryPoint from './entryPoints/EntryPoint';
 
 const entryPointName = process.argv[2];
 

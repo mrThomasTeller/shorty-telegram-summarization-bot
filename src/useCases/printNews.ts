@@ -1,3 +1,5 @@
+import type TelegramBot from 'node-telegram-bot-api';
+import { encryptIfExists } from '../data/encryption';
 import type DbService from '../services/DbService';
 import type TelegramBotService from '../services/TelegramBotService';
 
@@ -5,11 +7,11 @@ import type TelegramBotService from '../services/TelegramBotService';
 export default async function printNews(
   db: DbService,
   telegramBot: TelegramBotService,
-  chatId: number
+  tgChat: TelegramBot.Chat
 ): Promise<void> {
-  const { chat } = await db.getOrCreateChat(chatId);
+  const { chat } = await db.upsertChat(tgChat.id, encryptIfExists(tgChat.title));
   if ((chat.news ?? '').trim() !== '') {
-    await telegramBot.sendMessage(chatId, chat.news ?? '', { parse_mode: 'MarkdownV2' });
+    await telegramBot.sendMessage(tgChat.id, chat.news ?? '', { parse_mode: 'MarkdownV2' });
   }
-  await db.updateChat(chatId, { news: null });
+  await db.updateChat(tgChat.id, { news: null, title: encryptIfExists(tgChat.title) });
 }

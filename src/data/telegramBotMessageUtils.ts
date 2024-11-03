@@ -1,5 +1,5 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import summarizeCommand from '../config/commands/summarize.ts';
+import summarizeCommand from '../config/commands/summarize';
 
 export type ParsedCommand = {
   command: string;
@@ -7,7 +7,9 @@ export type ParsedCommand = {
 };
 
 export function parseCommand(message: TelegramBot.Message): ParsedCommand | undefined {
-  const [command, target] = (message.text ?? '').split(/[\n @]/s);
+  const text = transformStartCommandRedirect(message);
+
+  const [command, target] = text.split(/[\n @]/s);
   if (command?.startsWith('/') === true) {
     return { command: command.slice(1), target };
   }
@@ -17,16 +19,16 @@ export function parseCommand(message: TelegramBot.Message): ParsedCommand | unde
   return undefined;
 }
 
-export const getCommandParams = (text: string): string => {
-  const [_command, params] = text
+export const getCommandParameter = (msg: TelegramBot.Message): string => {
+  const [_command, params] = transformStartCommandRedirect(msg)
     .trim()
     .split(/[\n ](.*)/s)
     .map((s) => s.trim());
   return params ?? '';
 };
 
-export const getSpaceSeparatedCommandParams = (text: string): string[] =>
-  getCommandParams(text)
+export const getCommandParams = (msg: TelegramBot.Message): string[] =>
+  getCommandParameter(msg)
     .split(/\s+/g)
     .map((s) => s.trim());
 
@@ -39,10 +41,20 @@ export function isCommandForBot(
   return message.chat.type === 'private' || parsedCommand.target === botName;
 }
 
-const telegramMarkdownSpecialSymbols = ['.', '-', '!', '*', '_', '(', ')'];
+const telegramMarkdownSpecialSymbols = ['.', '-', '!', '*', '_', '(', ')', '+'];
 
 export const escapeTelegramMarkdown = (text: string): string =>
   telegramMarkdownSpecialSymbols.reduce(
     (acc, symbol) => acc.replaceAll(symbol, `\\${symbol}`),
     text
   );
+
+export const getPrivateCommandUrl = (botName: string, command: string, ...args: string[]): string =>
+  `https://t.me/${botName}?start=${command}${encodeURIComponent(
+    args.map((arg) => '=' + arg).join('')
+  )}`;
+
+const transformStartCommandRedirect = (message: TelegramBot.Message): string =>
+  message.chat.type === 'private' && message.text?.startsWith('/start ') === true
+    ? `/${message.text.slice('/start '.length)}`.replaceAll('=', ' ')
+    : message.text ?? '';

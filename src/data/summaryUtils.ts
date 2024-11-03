@@ -1,5 +1,5 @@
-import config from '../config/config.ts';
-import { splitText } from '../lib/text.ts';
+import config from '../config/config';
+import { splitText } from '../lib/common/text';
 import fp_ from 'lodash/fp.js';
 
 export function getPartsAndPointsCountForText(

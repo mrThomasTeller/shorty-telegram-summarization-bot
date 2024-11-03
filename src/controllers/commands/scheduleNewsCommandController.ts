@@ -1,12 +1,12 @@
-import logger from '../../config/logger.ts';
-import { getCommandParams } from '../../data/telegramBotMessageUtils.ts';
-import tryTelegramMessage from '../../useCases/tryTelegramMessage.ts';
-import type ChatController from '../ChatController.ts';
+import logger from '../../config/logger';
+import { getCommandParameter } from '../../data/telegramBotMessageUtils';
+import tryTelegramMessage from '../../useCases/tryTelegramMessage';
+import type ChatController from '../ChatController';
 
 const scheduleNewsCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$.subscribe(async (msg) => {
     try {
-      const news = msg.text === undefined ? '' : getCommandParams(msg.text);
+      const news = msg.text === undefined ? '' : getCommandParameter(msg);
 
       if (news.trim() !== '') {
         await tryTelegramMessage(chatId, services.telegramBot, news);

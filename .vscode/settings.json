@@ -1,5 +1,14 @@
 {
   "path-autocomplete.extensionOnImport": true,
-  "cSpell.words": ["acommit", "facommit", "fcommit", "Unsummarized"],
+  "cSpell.words": [
+    "Автопродление",
+    "Автосписание",
+    "автосписания",
+    "acommit",
+    "facommit",
+    "fcommit",
+    "UKASSA",
+    "Unsummarized"
+  ],
   "jest.autoRun": {}
 }

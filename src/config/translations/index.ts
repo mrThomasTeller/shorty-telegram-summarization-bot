@@ -1,5 +1,5 @@
 import i18next, { type ParseKeys } from 'i18next';
-import ruTranslations from './ru.ts';
+import ruTranslations from './ru';
 
 void i18next.init({
   lng: 'ru',

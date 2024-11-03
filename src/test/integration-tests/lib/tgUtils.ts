@@ -1,8 +1,8 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import { required } from '../../../lib/lang.ts';
+import { required } from '../../../lib/common/lang';
 import _ from 'lodash';
 import formatDate from 'date-fns/format';
-import { botName, tgMessageLength } from './constants.ts';
+import { botName, tgMessageLength } from './constants';
 
 export type TestTgMessage = TelegramBot.Message & {
   shouldBeSkipped?: boolean;

@@ -1,13 +1,13 @@
 import type TelegramBot from 'node-telegram-bot-api';
-import { getFormattedMessage } from '../../../data/dbChatMessageUtils.ts';
-import type DbChatMessage from '../../../data/types/DbChatMessage.ts';
-import { required } from '../../../lib/lang.ts';
-import { type TestContext } from './createContext.ts';
-import { t } from '../../../config/translations/index.ts';
+import { getFormattedMessage } from '../../../data/dbChatMessageUtils';
+import type DbChatMessage from '../../../data/types/DbChatMessage';
+import { required } from '../../../lib/lang';
+import { type TestContext } from './createContext';
+import { t } from '../../../config/translations/index';
 import { now } from 'lodash';
-import { myTgGroupId } from './tgUtils.ts';
-import { decryptIfExists } from '../../../data/encryption.ts';
-import { type TelegramBotSendMessageOptions } from '../../../services/TelegramBotService.ts';
+import { myTgGroupId } from './tgUtils';
+import { decryptIfExists } from '../../../data/encryption';
+import { type TelegramBotSendMessageOptions } from '../../../services/TelegramBotService';
 
 export function expectBotCreatedUsers(db: TestContext['db'], users: TelegramBot.User[]): void {
   for (const user of users) {

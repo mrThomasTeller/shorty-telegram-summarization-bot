@@ -1,7 +1,7 @@
-import type DbService from './DbService.ts';
-import type TelegramBotService from './TelegramBotService.ts';
-import type GptService from './GptService.ts';
-import type AdsService from './AdsService.ts';
+import type DbService from './DbService';
+import type TelegramBotService from './TelegramBotService';
+import type GptService from './GptService';
+import type AdsService from './AdsService';
 
 type Services = {
   ads: AdsService;

@@ -1,25 +1,25 @@
-import type Command from '../../config/commands/Command.ts';
-import helpCommand from '../../config/commands/help.ts';
-import noneCommand from '../../config/commands/none.ts';
-import pingCommand from '../../config/commands/ping.ts';
-import summarizeCommand from '../../config/commands/summarize.ts';
-import startCommand from '../../config/commands/start.ts';
-import type ChatController from '../ChatController.ts';
-import helpCommandController from './helpCommandController.ts';
-import noneCommandController from './noneCommandController.ts';
-import pingCommandController from './pingCommandController.ts';
-import summarizeCommandController from './summarize/summarizeCommandController.ts';
-import startCommandController from './startCommandController.ts';
-import tryMessageCommand from '../../config/commands/tryMessage.ts';
-import tryMessageCommandController from './tryMessageCommandController.ts';
-import scheduleNewsCommand from '../../config/commands/scheduleNews.ts';
-import scheduleNewsCommandController from './scheduleNewsCommandController.ts';
-import tariffCommand from '../../config/commands/tariff.ts';
-import tariffCommandController from './tariffCommandController.ts';
-import activateCommand from '../../config/commands/activate.ts';
-import activateCommandController from './activateCommandController.ts';
-import settingsCommand from '../../config/commands/settings.ts';
-import settingsCommandController from './settingsCommandController.ts';
+import type Command from '../../config/commands/Command';
+import helpCommand from '../../config/commands/help';
+import noneCommand from '../../config/commands/none';
+import pingCommand from '../../config/commands/ping';
+import summarizeCommand from '../../config/commands/summarize';
+import startCommand from '../../config/commands/start';
+import type ChatController from '../ChatController';
+import helpCommandController from './helpCommandController';
+import noneCommandController from './noneCommandController';
+import pingCommandController from './pingCommandController';
+import summarizeCommandController from './summarize/summarizeCommandController';
+import startCommandController from './startCommandController';
+import tryMessageCommand from '../../config/commands/tryMessage';
+import tryMessageCommandController from './tryMessageCommandController';
+import scheduleNewsCommand from '../../config/commands/scheduleNews';
+import scheduleNewsCommandController from './scheduleNewsCommandController';
+import tariffCommand from '../../config/commands/tariff';
+import tariffCommandController from './tariffCommandController';
+import settingsCommand from '../../config/commands/settings';
+import settingsCommandController from './settingsCommandController';
+import subscriptionCommand from '../../config/commands/subscription';
+import subscriptionCommandController from './subscription/subscriptionCommandController';
 
 export default function getCommandController(command: Command): ChatController {
   switch (command.command) {
@@ -47,11 +47,11 @@ export default function getCommandController(command: Command): ChatController {
     case tariffCommand.command: {
       return tariffCommandController;
     }
-    case activateCommand.command: {
-      return activateCommandController;
-    }
     case settingsCommand.command: {
       return settingsCommandController;
+    }
+    case subscriptionCommand.command: {
+      return subscriptionCommandController;
     }
     default: {
       throw new Error(`Unknown command: ${command.command}`);

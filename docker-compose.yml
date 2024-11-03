@@ -1,11 +1,12 @@
 volumes:
   postgres-data:
+  web-certificates:
 
 services:
   db:
     image: postgres:14
     volumes:
-      - postgres-data:/var/lib/postgresql/data:delegated
+      - postgres-data:/var/lib/common/postgresql/data:delegated
     env_file: ./.env
     ports:
       - ${DATABASE_PORT:-}:5432
@@ -24,6 +25,8 @@ services:
     volumes:
       - ./logs:/root/app/logs
     container_name: summarize-tg-bot-app
+    ports:
+      - ${WEBSERVER_PORT}:${WEBSERVER_PORT}
     restart: unless-stopped
 
   # по умолчанию запускается раз в день
@@ -42,14 +45,40 @@ services:
   #   restart: unless-stopped
 
   # logs ui
-  dozzle:
-    container_name: summarize-tg-bot-dozzle
-    image: amir20/dozzle:v5.0.5
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+  # dozzle:
+  #   container_name: summarize-tg-bot-dozzle
+  #   image: amir20/dozzle:v5.0.5
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   environment:
+  #     - DOZZLE_USERNAME=${DOZZLE_USERNAME}
+  #     - DOZZLE_PASSWORD=${DOZZLE_PASSWORD}
+  #   ports:
+  #     - 9999:8080
+  #   restart: unless-stopped
+
+  nginx:
+    build: ./nginx
+    env_file: ./.env
     environment:
-      - DOZZLE_USERNAME=${DOZZLE_USERNAME}
-      - DOZZLE_PASSWORD=${DOZZLE_PASSWORD}
+      - NGINX_APP_HOST=${NGINX_APP_HOST:-app}
+    volumes:
+      - ./certbot/www:/var/www/certbot
+      - web-certificates:/etc/letsencrypt
     ports:
-      - 9999:8080
+      - 80:80
+      - 443:443
+    container_name: summarize-tg-bot-nginx
+    restart: unless-stopped
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - web-certificates:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      - nginx
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    command: []
+    container_name: summarize-tg-bot-certbot
     restart: unless-stopped

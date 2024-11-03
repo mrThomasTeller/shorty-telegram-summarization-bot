@@ -1,8 +1,8 @@
-import { t } from '../config/translations/index.ts';
-import type EntryPoint from './EntryPoint.ts';
+import { t } from '../config/translations/index';
+import type EntryPoint from './EntryPoint';
 import type TelegramBotService from '../services/TelegramBotService';
 import { type Chat } from '@prisma/client';
-import logger from '../config/logger.ts';
+import logger from '../config/logger';
 
 const recoveryMessage: EntryPoint = async ({ db, telegramBot }) => {
   const chats = await db.getAllChats();

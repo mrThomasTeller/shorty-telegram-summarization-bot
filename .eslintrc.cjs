@@ -15,7 +15,8 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
-    project: ['tsconfig.json'],
+    project: ['./tsconfig.json'],
+    ignorePatterns: ['./src/test/integration-tests/**/*'],
   },
   rules: {
     // native
@@ -34,14 +35,8 @@ module.exports = {
     ],
     'max-lines': 'error',
     'max-params': ['error', 3],
-    'import/extensions': [
-      'error',
-      'ignorePackages',
-      {
-        ts: 'always',
-      },
-    ],
     'n/no-callback-literal': 0,
+    'no-extra-boolean-cast': 0,
 
     // typescript
     '@typescript-eslint/no-unnecessary-condition': 'error',
@@ -78,9 +73,14 @@ module.exports = {
     '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
     '@typescript-eslint/promise-function-async': 0,
     '@typescript-eslint/naming-convention': 0,
-    '@typescript-eslint/strict-boolean-expressions': ['error', { allowNullableObject: true }],
+    '@typescript-eslint/strict-boolean-expressions': [
+      'error',
+      { allowNullableObject: true, allowNullableBoolean: true },
+    ],
     '@typescript-eslint/switch-exhaustiveness-check': 'error',
     '@typescript-eslint/array-type': ['error', { default: 'array' }],
+    '@typescript-eslint/no-confusing-void-expression': 0,
+    '@typescript-eslint/method-signature-style': 0,
 
     // unicorn
     'unicorn/prevent-abbreviations': 0,

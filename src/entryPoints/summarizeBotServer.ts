@@ -1,26 +1,34 @@
-import type EntryPoint from './EntryPoint.ts';
+import _ from 'lodash';
 import type TelegramBot from 'node-telegram-bot-api';
 import { type GroupedObservable, Observable, filter, groupBy, pipe } from 'rxjs';
-import mainController from '../controllers/mainController.ts';
-import { getVisibleCommands } from '../config/commands/index.ts';
-import type TelegramBotService from '../services/TelegramBotService.ts';
-import type Services from '../services/Services.ts';
-import _ from 'lodash';
-import logger from '../config/logger.ts';
-import { sendHelpMessage } from '../controllers/commands/helpCommandController.ts';
-import subscriptionsExpirationNotifier from './summarizeBotServer/subscriptionsExpirationNotifier.ts';
-import { getEnv } from '../config/envVars.ts';
+import { getVisibleCommands } from '../config/commands/index';
+import { getEnv } from '../config/envVars';
+import logger from '../config/logger';
+import { sendHelpMessage } from '../controllers/commands/helpCommandController';
+import mainController from '../controllers/mainController';
+import type Services from '../services/Services';
+import type TelegramBotService from '../services/TelegramBotService';
+import type EntryPoint from './EntryPoint';
+import subscriptionsExpirationNotifier from './summarizeBotServer/subscriptionsExpirationNotifier';
+import { ukassaService } from '../services/UKassaService/UKassaService';
+import { subscriptionsChecker } from './summarizeBotServer/subscriptionsChecker';
+import { encryptIfExists } from '../data/encryption';
+import { convertTgUserToDbUserInput } from '../data/convertors';
 
 // todo refactor this function
 const summarizeBotServer: EntryPoint = async (services) => {
+  ukassaService.startWebServer();
+
   if (getEnv().NODE_ENV === 'production') {
     await services.telegramBot.sendMessage(getEnv().ADMIN_ID, 'Я родился! 🍼');
   }
 
-  await services.telegramBot.setMyCommands(getVisibleCommands());
+  await setMyCommands(services.telegramBot);
 
   services.telegramBot.onAddedToGroupChat(addedToGroupChatHandler(services));
   services.telegramBot.onRemovedFromGroupChat(removedFromGroupChatHandler(services));
+
+  mainController.onStart?.(services);
 
   createTgMessagesObservable(services.telegramBot)
     .pipe(groupNonEmptyMessagesByChatId)
@@ -29,30 +37,66 @@ const summarizeBotServer: EntryPoint = async (services) => {
   logger.info('Summarize telegram bot started');
 
   void subscriptionsExpirationNotifier(services);
+  void subscriptionsChecker(services);
+
+  if (getEnv().DEV_SHOW_ALL_TG_MESSAGES) {
+    services.telegramBot.onAnyMessage((msg) => {
+      // eslint-disable-next-line no-console
+      console.log(msg);
+    });
+    services.telegramBot.onCallbackQuery((query) => {
+      // eslint-disable-next-line no-console
+      console.log(query);
+    });
+  }
 };
 
 export default summarizeBotServer;
 
-const addedToGroupChatHandler = (services: Services) => async (chatId: number) => {
-  await sendHelpMessage(services.telegramBot, chatId);
+async function setMyCommands(telegramBot: TelegramBotService): Promise<void> {
+  const commands = getVisibleCommands();
+  const defaultCommands = commands.filter(
+    (command) => !command.scope || command.scope === 'default'
+  );
+  const privateCommands = commands.filter((command) => command.scope !== 'all_group_chats');
+  const groupCommands = commands.filter((command) => command.scope !== 'all_private_chats');
 
-  // todo test
-  await services.db.statisticsAddedToChat();
-  await services.db.updateChat(chatId, { isMember: true });
-};
+  await telegramBot.setMyCommands(defaultCommands);
+  await telegramBot.setMyCommands(privateCommands, { scope: { type: 'all_private_chats' } });
+  await telegramBot.setMyCommands(groupCommands, { scope: { type: 'all_group_chats' } });
+}
 
-const removedFromGroupChatHandler = (services: Services) => async (chatId: number) => {
-  // todo test
-  await services.db.statisticsRemovedFromChat();
-  await services.db.updateChat(chatId, { isMember: false });
-};
+const addedToGroupChatHandler =
+  ({ telegramBot, db }: Services) =>
+  async (msg: TelegramBot.ChatMemberUpdated) => {
+    // todo test
+    await db.statisticsAddedToChat();
+    await db.getOrCreateUser(convertTgUserToDbUserInput(msg.from));
+    await db.updateChat(msg.chat.id, {
+      isMember: true,
+      invitedByUserId: BigInt(msg.from.id),
+      title: encryptIfExists(msg.chat.title),
+    });
+
+    await sendHelpMessage(telegramBot, msg.chat.id);
+  };
+
+const removedFromGroupChatHandler =
+  ({ db }: Services) =>
+  async (msg: TelegramBot.ChatMemberUpdated) => {
+    // todo test
+    await db.statisticsRemovedFromChat();
+    await db.updateChat(msg.chat.id, { isMember: false, title: encryptIfExists(msg.chat.title) });
+  };
 
 function createTgMessagesObservable(
   telegramBotService: TelegramBotService
 ): Observable<TelegramBot.Message> {
   return new Observable((subscriber) =>
     telegramBotService.onAnyMessage((msg) => {
-      subscriber.next(msg);
+      if (Boolean(msg.text)) {
+        subscriber.next(msg);
+      }
     })
   );
 }

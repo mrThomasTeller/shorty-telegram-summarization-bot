@@ -1,15 +1,16 @@
 import type TelegramBot from 'node-telegram-bot-api';
+import { type InlineKeyboardMarkup } from 'node-telegram-bot-api';
 import { setTimeout } from 'node:timers/promises';
-import { match } from 'ts-pattern';
-import { getEnv } from '../../../../config/envVars.ts';
-import logger, { type LogLevel } from '../../../../config/logger.ts';
-import { t } from '../../../../config/translations/index.ts';
-import { formatSummaryFromGpt } from '../../../../data/summaryUtils.ts';
-import type Services from '../../../../services/Services.ts';
-import {
-  type EndSummarySummarizeResultCase,
-  type SummarizeResultCase,
-} from '../types/SummarizeResultCase.ts';
+import { getEnv } from '../../../../config/envVars';
+import logger, { type LogLevel } from '../../../../config/logger';
+import { t } from '../../../../config/translations/index';
+import { encryptIfExists } from '../../../../data/encryption';
+import { getSummariesRestText } from '../../../../data/subscriptionLimits';
+import { formatSummaryFromGpt } from '../../../../data/summaryUtils';
+import { required } from '../../../../lib/common/lang';
+import type Services from '../../../../services/Services';
+import { makeGroupUrl } from '../../subscription/routing';
+import { type SummarizeResultCase } from '../types/SummarizeResultCase';
 
 const handleSummarizeResultCase =
   (services: Services, msg: TelegramBot.Message) => async (resultCase: SummarizeResultCase) => {
@@ -27,20 +28,17 @@ const handleSummarizeResultCase =
       await services.db.updateChat(msg.chat.id, {
         unsummarizedSymbols: 0,
         notifiedItsTimeToSummarize: false,
+        title: encryptIfExists(msg.chat.title),
       });
     }
 
-    const text = getBotMessageForSummarizeResultCase(resultCase);
+    const botName = required(await services.telegramBot.getUsername(), 'Bot name is required');
+    const text = getBotMessageForSummarizeResultCase(resultCase, msg, botName);
 
-    await services.telegramBot.sendMessage(
-      msg.chat.id,
-      text,
-      resultCase.type === 'responseFromGPT'
-        ? undefined
-        : {
-            parse_mode: 'HTML',
-          }
-    );
+    await services.telegramBot.sendMessage(msg.chat.id, typeof text === 'string' ? text : text[0], {
+      parse_mode: resultCase.type === 'responseFromGPT' ? undefined : 'HTML',
+      reply_markup: Array.isArray(text) ? text[1] : undefined,
+    });
 
     if (resultCase.type === 'ads') {
       await setTimeout(getEnv().TIME_TO_SHOW_ADS);
@@ -74,7 +72,11 @@ function getLogMessageForSummarizeResultCase(
   }
 }
 
-function getBotMessageForSummarizeResultCase(resultCase: SummarizeResultCase): string {
+function getBotMessageForSummarizeResultCase(
+  resultCase: SummarizeResultCase,
+  msg: TelegramBot.Message,
+  botName: string
+): string | [string, InlineKeyboardMarkup] {
   switch (resultCase.type) {
     case 'startSummary': {
       return t('summarize.message.start');
@@ -86,11 +88,11 @@ function getBotMessageForSummarizeResultCase(resultCase: SummarizeResultCase): s
       return formatSummaryFromGpt(resultCase.text);
     }
     case 'endSummary': {
-      return t(getEndSummaryTranslationKey(resultCase), {
-        free: resultCase.freeSummariesRest,
-        freeTotal: getEnv().MAX_SUMMARIES_PER_WEEK,
-        premium: resultCase.premiumSummariesRest,
-      });
+      return `${t('summarize.message.end')}\n${getSummariesRestText(
+        resultCase,
+        msg.chat.id,
+        botName
+      )}`;
     }
     case 'maxTriesExceeded': {
       return t('summarize.errors.maxQueriesToGptExceeded');
@@ -116,25 +118,27 @@ function getBotMessageForSummarizeResultCase(resultCase: SummarizeResultCase): s
           : 'summarize.errors.maxSummariesExceeded.free',
         {
           count: getEnv().MAX_SUMMARIES_PER_WEEK,
+          subscriptionUrl: makeGroupUrl({ botName, id: BigInt(msg.chat.id) }),
         }
       );
     }
     case 'tooManySummaryParts': {
-      return t('summarize.message.tooManyMessages');
+      return [
+        t('summarize.message.tooManyMessages'),
+        {
+          inline_keyboard: [
+            [
+              {
+                text: '⚡️ Увеличить лимит',
+                url: makeGroupUrl({ botName, id: BigInt(msg.chat.id) }),
+              },
+            ],
+          ],
+        },
+      ];
     }
     case 'ads': {
       return t('summarize.message.dontShowAds');
     }
   }
 }
-
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-const getEndSummaryTranslationKey = (resultCase: EndSummarySummarizeResultCase) =>
-  match(resultCase)
-    .with({ hasPremium: false }, () => 'summarize.message.end.free' as const)
-    .with(
-      { freeSummariesRest: 0, premiumSummariesRest: 0 },
-      () => 'summarize.message.end.premiumEnded' as const
-    )
-    .with({ freeSummariesRest: 0 }, () => 'summarize.message.end.premiumNoFree' as const)
-    .otherwise(() => 'summarize.message.end.premiumWithFree' as const);

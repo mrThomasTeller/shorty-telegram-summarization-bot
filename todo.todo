@@ -32,26 +32,11 @@ Release 0.7 (open beta):
 
 Release 1.1:
   ✔ сервер крашится от каждой ошибки в observables @done(24-09-15 13:13)
-  - показывать когда кончится оплаченный период (начнётся новый)
-  - запретить краткие выжимки в личных сообщениях
-  - сделать напоминание пользователю о продлении подписки
-  - сделать напоминание мне проверить подписку пользователя
-  - test start command
-  - test ads
-  - test info messages
-  - test all // todo test
-  - robots.txt, firewall
-  - healthcheck
-  - use kubernetes or docker swarm
-  - check that crypto key is right
-  - make gpt requests as big as possible
-  - add possibility to show ads
-  - how to make it easier and more obvious to call the bot?
-  - regular Ping and notifications to your phone when bot crashes
-  - take into account "replies to" / "forwarded messages"
-  - delete deleted messages from the database, edit edited messages
-  - newsletter
-  - ssl access to dozzle
+  ✔ показывать когда кончится оплаченный период (начнётся новый) @done(24-11-04 00:34)
+  ✔ запретить краткие выжимки в личных сообщениях @done(24-11-04 00:34)
+  ✔ сделать напоминание пользователю о продлении подписки @done(24-11-04 00:34)
+  ✔ сделать напоминание мне проверить подписку пользователя @done(24-11-04 00:34)
+  ✔ how to make it easier and more obvious to call the bot? @done(24-11-04 00:34)
   ✔ just mention the bot to get a summary @done(24-04-03 11:00)
 
 Release 1.1 (open beta of the second app):
@@ -60,11 +45,28 @@ Release 1.1 (open beta of the second app):
   - write news to all chat rooms where summarize bot is a member
 
 Release 1.2:
+  - венруть ключи активации
+  - test start command
+  - test info messages
+  - test all // todo test
+  - robots.txt, firewall
+  - healthcheck
+  - use kubernetes or docker swarm
+  - check that crypto key is right
+  - make gpt requests as big as possible
+  - regular Ping and notifications to your phone when bot crashes
+  - take into account "replies to" / "forwarded messages"
+  - delete deleted messages from the database, edit edited messages
+  - newsletter
+  - ssl access to dozzle
   - audience reach calculation
   - try to increase prompt size
   - work out the issue of storing personal data.
   - detailed help
   - work out the issue with adverts
+
+Срочно:
+  - как работает в форумах?
 
 Users requests:
   - increase max symbols limit for summary
@@ -77,16 +79,19 @@ Users issues:
   - Бот делает ошибки в создании выжимки. Имена путает участников (#1)
   - Бот не работает в чате где нельзя писать чаще чем раз в какое-то время (#3)
 
-UX:
-  - показывать оставшиеся премиум-выжимки по команде /tariff
+Security Issues:
+  - firewall
 
-Important:
-  - если подписка одновременно у чата и пользователя?
+UX:
+  ✔ показывать оставшиеся премиум-выжимки по команде /tariff @done(24-10-25 17:17)
+  - объяснить, что боту не нужны права администратора
+  - обработать миграцию чата, когда кому-то передали права администратора
 
 Маркетинг:
   - Маячить пользователям в чате, что можно добавить шорти в свои диалоги
 
 Backlog:
+  - use bun --watch
   - сделать примеры сообщений в чатах для теста промптов и моделей gpt
   - BUG: fix test "will not change order of summaries if second summary came earlier than first".
   - write how many recent messages the bot can make a summarisation from, if the number of messages for summarisation is exceeded.

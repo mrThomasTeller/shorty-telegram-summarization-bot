@@ -1,14 +1,14 @@
 import {
-  type ActivationKey,
   type Chat,
+  type PaymentProvider,
   type PrismaClient,
   type Subscription,
   type Summary,
   type Tariff,
   type User,
 } from '@prisma/client';
-import type DbChatMessage from '../data/types/DbChatMessage.ts';
-import { type TOmit } from '../lib/typeUtils.ts';
+import type DbChatMessage from '../data/types/DbChatMessage';
+import { type TOmit } from '../lib/common/typeUtils';
 
 export type UserCreateInput = Parameters<PrismaClient['user']['upsert']>[0]['create'];
 export type MessageCreateInput = Parameters<PrismaClient['message']['upsert']>[0]['create'] & {
@@ -16,17 +16,28 @@ export type MessageCreateInput = Parameters<PrismaClient['message']['upsert']>[0
 };
 
 export type SubscriptionWithTariff = Subscription & { tariff: Tariff };
+export type SubscriptionWithTariffAndChat = Subscription & { tariff: Tariff; chat: Chat | null };
+
+export type AddSubscriptionParams = {
+  object?: { chatId: number } | { userId: number };
+  subscriber: { id: number; username?: string };
+  tariffId: string;
+  paymentMethodId?: string | null;
+  paymentProvider: PaymentProvider;
+  renewPeriodMonths: number;
+  expires: Date;
+};
 
 // todo разделить на несколько сервисов
 type DbService = {
+  addSubscription: (params: AddSubscriptionParams) => Promise<SubscriptionWithTariffAndChat>;
+
   countSummariesFrom: (params: {
     chatId?: number;
     userId?: number;
     from: Date;
     usedPremium?: boolean;
   }) => Promise<number>;
-
-  createActivationKey: (tariffId: string) => Promise<ActivationKey>;
 
   createChatMessage: (message: MessageCreateInput) => Promise<DbChatMessage>;
 
@@ -37,43 +48,56 @@ type DbService = {
     usedPremium: boolean;
   }) => Promise<Summary>;
 
-  getActivationKey: (id: string) => Promise<ActivationKey | undefined>;
+  deleteSubscription: (id: bigint) => Promise<void>;
 
   getAllChats: () => Promise<Chat[]>;
 
-  getAllSubscriptions: () => Promise<Subscription[]>;
+  getAllSubscriptions: () => Promise<SubscriptionWithTariffAndChat[]>;
+
+  getAllTariffs: () => Promise<Tariff[]>;
 
   getAllUsers: () => Promise<User[]>;
 
-  getChatMessages: (chatId: number, fromDate?: Date) => Promise<DbChatMessage[]>;
+  getChat: (chatId: number) => Promise<Chat | null>;
 
-  getOrCreateChat: (chatId: number) => Promise<{ chat: Chat; created: boolean }>;
+  getChatMessages: (chatId: number, fromDate?: Date) => Promise<DbChatMessage[]>;
 
   getOrCreateUser: (userInput: UserCreateInput) => Promise<[user: User, created: boolean]>;
 
-  getSubscription: (chatId: number, userId?: number) => Promise<SubscriptionWithTariff | undefined>;
+  getSubscription: (id: bigint) => Promise<SubscriptionWithTariffAndChat>;
+
+  getSubscriptions: (chatId: number, userId?: number) => Promise<SubscriptionWithTariff[]>;
 
   getSummariesFrom: (chatId: number, from: Date) => Promise<Summary[]>;
 
+  getUserSubscription: (
+    userId: number,
+    chatId?: number
+  ) => Promise<SubscriptionWithTariffAndChat | null>;
+
+  getTariff: (id: string) => Promise<Tariff>;
+
+  getAllUserSubscriptions: (userId: number) => Promise<SubscriptionWithTariffAndChat[]>;
+
   hasMessage: (messageId: number, chatId: number) => Promise<boolean>;
 
-  setActivationKeyUsedForSubscription: (id: string, subscriptionId: bigint) => Promise<void>;
-
   setNewsForAllChats: (news: string) => Promise<void>;
-
-  setSubscription: (
-    object: { chatId: number } | { userId: number },
-    subscriber: { id: number; username?: string },
-    tariffId: string
-  ) => Promise<{ id: bigint }>;
-
-  setSubscriptionNotifiedAt: (id: bigint, date: Date) => Promise<void>;
 
   statisticsAddedToChat: () => Promise<void>;
 
   statisticsRemovedFromChat: () => Promise<void>;
 
-  updateChat: (chatId: number, data: Partial<TOmit<Chat, 'id'>>) => Promise<void>;
+  updateChat: (
+    chatId: number,
+    data: Partial<TOmit<Chat, 'id' | 'title'>> & { title: Buffer | undefined }
+  ) => Promise<void>;
+
+  updateSubscription: (id: bigint, data: Partial<Subscription>) => Promise<void>;
+
+  upsertChat: (
+    chatId: number,
+    title: Buffer | undefined
+  ) => Promise<{ chat: Chat; created: boolean }>;
 };
 
 export default DbService;

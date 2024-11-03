@@ -1,4 +1,5 @@
-import { type GptResultCase } from '../../../../api/gpt.ts';
+import { type GptResultCase } from '../../../../api/gpt';
+import { type SubscriptionWithTariff } from '../../../../services/DbService';
 
 export type SummarizeResultCase =
   | GptResultCase
@@ -31,7 +32,7 @@ export type EndSummarySummarizeResultCase = {
   type: 'endSummary';
   freeSummariesRest: number;
   premiumSummariesRest: number;
-  hasPremium: boolean;
+  subscription: SubscriptionWithTariff | undefined;
 };
 
 export type AdsSummarizeResultCase = { type: 'ads' };

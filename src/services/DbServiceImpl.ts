@@ -1,21 +1,23 @@
 import {
   PrismaClient,
-  type ActivationKey,
   type Chat,
   type Subscription,
   type Summary,
+  type Tariff,
   type User,
 } from '@prisma/client';
 import _ from 'lodash';
-import type DbChatMessage from '../data/types/DbChatMessage.ts';
-import { todayMidday } from '../lib/date.ts';
-import { type TOmit } from '../lib/typeUtils.ts';
-import type DbService from './DbService.ts';
+import type DbChatMessage from '../data/types/DbChatMessage';
+import { todayMidday } from '../lib/common/date';
+import { type TOmit } from '../lib/common/typeUtils';
+import type DbService from './DbService';
 import {
+  type AddSubscriptionParams,
   type MessageCreateInput,
   type SubscriptionWithTariff,
+  type SubscriptionWithTariffAndChat,
   type UserCreateInput,
-} from './DbService.ts';
+} from './DbService';
 
 export default class DbServiceImpl implements DbService {
   readonly prisma: PrismaClient;
@@ -24,10 +26,24 @@ export default class DbServiceImpl implements DbService {
     this.prisma = new PrismaClient();
   }
 
-  createActivationKey(tariffId: string): Promise<ActivationKey> {
-    return this.prisma.activationKey.create({
-      data: { tariffId },
+  async addSubscription({
+    object,
+    subscriber,
+    ...data
+  }: AddSubscriptionParams): Promise<SubscriptionWithTariffAndChat> {
+    return await this.prisma.subscription.create({
+      data: {
+        subscriberUserId: subscriber.id,
+        subscriberUserName: subscriber.username,
+        ...object,
+        ...data,
+      },
+      include: { tariff: true, chat: true },
     });
+  }
+
+  async deleteSubscription(id: bigint): Promise<void> {
+    await this.prisma.subscription.delete({ where: { id } });
   }
 
   async createChatMessage(msg: MessageCreateInput): Promise<DbChatMessage> {
@@ -37,22 +53,6 @@ export default class DbServiceImpl implements DbService {
     });
   }
 
-  async getActivationKey(id: string): Promise<ActivationKey | undefined> {
-    return (await this.prisma.activationKey.findUnique({ where: { id } })) ?? undefined;
-  }
-
-  async getOrCreateChat(chatId: number): Promise<{ chat: Chat; created: boolean }> {
-    const chat = await this.prisma.chat.findUnique({ where: { id: chatId } });
-    return chat === null
-      ? {
-          chat: await this.prisma.chat.create({
-            data: { id: chatId, isMember: true },
-          }),
-          created: true,
-        }
-      : { chat, created: false };
-  }
-
   async getOrCreateUser(userInput: UserCreateInput): Promise<[user: User, created: boolean]> {
     const user = await this.prisma.user.findUnique({ where: { id: userInput.id } });
     return user === null
@@ -60,18 +60,13 @@ export default class DbServiceImpl implements DbService {
       : [user, false];
   }
 
-  async getSubscription(
-    chatId: number,
-    userId?: number
-  ): Promise<SubscriptionWithTariff | undefined> {
-    return (
-      (await this.prisma.subscription.findFirst({
-        where: {
-          OR: _.compact([{ chatId }, userId == null ? undefined : { userId }]),
-        },
-        include: { tariff: true },
-      })) ?? undefined
-    );
+  async getSubscriptions(chatId: number, userId?: number): Promise<SubscriptionWithTariff[]> {
+    return await this.prisma.subscription.findMany({
+      where: {
+        OR: _.compact([{ chatId }, userId == null ? undefined : { userId }]),
+      },
+      include: { tariff: true },
+    });
   }
 
   async getSummariesFrom(chatId: number, date: Date): Promise<Summary[]> {
@@ -86,6 +81,13 @@ export default class DbServiceImpl implements DbService {
     });
 
     return _.sortBy(summaries, 'date');
+  }
+
+  getAllUserSubscriptions(userId: number): Promise<SubscriptionWithTariffAndChat[]> {
+    return this.prisma.subscription.findMany({
+      where: { subscriberUserId: userId },
+      include: { tariff: true, chat: true },
+    });
   }
 
   async hasMessage(messageId: number, chatId: number): Promise<boolean> {
@@ -112,13 +114,6 @@ export default class DbServiceImpl implements DbService {
   async setNewsForAllChats(news: string): Promise<void> {
     await this.prisma.chat.updateMany({
       data: { news },
-    });
-  }
-
-  async setSubscriptionNotifiedAt(id: bigint, date: Date): Promise<void> {
-    await this.prisma.subscription.update({
-      where: { id },
-      data: { notifiedAt: date },
     });
   }
 
@@ -184,12 +179,26 @@ export default class DbServiceImpl implements DbService {
     return this.prisma.chat.findMany();
   }
 
-  getAllSubscriptions(): Promise<Subscription[]> {
-    return this.prisma.subscription.findMany();
+  getAllSubscriptions(): Promise<SubscriptionWithTariffAndChat[]> {
+    return this.prisma.subscription.findMany({
+      include: { tariff: true, chat: true },
+    });
+  }
+
+  getAllTariffs(): Promise<Tariff[]> {
+    return this.prisma.tariff.findMany({
+      orderBy: {
+        price: 'asc',
+      },
+    });
   }
 
   getAllUsers(): Promise<User[]> {
     return this.prisma.user.findMany();
+  }
+
+  getChat(chatId: number): Promise<Chat | null> {
+    return this.prisma.chat.findUnique({ where: { id: chatId } });
   }
 
   getChatMessages(chatId: number, fromDate?: Date | undefined): Promise<DbChatMessage[]> {
@@ -207,40 +216,39 @@ export default class DbServiceImpl implements DbService {
     });
   }
 
-  async setActivationKeyUsedForSubscription(id: string, subscriptionId: bigint): Promise<void> {
-    await this.prisma.activationKey.update({
+  async getSubscription(id: bigint): Promise<SubscriptionWithTariffAndChat> {
+    return await this.prisma.subscription.findUniqueOrThrow({
       where: { id },
-      data: { usedForSubscriptionId: subscriptionId },
+      include: { tariff: true, chat: true },
     });
   }
 
-  async setSubscription(
-    object: { chatId: number } | { userId: number },
-    subscriber: { id: number; username?: string },
-    tariffId: string
-  ): Promise<{ id: bigint }> {
-    const subscription = await this.prisma.subscription.upsert({
-      where: object,
-      create: {
-        ...object,
-        email: '?',
-        subscriberUserId: subscriber.id,
-        subscriberUserName: subscriber.username,
-        tariffId,
+  async getUserSubscription(
+    userId: number,
+    chatId?: number
+  ): Promise<SubscriptionWithTariffAndChat | null> {
+    return await this.prisma.subscription.findFirst({
+      where: {
+        subscriberUserId: userId,
+        ...(chatId == null ? { userId } : { chatId }),
       },
-      update: {
-        tariffId,
-      },
+      include: { tariff: true, chat: true },
     });
+  }
 
-    return { id: subscription.id };
+  getTariff(id: string): Promise<Tariff> {
+    return this.prisma.tariff.findUniqueOrThrow({ where: { id } });
   }
 
   async updateChat(
     chatId: number,
-    { settings, ...data }: Partial<TOmit<Chat, 'id'>>
+    {
+      settings,
+      title,
+      ...data
+    }: Partial<TOmit<Chat, 'id' | 'title'>> & { title: Buffer | undefined }
   ): Promise<void> {
-    await this.getOrCreateChat(chatId);
+    await this.upsertChat(chatId, title);
     await this.prisma.chat.update({
       where: { id: chatId },
       data: {
@@ -248,5 +256,36 @@ export default class DbServiceImpl implements DbService {
         settings: settings ?? undefined,
       },
     });
+  }
+
+  async updateSubscription(id: bigint, data: Partial<Subscription>): Promise<void> {
+    await this.prisma.subscription.update({
+      where: { id },
+      data,
+    });
+  }
+
+  // todo объединить с updateChat
+  async upsertChat(
+    chatId: number,
+    title: Buffer | undefined
+  ): Promise<{ chat: Chat; created: boolean }> {
+    let chat = await this.prisma.chat.findUnique({ where: { id: chatId } });
+
+    if (chat && title != null && chat.title?.compare(title) !== 0) {
+      chat = await this.prisma.chat.update({
+        where: { id: chat.id },
+        data: { title },
+      });
+    }
+
+    return chat === null
+      ? {
+          chat: await this.prisma.chat.create({
+            data: { id: chatId, isMember: true, title },
+          }),
+          created: true,
+        }
+      : { chat, created: false };
   }
 }

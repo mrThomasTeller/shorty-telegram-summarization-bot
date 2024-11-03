@@ -3,12 +3,12 @@ import { either } from 'fp-ts';
 import { type Either } from 'fp-ts/lib/Either';
 import _ from 'lodash';
 import type TelegramBot from 'node-telegram-bot-api';
-import type DbChatMessage from '../../../../data/types/DbChatMessage.ts';
-import { yesterday } from '../../../../lib/date.ts';
-import type Services from '../../../../services/Services.ts';
-import { type ChatMessagesForSummaryData } from '../types/ChatMessagesForSummaryData.ts';
-import { type LimitsData } from '../types/LimitsData.ts';
-import { type SummarizeResultCase } from '../types/SummarizeResultCase.ts';
+import type DbChatMessage from '../../../../data/types/DbChatMessage';
+import { yesterday } from '../../../../lib/common/date';
+import type Services from '../../../../services/Services';
+import { type ChatMessagesForSummaryData } from '../types/ChatMessagesForSummaryData';
+import { type LimitsData } from '../../../../data/types/LimitsData';
+import { type SummarizeResultCase } from '../types/SummarizeResultCase';
 
 export const getChatMessagesForSummary = _.curry(
   async (
@@ -16,7 +16,8 @@ export const getChatMessagesForSummary = _.curry(
     msg: TelegramBot.Message,
     limits: LimitsData
   ): Promise<Either<SummarizeResultCase, ChatMessagesForSummaryData>> => {
-    const summariesRest = limits.freeSummariesRest + limits.premiumSummariesRest;
+    const summariesRest =
+      limits.premiumSummariesRest > 0 ? limits.premiumSummariesRest : limits.freeSummariesRest;
 
     if (summariesRest <= 0) {
       return either.left({ type: 'tooManySummaries', hasPremium: !!limits.subscription });
@@ -24,7 +25,7 @@ export const getChatMessagesForSummary = _.curry(
 
     const startSummaryFrom = maxTime([limits.lastSummaryDate ?? yesterday(), yesterday()]);
 
-    // fixme если сообщения были отброшены нужно уведомить пользователя
+    // todo если сообщения были отброшены нужно уведомить пользователя
     const allMessages = await services.db.getChatMessages(msg.chat.id, startSummaryFrom);
     const messages = dropOverflowedMessages(
       allMessages,
@@ -34,12 +35,10 @@ export const getChatMessagesForSummary = _.curry(
     return either.right({
       ...limits,
       messages,
-      freeSummariesRest: Math.max(limits.freeSummariesRest - 1, 0),
-      premiumSummariesRest:
-        limits.freeSummariesRest > 0
-          ? limits.premiumSummariesRest
-          : limits.premiumSummariesRest - 1,
-      usedPremium: limits.freeSummariesRest <= 0,
+      premiumSummariesRest: Math.max(limits.premiumSummariesRest - 1, 0),
+      freeSummariesRest:
+        limits.premiumSummariesRest > 0 ? limits.freeSummariesRest : limits.freeSummariesRest - 1,
+      usedPremium: limits.premiumSummariesRest > 0,
     });
   }
 );

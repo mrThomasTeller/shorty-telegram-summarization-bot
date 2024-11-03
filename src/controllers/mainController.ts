@@ -1,25 +1,27 @@
-import { type GroupedObservable, groupBy, map } from 'rxjs';
-import type ChatController from './ChatController.ts';
-import { getEnv, getWhiteChatsList } from '../config/envVars.ts';
-import {
-  type ParsedCommand,
-  isCommandForBot,
-  parseCommand,
-} from '../data/telegramBotMessageUtils.ts';
-import { required } from '../lib/lang.ts';
-import commands from '../config/commands/index.ts';
-import getCommandController from './commands/getCommandController.ts';
-import type Command from '../config/commands/Command.ts';
-import { t } from '../config/translations/index.ts';
-import { catchError } from '../lib/async.ts';
-import type TelegramBotService from '../services/TelegramBotService.ts';
-import { filterAsync } from '../lib/rxOperators.ts';
 import type TelegramBot from 'node-telegram-bot-api';
-import type Services from '../services/Services.ts';
-import logger from '../config/logger.ts';
-import noneCommand from '../config/commands/none.ts';
+import { type GroupedObservable, groupBy, map, mergeMap } from 'rxjs';
+import type Command from '../config/commands/Command';
+import commands from '../config/commands/index';
+import noneCommand from '../config/commands/none';
+import { getEnv, getWhiteChatsList } from '../config/envVars';
+import logger from '../config/logger';
+import { t } from '../config/translations/index';
+import { convertTgUserToDbUserInput } from '../data/convertors';
+import { encryptIfExists } from '../data/encryption';
+import { type ParsedCommand, isCommandForBot, parseCommand } from '../data/telegramBotMessageUtils';
+import { blockedMessagesService } from '../services/BlockedMessagesService';
+import { catchError } from '../lib/common/async';
+import { required } from '../lib/common/lang';
+import { filterAsync } from '../lib/common/rxOperators';
+import type Services from '../services/Services';
+import type TelegramBotService from '../services/TelegramBotService';
+import type ChatController from './ChatController';
+import getCommandController from './commands/getCommandController';
 
-type ObserveCase = Command | 'maintenanceMessage';
+type ObserveCase = {
+  command: Command;
+  case: 'command' | 'maintenanceMessage';
+};
 
 type MessageAndParsedCommand = {
   msg: TelegramBot.Message;
@@ -31,18 +33,33 @@ const mainController: ChatController = ({ chat$, chatId, services }) => {
 
   chat$
     .pipe(
-      map(
-        (msg): MessageAndParsedCommand => ({
-          msg,
-          parsedCommand: parseCommand(msg),
-        })
-      ),
+      map(getParsedOrBlockedCommand),
       filterAsync(messageHasCommandForBot(services.telegramBot)),
       groupBy(getObserveCaseForMessage(whiteChatsList))
     )
     .subscribe(observeCommandsOrSendMaintenanceMessages(chatId, services));
 };
 
+mainController.onStart = (services) => {
+  for (const controller of Object.values(commands)) {
+    getCommandController(controller).onStart?.(services);
+  }
+};
+
+function getParsedOrBlockedCommand(msg: TelegramBot.Message): MessageAndParsedCommand {
+  const result = { msg, parsedCommand: parseCommand(msg) };
+
+  if (result.parsedCommand?.command === 'start') {
+    const blockedMessage = blockedMessagesService.pop(msg.chat.id);
+    if (blockedMessage != null) {
+      return { msg: blockedMessage, parsedCommand: parseCommand(blockedMessage) };
+    }
+  }
+
+  return result;
+}
+
+// todo забыл зачем это надо...
 const messageHasCommandForBot =
   (telegramBot: TelegramBotService) =>
   async ({ msg, parsedCommand }: MessageAndParsedCommand): Promise<boolean> => {
@@ -60,12 +77,17 @@ const getObserveCaseForMessage =
       logger.warn(`unknown command: ${parsedCommandName}`);
     }
 
-    return (getEnv().MODE === 'MAINTENANCE' && !command.allowInMaintenance) ||
-      (whiteChatsList !== undefined &&
-        !whiteChatsList.includes(msg.chat.id) &&
-        command.whiteListOnly)
-      ? 'maintenanceMessage'
-      : command;
+    if (getEnv().MODE === 'MAINTENANCE' && command.allowInMaintenance !== true)
+      return { case: 'maintenanceMessage', command };
+
+    if (
+      whiteChatsList !== undefined &&
+      !whiteChatsList.includes(msg.chat.id) &&
+      command.ignoreWhiteList !== true
+    )
+      return { case: 'maintenanceMessage', command };
+
+    return { case: 'command', command };
   };
 
 const sendMaintenanceMessageFn =
@@ -83,12 +105,22 @@ const observeCommandsOrSendMaintenanceMessages =
   (chatId: number, services: Services) =>
   (chatParsedCommand$: GroupedObservable<ObserveCase, MessageAndParsedCommand>) => {
     const observeCase = chatParsedCommand$.key;
-    const chatCommandMessage$ = chatParsedCommand$.pipe(map(({ msg }) => msg));
+    const chatCommandMessage$ = chatParsedCommand$.pipe(
+      mergeMap(async ({ msg }) => {
+        if (msg.from) {
+          await services.db.getOrCreateUser(convertTgUserToDbUserInput(msg.from));
+        }
 
-    if (observeCase === 'maintenanceMessage') {
+        await services.db.upsertChat(msg.chat.id, encryptIfExists(msg.chat.title));
+
+        return msg;
+      })
+    );
+
+    if (observeCase.case === 'maintenanceMessage') {
       chatCommandMessage$.subscribe(sendMaintenanceMessageFn(chatId, services.telegramBot));
     } else {
-      const controller = getCommandController(observeCase);
+      const controller = getCommandController(observeCase.command);
       controller({
         chat$: chatCommandMessage$,
         chatId,

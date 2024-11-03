@@ -4,7 +4,7 @@ import type Command from './Command';
 const scheduleNewsCommand: Command = {
   command: 'scheduleNews',
   description: 'Отправить новости во все чаты где есть бот',
-  whiteListOnly: true,
+  ignoreWhiteList: false,
   allowInMaintenance: true,
   adminOnly: true,
 };

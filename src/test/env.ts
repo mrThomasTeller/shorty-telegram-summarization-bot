@@ -1,8 +1,8 @@
-import '../env.ts';
+import '../env';
 import { type _MockProxy } from 'jest-mock-extended/lib/Mock';
-import { setEnv, setWhiteChatsList } from '../config/envVars.ts';
-import { myTgGroup2Id, myTgGroupId, myTgUser } from './integration-tests/lib/tgUtils.ts';
-import logger from '../config/logger.ts';
+import { setEnv, setWhiteChatsList } from '../config/envVars';
+import { myTgGroup2Id, myTgGroupId, myTgUser } from './integration-tests/lib/tgUtils';
+import logger from '../config/logger';
 import { type Logger } from 'winston';
 
 beforeAll(() => {

@@ -1,4 +1,4 @@
-import type TelegramBotService from '../services/TelegramBotService.ts';
+import type TelegramBotService from '../services/TelegramBotService';
 
 export default async function tryTelegramMessage(
   chatId: number,
