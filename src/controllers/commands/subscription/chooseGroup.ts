@@ -6,6 +6,7 @@ import type TelegramBotService from '../../../services/TelegramBotService';
 import { chooseTariff } from './chooseTariff';
 import { ObjectType } from './types/ObjectType';
 import { helpKeyboard } from './help';
+import { encryptIfExists } from '../../../data/encryption';
 
 export async function chooseGroup({
   db,
@@ -24,8 +25,8 @@ export async function chooseGroup({
   const requestChat = (isChannel: boolean): TelegramBot.KeyboardButtonRequestChat => ({
     request_id: serviceMessagesService.registerChatRequest(telegramBot, async (chatShared, msg) => {
       const isInChat = await telegramBot.isInChat(chatShared.chat_id);
-      // eslint-disable-next-line unicorn/prefer-ternary
       if (isInChat) {
+        await db.upsertChat(chatShared.chat_id, encryptIfExists(chatShared.title));
         await chooseTariff({
           db,
           telegramBot,
