@@ -19,8 +19,6 @@ export default {
   server: {
     maintenanceMessage:
       '😴 Бот временно отключен для технического обслуживания. Пожалуйста, попробуйте позже.',
-
-    privateChatOnly: 'Чтобы я смог выполнить эту команду, напиши мне её в ЛС @{{botName}} 😉',
   },
   summarize: {
     gptQuery:

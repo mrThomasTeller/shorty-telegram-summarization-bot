@@ -42,7 +42,10 @@ type TelegramBotService = {
     options?: TelegramBotSendMessageOptions
   ) => Promise<void>;
 
-  setMyCommands: (commands: TelegramBot.BotCommand[]) => Promise<void>;
+  setMyCommands: (
+    commands: TelegramBot.BotCommand[],
+    options?: { scope?: TelegramBot.BotCommandScope }
+  ) => Promise<void>;
 };
 
 export default TelegramBotService;

@@ -121,7 +121,10 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
     ]);
   }
 
-  async setMyCommands(commands: TelegramBot.BotCommand[]): Promise<void> {
-    await this.__bot.setMyCommands(commands);
+  async setMyCommands(
+    commands: TelegramBot.BotCommand[],
+    options?: { scope?: TelegramBot.BotCommandScope }
+  ): Promise<void> {
+    await this.__bot.setMyCommands(commands, options);
   }
 }

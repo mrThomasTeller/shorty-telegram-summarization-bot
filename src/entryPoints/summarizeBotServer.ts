@@ -23,7 +23,7 @@ const summarizeBotServer: EntryPoint = async (services) => {
     await services.telegramBot.sendMessage(getEnv().ADMIN_ID, 'Я родился! 🍼');
   }
 
-  await services.telegramBot.setMyCommands(getVisibleCommands());
+  await setMyCommands(services.telegramBot);
 
   services.telegramBot.onAddedToGroupChat(addedToGroupChatHandler(services));
   services.telegramBot.onRemovedFromGroupChat(removedFromGroupChatHandler(services));
@@ -52,6 +52,19 @@ const summarizeBotServer: EntryPoint = async (services) => {
 };
 
 export default summarizeBotServer;
+
+async function setMyCommands(telegramBot: TelegramBotService): Promise<void> {
+  const commands = getVisibleCommands();
+  const defaultCommands = commands.filter(
+    (command) => !command.scope || command.scope === 'default'
+  );
+  const privateCommands = commands.filter((command) => command.scope !== 'all_group_chats');
+  const groupCommands = commands.filter((command) => command.scope !== 'all_private_chats');
+
+  await telegramBot.setMyCommands(defaultCommands);
+  await telegramBot.setMyCommands(privateCommands, { scope: { type: 'all_private_chats' } });
+  await telegramBot.setMyCommands(groupCommands, { scope: { type: 'all_group_chats' } });
+}
 
 const addedToGroupChatHandler =
   ({ telegramBot, db }: Services) =>

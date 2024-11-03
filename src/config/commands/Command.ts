@@ -5,7 +5,7 @@ type Command = TelegramBot.BotCommand & {
   allowInMaintenance?: boolean;
   adminOnly?: boolean;
   hide?: boolean;
-  privateChatOnly?: boolean;
+  scope?: 'default' | 'all_private_chats' | 'all_group_chats';
 };
 
 export default Command;

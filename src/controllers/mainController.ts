@@ -20,7 +20,7 @@ import getCommandController from './commands/getCommandController';
 
 type ObserveCase = {
   command: Command;
-  case: 'command' | 'maintenanceMessage' | 'privateChatOnly';
+  case: 'command' | 'maintenanceMessage';
 };
 
 type MessageAndParsedCommand = {
@@ -80,9 +80,6 @@ const getObserveCaseForMessage =
     if (getEnv().MODE === 'MAINTENANCE' && command.allowInMaintenance !== true)
       return { case: 'maintenanceMessage', command };
 
-    if (command.privateChatOnly === true && msg.chat.type !== 'private')
-      return { case: 'privateChatOnly', command };
-
     if (
       whiteChatsList !== undefined &&
       !whiteChatsList.includes(msg.chat.id) &&
@@ -104,13 +101,6 @@ const sendMaintenanceMessageFn =
     );
   };
 
-const sendPrivateChatOnlyMessageFn =
-  (chatId: number, telegramBot: TelegramBotService) => async () => {
-    const botName = required(await telegramBot.getUsername());
-
-    await telegramBot.sendMessage(chatId, t('server.privateChatOnly', { botName }));
-  };
-
 const observeCommandsOrSendMaintenanceMessages =
   (chatId: number, services: Services) =>
   (chatParsedCommand$: GroupedObservable<ObserveCase, MessageAndParsedCommand>) => {
@@ -129,8 +119,6 @@ const observeCommandsOrSendMaintenanceMessages =
 
     if (observeCase.case === 'maintenanceMessage') {
       chatCommandMessage$.subscribe(sendMaintenanceMessageFn(chatId, services.telegramBot));
-    } else if (observeCase.case === 'privateChatOnly') {
-      chatCommandMessage$.subscribe(sendPrivateChatOnlyMessageFn(chatId, services.telegramBot));
     } else {
       const controller = getCommandController(observeCase.command);
       controller({
