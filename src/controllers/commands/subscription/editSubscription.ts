@@ -63,6 +63,7 @@ export async function editSubscription({
     user.id,
     `${subscriptionObjectText}\n\n${tariffText}\n\nВы хотите изменить подписку?`,
     {
+      parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
           [

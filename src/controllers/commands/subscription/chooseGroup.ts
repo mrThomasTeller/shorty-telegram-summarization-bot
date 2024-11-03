@@ -5,6 +5,7 @@ import { serviceMessagesService } from '../../../services/ServiceMessagesService
 import type TelegramBotService from '../../../services/TelegramBotService';
 import { chooseTariff } from './chooseTariff';
 import { ObjectType } from './types/ObjectType';
+import { helpKeyboard } from './help';
 
 export async function chooseGroup({
   db,
@@ -36,7 +37,7 @@ export async function chooseGroup({
         await telegramBot.sendMessage(
           userId,
           '⚠️ Shorty не является участником этого чата. Пожалуйста, добавьте его, a затем попробуйте снова.',
-          { reply_markup: { remove_keyboard: false } }
+          { reply_markup: { remove_keyboard: false, ...helpKeyboard } }
         );
       }
     }),

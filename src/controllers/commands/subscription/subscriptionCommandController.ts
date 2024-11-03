@@ -205,6 +205,7 @@ async function paymentSucceeded(
       `💸 ${mainText}\n\n💼 ${ucFirst(subObjectText)}\n${tariffText}`,
       autoRenew
         ? {
+            parse_mode: 'HTML',
             reply_markup: {
               inline_keyboard: [
                 [

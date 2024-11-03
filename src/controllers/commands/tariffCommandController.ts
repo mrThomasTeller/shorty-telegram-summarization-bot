@@ -12,7 +12,9 @@ const tariffCommandController: ChatController = ({ chat$, chatId, services }) =>
         thanks: true,
         telegramBot: services.telegramBot,
       });
-      await services.telegramBot.sendMessage(chatId, text);
+      await services.telegramBot.sendMessage(chatId, text, {
+        parse_mode: 'HTML',
+      });
     } catch (error) {
       logger.error('Error in tariffCommandController', error);
     }

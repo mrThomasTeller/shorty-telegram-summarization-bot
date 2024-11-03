@@ -47,7 +47,7 @@ export async function getTariffRestText({
         thanks: thanks ? t('tariff.thanks') : '',
         interpolation: { escapeValue: false },
       })
-    : t('tariff.free', { rest: restText });
+    : t('tariff.free', { rest: restText, interpolation: { escapeValue: false } });
 }
 
 export type TariffTextFormat = 'name' | 'price' | 'nameAndPrice';
