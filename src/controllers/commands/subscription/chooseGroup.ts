@@ -7,6 +7,7 @@ import { chooseTariff } from './chooseTariff';
 import { ObjectType } from './types/ObjectType';
 import { helpKeyboard } from './help';
 import { encryptIfExists } from '../../../data/encryption';
+import { editSubscription } from './editSubscription';
 
 export async function chooseGroup({
   db,
@@ -26,11 +27,26 @@ export async function chooseGroup({
     request_id: serviceMessagesService.registerChatRequest(telegramBot, async (chatShared, msg) => {
       const isInChat = await telegramBot.isInChat(chatShared.chat_id);
       if (isInChat) {
-        await db.upsertChat(chatShared.chat_id, encryptIfExists(chatShared.title));
+        const [subscription] = await Promise.all([
+          db.getUserSubscription(userId, chatShared.chat_id),
+          db.upsertChat(chatShared.chat_id, encryptIfExists(chatShared.title)),
+        ]);
+
+        const user = required(msg.from, 'user is required');
+        if (subscription) {
+          await editSubscription({
+            db,
+            telegramBot,
+            user,
+            id: subscription.id,
+          });
+          return;
+        }
+
         await chooseTariff({
           db,
           telegramBot,
-          user: required(msg.from, 'user is required'),
+          user,
           object: ObjectType.group,
           id: BigInt(chatShared.chat_id),
         });
