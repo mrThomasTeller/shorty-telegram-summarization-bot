@@ -4,7 +4,7 @@ import type TelegramBot from 'node-telegram-bot-api';
 import { match } from 'ts-pattern';
 import logger from '../../../config/logger';
 import { getSubscriptionObjectText, isSubscriptionActive } from '../../../data/subscriptionUtils';
-import { getTariffRestText } from '../../../data/tariffUtils';
+import { getTariffRestText, getTariffText } from '../../../data/tariffUtils';
 import { required } from '../../../lib/common/lang';
 import { blockedMessagesService } from '../../../services/BlockedMessagesService';
 import type DbService from '../../../services/DbService';
@@ -224,6 +224,16 @@ async function paymentSucceeded(
           }
         : undefined
     ); // todo 2sub instructions
+
+    if (!autoRenew) {
+      await telegramBot.sendMessage(
+        getEnv().ADMIN_ID,
+        `🎉 У нас новый подписчик!\nUser: ${username ?? userId}\nTariff: ${getTariffText({
+          tariff: subscription.tariff,
+          format: 'nameAndPrice',
+        })}`
+      );
+    }
   } catch (error) {
     logger.error('Error in paymentSucceeded', error);
   }
