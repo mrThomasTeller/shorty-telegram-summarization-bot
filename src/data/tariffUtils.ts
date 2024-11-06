@@ -25,11 +25,14 @@ export async function getTariffRestText({
   subscription,
   thanks = false,
   price = false,
+  formatExpires = (expires) => expires,
 }: {
   db: DbService;
   telegramBot: TelegramBotService;
   userId: number | bigint | undefined;
   chatId: number | bigint;
+  // todo ну, это совсем чмошно..
+  formatExpires?: (expires: string) => string;
   price?: boolean;
   subscription?: SubscriptionWithTariff;
   thanks?: boolean;
@@ -43,7 +46,7 @@ export async function getTariffRestText({
         name: limitsData.subscription.tariff.name,
         price: price ? ` (${getTariffText({ tariff: limitsData.subscription.tariff })})` : '',
         rest: restText,
-        expires: getSubscriptionExpiresText(limitsData.subscription),
+        expires: formatExpires(getSubscriptionExpiresText(limitsData.subscription)),
         thanks: thanks ? t('tariff.thanks') : '',
         interpolation: { escapeValue: false },
       })

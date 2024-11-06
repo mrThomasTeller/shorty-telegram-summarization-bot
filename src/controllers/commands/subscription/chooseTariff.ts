@@ -16,6 +16,7 @@ import { checkAccessToObject } from './common';
 import { getSubscriptionObjectText } from '../../../data/subscriptionUtils';
 import { ucFirst } from '../../../lib/common/string';
 import { helpKeyboard, helpKeyboardButton } from './help';
+import { required } from '../../../lib/common/lang';
 
 export async function chooseTariff({
   object,
@@ -108,28 +109,53 @@ export async function tariffChosen({
   await checkAccessToObject({ db, telegramBot, user, object, id });
 
   const botName = await telegramBot.getUsername();
-  const paymentUrl = await ukassaService.createPayment<UkassaWebhookMetadata>({
-    price: tariff.price,
-    description: `Shorty: подписка на тариф "${tariff.name}". Период оплаты: 1 месяц.`,
-    returnUrl: `https://t.me/${botName}`,
-    savePaymentMethod: true,
-    metadata: {
-      object,
-      id: Number(id),
-      tariffId,
-      userId: user.id,
-      username: user.username,
-      secret: getEnv().UKASSA_WEBHOOK_SECRET_KEY,
-    },
-  });
+  const createPayment = (savePaymentMethod: boolean): Promise<string | undefined> =>
+    ukassaService.createPayment<UkassaWebhookMetadata>({
+      price: tariff.price,
+      description: `Shorty: подписка на тариф "${tariff.name}". Период оплаты: 1 месяц.`,
+      returnUrl: `https://t.me/${botName}`,
+      savePaymentMethod,
+      metadata: {
+        object,
+        id: Number(id),
+        tariffId,
+        userId: user.id,
+        username: user.username,
+        secret: getEnv().UKASSA_WEBHOOK_SECRET_KEY,
+      },
+    });
+
+  const [subscriptionPaymentUrl, oneTimePaymentUrl] = await Promise.all([
+    createPayment(true),
+    createPayment(false),
+  ]);
 
   await telegramBot.sendMessage(
     user.id,
-    'Оплата происходит через сервис ЮKassa. После оформления подписки необходимая сумма будет списываться автоматически каждый месяц. Вы можете отключить автосписание в любой момент введя здесь команду /subscription, при этом подписка будет действовать до конца оплаченного периода.\n\n👇 Ссылка на оплату 👇',
+    `
+_Оплата происходит через сервис [ЮKassa](https://yookassa.ru/)
+
+⭐️ Вы можете оформить ежемесячную подписку, тогда необходимая сумма будет списываться автоматически каждый месяц\\. Вы сможете отключить автосписание в любой момент введя здесь команду /subscription, при этом подписка будет действовать до конца оплаченного периода\\.
+
+1️⃣ Также вы можете оплатить только один месяц без автопродления\\._
+
+👇 Ссылки на оплату 👇`.trim(),
     {
+      parse_mode: 'MarkdownV2',
       reply_markup: {
         inline_keyboard: [
-          [{ text: '⭐️ Оплатить подписку', url: paymentUrl }],
+          [
+            {
+              text: '⭐️ Ежемесячная подписка',
+              url: required(subscriptionPaymentUrl, 'Subscription payment url is required'),
+            },
+          ],
+          [
+            {
+              text: '1️⃣ Один месяц',
+              url: required(oneTimePaymentUrl, 'One time payment url is required'),
+            },
+          ],
           helpKeyboardButton(botName),
         ],
       },

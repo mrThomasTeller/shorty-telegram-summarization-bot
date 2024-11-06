@@ -286,6 +286,7 @@ export async function doEditSubscription({
       break;
     }
 
+    // todo 2sub возможность включить автопродление
     case EditSubscriptionAction.resubscribe: {
       const botName = await telegramBot.getUsername();
       await telegramBot.sendMessage(

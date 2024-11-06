@@ -196,6 +196,7 @@ async function paymentSucceeded(
       userId,
       chatId: Number(id),
       price: true,
+      formatExpires: (expires) => `\n<em>${expires}</em>`,
     });
 
     const botName = await telegramBot.getUsername();
@@ -203,10 +204,10 @@ async function paymentSucceeded(
     await telegramBot.sendMessage(
       userId,
       `💸 ${mainText}\n\n💼 ${ucFirst(subObjectText)}\n${tariffText}`,
-      autoRenew
-        ? {
-            parse_mode: 'HTML',
-            reply_markup: {
+      {
+        parse_mode: 'HTML',
+        reply_markup: autoRenew
+          ? {
               inline_keyboard: [
                 [
                   {
@@ -220,9 +221,9 @@ async function paymentSucceeded(
                 ],
                 helpKeyboardButton(botName),
               ],
-            },
-          }
-        : undefined
+            }
+          : undefined,
+      }
     ); // todo 2sub instructions
 
     if (!autoRenew) {
