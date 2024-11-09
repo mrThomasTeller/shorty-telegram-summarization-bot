@@ -80,6 +80,7 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
     return () => this.__bot.off('my_chat_member', listener);
   }
 
+  // todo ставить сообщения в очередь (не более 5 для одного чата в секунду)
   async sendMessage(
     chatId: number,
     text: string,

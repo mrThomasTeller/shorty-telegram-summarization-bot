@@ -45,6 +45,7 @@ Release 1.1 (open beta of the second app):
   - write news to all chat rooms where summarize bot is a member
 
 Release 1.2:
+  - разобрать логи и пофиксить баги
   - венруть ключи активации
   - test start command
   - test info messages

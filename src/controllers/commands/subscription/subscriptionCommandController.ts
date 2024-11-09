@@ -229,10 +229,12 @@ async function paymentSucceeded(
     if (!autoRenew) {
       await telegramBot.sendMessage(
         getEnv().ADMIN_ID,
-        `🎉 У нас новый подписчик!\nUser: ${username ?? userId}\nTariff: ${getTariffText({
-          tariff: subscription.tariff,
-          format: 'nameAndPrice',
-        })}`
+        `
+🎉 У нас новый подписчик!
+User: ${username ?? userId}
+Tariff: ${getTariffText({ tariff: subscription.tariff, format: 'nameAndPrice' })}
+AutoRenew: ${paymentMethod.saved ? '✅' : '❌'}
+`.trim()
       );
     }
   } catch (error) {

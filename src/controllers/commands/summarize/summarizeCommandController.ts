@@ -32,6 +32,7 @@ const handleSingleSummarizeRequest$ = _.curry(
       ),
       mergeMap(getChatMessagesForSummary(services, msg)),
       mergeMap((data) => matchEither(of, queryGptOrReturnError$(services, chatId), data)),
+      // fixme ошбики тут не ловятся и кладут сервер
       concatMap(handleSummarizeResultCase(services, msg)),
 
       last(),
