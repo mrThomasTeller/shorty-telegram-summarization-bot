@@ -53,11 +53,12 @@ export default class DbServiceImpl implements DbService {
     });
   }
 
-  async getOrCreateUser(userInput: UserCreateInput): Promise<[user: User, created: boolean]> {
-    const user = await this.prisma.user.findUnique({ where: { id: userInput.id } });
-    return user === null
-      ? [await this.prisma.user.create({ data: userInput }), true]
-      : [user, false];
+  async getOrCreateUser(userInput: UserCreateInput): Promise<User> {
+    return await this.prisma.user.upsert({
+      where: { id: userInput.id },
+      update: userInput,
+      create: userInput,
+    });
   }
 
   async getSubscriptions(chatId: number, userId?: number): Promise<SubscriptionWithTariff[]> {

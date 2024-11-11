@@ -62,7 +62,7 @@ type DbService = {
 
   getChatMessages: (chatId: number, fromDate?: Date) => Promise<DbChatMessage[]>;
 
-  getOrCreateUser: (userInput: UserCreateInput) => Promise<[user: User, created: boolean]>;
+  getOrCreateUser: (userInput: UserCreateInput) => Promise<User>;
 
   getSubscription: (id: bigint) => Promise<SubscriptionWithTariffAndChat>;
 

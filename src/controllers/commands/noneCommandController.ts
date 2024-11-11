@@ -54,9 +54,7 @@ async function addMessageToDb(
   msg: TelegramBot.Message,
   db: DbService
 ): Promise<{ chat: Chat; message: DbChatMessage }> {
-  const userCreationResult =
-    msg.from && (await db.getOrCreateUser(convertTgUserToDbUserInput(msg.from)));
-  const user = userCreationResult?.[0];
+  const user = msg.from && (await db.getOrCreateUser(convertTgUserToDbUserInput(msg.from)));
 
   const { chat, created: chatCreated } = await db.upsertChat(
     msg.chat.id,
