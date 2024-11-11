@@ -128,6 +128,8 @@ export class UKassaService {
       }
     });
 
+    app.use(expressErrorHandler);
+
     app.listen(port, () => {
       logger.info(`UKassa WebServer started at http://localhost:${port}`);
     });
@@ -135,3 +137,26 @@ export class UKassaService {
 }
 
 export const ukassaService = new UKassaService();
+
+const expressErrorHandler = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  err: any,
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+  // eslint-disable-next-line max-params
+): void => {
+  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+  if (err) {
+    logger.error('Ошибка обработки express-запроса:', err);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (err.type === 'entity.parse.failed') {
+      res.status(400).send('Bad Request: Invalid JSON');
+      return;
+    }
+
+    res.status(500).send('Internal Server Error');
+  }
+  next();
+};
