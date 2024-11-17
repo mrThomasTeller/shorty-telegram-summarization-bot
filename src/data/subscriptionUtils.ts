@@ -12,7 +12,8 @@ import { getTariffText, type TariffTextFormat } from './tariffUtils';
 import { escapeTelegramMarkdown } from './telegramBotMessageUtils';
 
 export const isSubscriptionActive = (subscription: SubscriptionWithTariff): boolean =>
-  subscription.expires > new Date() && !subscription.deactivated;
+  subscription.paymentProvider === 'Boosty' ||
+  (subscription.expires > new Date() && !subscription.deactivated);
 
 export const getSortedActiveSubscriptions = (
   subscriptions: SubscriptionWithTariff[]

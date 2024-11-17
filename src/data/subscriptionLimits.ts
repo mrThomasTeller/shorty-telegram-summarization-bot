@@ -65,7 +65,6 @@ export async function getLimitsData({
 
   return (
     activeSubscription ??
-    prioritizedSubscriptions[0] ??
     (await getLimitsDataForSubscription({
       subscription: undefined,
       summariesFor24Hours,
