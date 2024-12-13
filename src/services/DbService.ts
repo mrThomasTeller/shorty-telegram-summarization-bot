@@ -30,6 +30,8 @@ export type AddSubscriptionParams = {
 
 // todo разделить на несколько сервисов
 type DbService = {
+  __prisma: PrismaClient;
+
   addSubscription: (params: AddSubscriptionParams) => Promise<SubscriptionWithTariffAndChat>;
 
   countSummariesFrom: (params: {

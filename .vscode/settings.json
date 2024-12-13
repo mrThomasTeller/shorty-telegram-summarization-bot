@@ -11,5 +11,6 @@
     "UKASSA",
     "Unsummarized"
   ],
-  "jest.autoRun": {}
+  "jest.autoRun": {},
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

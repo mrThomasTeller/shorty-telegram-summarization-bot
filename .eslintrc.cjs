@@ -3,7 +3,7 @@ module.exports = {
     es2021: true,
     node: true,
   },
-  plugins: ['sonarjs', 'unicorn'],
+  plugins: ['sonarjs', 'unicorn', 'sort-class-members'],
   extends: [
     'standard-with-typescript',
     'prettier',
@@ -104,5 +104,21 @@ module.exports = {
 
     // sonarjs
     'sonarjs/no-duplicate-string': 0,
+
+    'sort-class-members/sort-class-members': [
+      2,
+      {
+        order: [
+          '[static-properties]',
+          '[static-methods]',
+          '[properties]',
+          '[conventional-private-properties]',
+          'constructor',
+          '[methods]',
+          '[conventional-private-methods]',
+        ],
+        accessorPairPositioning: 'getThenSet',
+      },
+    ],
   },
 };

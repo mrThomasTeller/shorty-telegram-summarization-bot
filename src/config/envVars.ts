@@ -12,6 +12,8 @@ type Env = {
   MIN_MESSAGES_COUNT_TO_SUMMARIZE: number;
   MAX_SUMMARIES_PER_WEEK: number;
   MAX_SUMMARY_PARTS: number;
+  SUMMARY_MAX_PART_LENGTH: number;
+  SUMMARY_SYMBOLS_FOR_ONE_POINT: number;
   CRYPTO_KEY: string;
   GRAM_ADS_TOKEN: string;
   DUMMY_GPT_RESPONSES: boolean;
@@ -27,6 +29,9 @@ type Env = {
   UKASSA_WEBHOOK_SECRET_PATH: string;
   UKASSA_WEBHOOK_SECRET_KEY: string;
   SUPPORT_BOT_NAME: string;
+  TG_API_ID?: number;
+  TG_API_HASH?: string;
+  TG_PHONE_NUMBER?: string;
 };
 
 export function getEnv(): Env {
@@ -42,6 +47,8 @@ export function getEnv(): Env {
     MIN_MESSAGES_COUNT_TO_SUMMARIZE: Number(required(process.env.MIN_MESSAGES_COUNT_TO_SUMMARIZE)),
     MAX_SUMMARIES_PER_WEEK: Number(required(process.env.MAX_SUMMARIES_PER_WEEK)),
     MAX_SUMMARY_PARTS: Number(required(process.env.MAX_SUMMARY_PARTS)),
+    SUMMARY_MAX_PART_LENGTH: Number(required(process.env.SUMMARY_MAX_PART_LENGTH)),
+    SUMMARY_SYMBOLS_FOR_ONE_POINT: Number(required(process.env.SUMMARY_SYMBOLS_FOR_ONE_POINT)),
     CRYPTO_KEY: required(process.env.CRYPTO_KEY),
     GRAM_ADS_TOKEN: required(process.env.GRAM_ADS_TOKEN),
     DUMMY_GPT_RESPONSES: process.env.DUMMY_GPT_RESPONSES === 'true',
@@ -57,6 +64,9 @@ export function getEnv(): Env {
     UKASSA_WEBHOOK_SECRET_PATH: required(process.env.UKASSA_WEBHOOK_SECRET_PATH),
     UKASSA_WEBHOOK_SECRET_KEY: required(process.env.UKASSA_WEBHOOK_SECRET_KEY),
     SUPPORT_BOT_NAME: required(process.env.SUPPORT_BOT_NAME),
+    TG_API_ID: process.env.TG_API_ID == null ? undefined : Number(process.env.TG_API_ID),
+    TG_API_HASH: process.env.TG_API_HASH,
+    TG_PHONE_NUMBER: process.env.TG_PHONE_NUMBER,
   };
 }
 

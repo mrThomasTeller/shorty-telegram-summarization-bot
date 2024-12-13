@@ -1,6 +1,5 @@
 import { type Tariff } from '@prisma/client';
 import { type Nullish } from 'utility-types';
-import config from '../config/config';
 import { getEnv } from '../config/envVars';
 import { t } from '../config/translations/index';
 import { required } from '../lib/common/lang';
@@ -14,7 +13,7 @@ export const getMaxSummaryParts = (tariff: Tariff | Nullish): number =>
   getEnv().MAX_SUMMARY_PARTS * (tariff?.messagesMultiplier ?? 1);
 
 export const getMaxTextToSummarizeApproximateLength = (tariff: Tariff | Nullish): number =>
-  getMaxSummaryParts(tariff) * config.summary.maxPartLength;
+  getMaxSummaryParts(tariff) * getEnv().SUMMARY_MAX_PART_LENGTH;
 
 // todo не надо брать chatId если передали subscription
 export async function getTariffRestText({

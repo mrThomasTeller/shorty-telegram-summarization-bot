@@ -1,11 +1,12 @@
-import config from '../config/config';
-import { splitText } from '../lib/common/text';
 import fp_ from 'lodash/fp.js';
+import config from '../config/config';
+import { getEnv } from '../config/envVars';
+import { splitText } from '../lib/common/text';
 
 export function getPartsAndPointsCountForText(
   fullText: string
 ): { pointsCount: number; text: string }[] {
-  const textParts = splitText(fullText, config.summary.maxPartLength);
+  const textParts = splitText(fullText, getEnv().SUMMARY_MAX_PART_LENGTH);
 
   const pointsCount = fp_.cond([
     [fp_.isEqual(1), () => getPointsCountForOnePart(fullText)],
@@ -22,7 +23,7 @@ export function getPartsAndPointsCountForText(
 
 const getPointsCountForOnePart = (text: string): number =>
   Math.min(
-    Math.ceil(text.length / config.summary.symbolsForOnePoint),
+    Math.ceil(text.length / getEnv().SUMMARY_SYMBOLS_FOR_ONE_POINT),
     config.summary.maxPointsCount
   );
 

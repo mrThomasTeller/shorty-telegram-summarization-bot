@@ -7,8 +7,8 @@ import { type TelegramBotSendMessageOptions } from './TelegramBotService';
 import { isPrivateChat } from '../data/telegramChatUtils';
 
 export default class TelegramBotServiceImpl implements TelegramBotService {
-  readonly __bot: TelegramBot;
   private me?: TelegramBot.User;
+  readonly __bot: TelegramBot;
 
   constructor(private readonly db: DbService) {
     this.__bot = new TelegramBot(getEnv().TELEGRAM_BOT_TOKEN, { polling: true });

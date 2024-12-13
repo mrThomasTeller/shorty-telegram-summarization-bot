@@ -10,6 +10,8 @@ export const convertTgUserToDbUserInput = (user: TelegramBot.User): UserCreateIn
   username: encryptIfExists(user.username),
 });
 
+let mockedMessageDate: Date | undefined;
+
 export const convertTgMessageToDbMessageInput = (
   msg: TelegramBot.Message,
   chat: Chat,
@@ -18,6 +20,10 @@ export const convertTgMessageToDbMessageInput = (
   messageId: msg.message_id,
   chatId: chat.id,
   text: encryptIfExists(msg.text),
-  date: new Date(msg.date * 1000),
+  date: mockedMessageDate ?? new Date(msg.date * 1000),
   userId: user?.id,
 });
+
+export function mockMessageDate(date: Date | undefined): void {
+  mockedMessageDate = date;
+}

@@ -1,6 +1,6 @@
 {
   "name": "shorty-chat-bot",
-  "version": "1.1.1-8",
+  "version": "1.1.1-10",
   "description": "",
   "main": "src/start.ts",
   "type": "module",
@@ -20,7 +20,7 @@
     "test": "bun check:test",
     "lint": "bun check:lint",
     "commit": "bun git:commit",
-    "check:test": "jest src --no-coverage",
+    "check:test": "bun test src/test/e2e",
     "check:test-only": "jest --no-coverage",
     "check:test-coverage": "jest src",
     "check:lint": "eslint src --ext ts,tsx,js,jsx",
@@ -70,6 +70,7 @@
     "cors": "^2.8.5",
     "date-fns": "^2.30.0",
     "dotenv": "^16.3.1",
+    "eslint-plugin-sort-class-members": "^1.21.0",
     "execa": "^8.0.1",
     "express": "^4.21.0",
     "fp-ts": "^2.16.1",
@@ -81,9 +82,10 @@
     "prisma": "^5.3.1",
     "remeda": "^2.16.0",
     "rxjs": "^7.8.1",
+    "telegram": "^2.26.8",
     "ts-node": "^10.9.1",
     "ts-pattern": "^5.1.1",
-    "typescript": "^5.4.5",
+    "typescript": "^5.7.2",
     "utility-types": "^3.10.0",
     "winston": "^3.11.0",
     "zod": "^3.23.8"
@@ -108,6 +110,10 @@
     "jest-mock-extended": "^3.0.5",
     "lint-staged": "^14.0.1",
     "nodemon": "^3.0.1",
-    "ts-jest": "^29.1.1"
+    "ts-jest": "^29.1.1",
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
   }
 }

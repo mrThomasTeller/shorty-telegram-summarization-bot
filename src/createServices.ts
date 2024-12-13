@@ -10,30 +10,31 @@ import type TelegramBotService from './services/TelegramBotService';
 import TelegramBotServiceImpl from './services/TelegramBotServiceImpl';
 
 export class ServicesImpl implements Services {
-  public get prisma(): PrismaClient {
-    return this.dbImpl.prisma;
+  private _ads?: AdsService;
+  private _db?: DbService;
+  private _telegramBot?: TelegramBotService;
+  private _gpt?: GptService;
+
+  constructor(db?: DbService) {
+    this._db = db;
   }
 
-  private _ads?: AdsService;
+  public get prisma(): PrismaClient {
+    return this.db.__prisma;
+  }
+
   get ads(): AdsService {
     return (this._ads ??= new AdsServiceImpl());
   }
 
-  private _db?: DbServiceImpl;
   get db(): DbService {
-    return this.dbImpl;
-  }
-
-  private get dbImpl(): DbServiceImpl {
     return (this._db ??= new DbServiceImpl());
   }
 
-  private _telegramBot?: TelegramBotService;
   get telegramBot(): TelegramBotService {
     return (this._telegramBot ??= new TelegramBotServiceImpl(this.db));
   }
 
-  private _gpt?: GptService;
   get gpt(): GptService {
     return (this._gpt ??= new GptServiceImpl());
   }

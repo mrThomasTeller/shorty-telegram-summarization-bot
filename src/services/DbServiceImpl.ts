@@ -18,12 +18,15 @@ import {
   type SubscriptionWithTariffAndChat,
   type UserCreateInput,
 } from './DbService';
+import { randomUUID } from 'node:crypto';
 
 export default class DbServiceImpl implements DbService {
   readonly prisma: PrismaClient;
+  readonly __prisma: PrismaClient;
 
-  constructor() {
-    this.prisma = new PrismaClient();
+  constructor(prisma?: PrismaClient) {
+    this.prisma = prisma ?? new PrismaClient();
+    this.__prisma = this.prisma;
   }
 
   async addSubscription({
@@ -271,22 +274,14 @@ export default class DbServiceImpl implements DbService {
     chatId: number,
     title: Buffer | undefined
   ): Promise<{ chat: Chat; created: boolean }> {
-    let chat = await this.prisma.chat.findUnique({ where: { id: chatId } });
+    const insertId = randomUUID();
 
-    if (chat && title != null && chat.title?.compare(title) !== 0) {
-      chat = await this.prisma.chat.update({
-        where: { id: chat.id },
-        data: { title },
-      });
-    }
+    const chat = await this.prisma.chat.upsert({
+      where: { id: chatId },
+      update: { title },
+      create: { id: chatId, isMember: true, title, createId: insertId },
+    });
 
-    return chat === null
-      ? {
-          chat: await this.prisma.chat.create({
-            data: { id: chatId, isMember: true, title },
-          }),
-          created: true,
-        }
-      : { chat, created: false };
+    return { chat, created: chat.createId === insertId };
   }
 }
