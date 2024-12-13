@@ -5,6 +5,7 @@ import type DbService from './DbService';
 import type TelegramBotService from './TelegramBotService';
 import { type TelegramBotSendMessageOptions } from './TelegramBotService';
 import { isPrivateChat } from '../data/telegramChatUtils';
+import { setTimeout } from 'node:timers/promises';
 
 export default class TelegramBotServiceImpl implements TelegramBotService {
   readonly __bot: TelegramBot;
@@ -109,7 +110,7 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
     }
 
     await Promise.all([
-      this.__bot.sendMessage(chatId, text, {
+      this.trySendMessage(chatId, text, {
         ...options,
         disable_web_page_preview: true,
         reply_markup: replyMarkup ?? {
@@ -120,6 +121,27 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
         'keyboard' in replyMarkup &&
         this.db.updateChat(chatId, { title: undefined, replyKeyboardShown: true }),
     ]);
+  }
+
+  async trySendMessage(
+    chatId: number,
+    text: string,
+    options?: TelegramBot.SendMessageOptions
+  ): Promise<void> {
+    try {
+      await this.__bot.sendMessage(chatId, text, options);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (error?.response?.body?.error_code === 429) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        const retryAfter = error.response.body.parameters.retry_after;
+        await setTimeout(retryAfter * 1000);
+        await this.trySendMessage(chatId, text, options);
+      } else {
+        throw error;
+      }
+    }
   }
 
   async setMyCommands(

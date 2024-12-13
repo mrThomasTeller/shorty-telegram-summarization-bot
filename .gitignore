@@ -1,5 +1,6 @@
 /chats
 /build
+/.tgSessionData
 
 # Logs
 logs
