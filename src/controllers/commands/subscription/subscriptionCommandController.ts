@@ -151,6 +151,7 @@ async function paymentSucceeded(
         // todo 2sub брать только разницу в деньгах
         await db.updateSubscription(BigInt(id), {
           ...paymentData,
+          createdAt: new Date(),
           expires: addMonths(new Date(), 1),
           deactivated: false,
           renewPeriodMonths: 1,
