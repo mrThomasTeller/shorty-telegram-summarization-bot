@@ -31,7 +31,7 @@ export default class GptServiceImpl implements GptService {
       apiKey: required(getEnv().GPT_API_KEY),
       completionParams: {
         max_tokens: 2048,
-        model: 'gpt-4o-2024-08-06',
+        model: 'gpt-4o',
       },
     });
   }

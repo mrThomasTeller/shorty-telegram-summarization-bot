@@ -162,6 +162,7 @@ export async function doEditSubscription({
     }
 
     case EditSubscriptionAction.changeGroup: {
+      // todo тут при переключении группы нужно изменять и id выжимок
       await telegramBot.sendMessage(
         user.id,
         `😔 В данный момент это невозможно сделать автоматически. Пожалуйста, обратитесь в поддержку: @${
