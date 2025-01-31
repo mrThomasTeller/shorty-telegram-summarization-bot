@@ -2,18 +2,23 @@
 # todo fix it
 # FROM oven/bun:slim AS deps
 
-# COPY package.json bun.lockb ./
+# COPY package.json bun.lock ./
 # RUN bun version --allow-same-version 1.0.0
 
 # Building
-FROM oven/bun:slim
-RUN apt-get update -y && apt-get install -y openssl
+FROM node:20-slim
+RUN apt-get update -y
+RUN apt-get install -y openssl
+RUN apt-get install -y curl
+RUN apt-get install -y unzip
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/root/.bun/bin:${PATH}"
 
 WORKDIR /root/app
 
 COPY .husky .
-# COPY --from=deps package.json bun.lockb ./
-COPY package.json bun.lockb ./
+# COPY --from=deps package.json bun.lock ./
+COPY package.json bun.lock ./
 
 RUN bun prod:install
 
