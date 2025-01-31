@@ -6,6 +6,7 @@ import type TelegramBotService from './TelegramBotService';
 import { type TelegramBotSendMessageOptions } from './TelegramBotService';
 import { isPrivateChat } from '../data/telegramChatUtils';
 import { setTimeout } from 'node:timers/promises';
+import logger from '../config/logger';
 
 export default class TelegramBotServiceImpl implements TelegramBotService {
   readonly __bot: TelegramBot;
@@ -86,41 +87,47 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
     chatId: number,
     text: string,
     options?: TelegramBotSendMessageOptions
-  ): Promise<void> {
-    const replyMarkup = options?.reply_markup;
+  ): Promise<boolean> {
+    try {
+      const replyMarkup = options?.reply_markup;
 
-    // удаляем клавиатуру, если она была показана
-    if (isPrivateChat(chatId)) {
-      const chat = await this.db.getChat(chatId);
-      if (
-        chat?.replyKeyboardShown &&
-        replyMarkup &&
-        ('inline_keyboard' in replyMarkup || 'force_reply' in replyMarkup)
-      ) {
-        const [, msg] = await Promise.all([
-          this.db.updateChat(chatId, { title: undefined, replyKeyboardShown: false }),
-          this.__bot.sendMessage(chatId, '.', {
-            reply_markup: {
-              remove_keyboard: true,
-            },
-          }),
-        ]);
-        await this.__bot.deleteMessage(chatId, msg.message_id);
+      // удаляем клавиатуру, если она была показана
+      if (isPrivateChat(chatId)) {
+        const chat = await this.db.getChat(chatId);
+        if (
+          chat?.replyKeyboardShown &&
+          replyMarkup &&
+          ('inline_keyboard' in replyMarkup || 'force_reply' in replyMarkup)
+        ) {
+          const [, msg] = await Promise.all([
+            this.db.updateChat(chatId, { title: undefined, replyKeyboardShown: false }),
+            this.__bot.sendMessage(chatId, '.', {
+              reply_markup: {
+                remove_keyboard: true,
+              },
+            }),
+          ]);
+          await this.__bot.deleteMessage(chatId, msg.message_id);
+        }
       }
-    }
 
-    await Promise.all([
-      this.trySendMessage(chatId, text, {
-        ...options,
-        disable_web_page_preview: true,
-        reply_markup: replyMarkup ?? {
-          remove_keyboard: true,
-        },
-      }),
-      replyMarkup &&
-        'keyboard' in replyMarkup &&
-        this.db.updateChat(chatId, { title: undefined, replyKeyboardShown: true }),
-    ]);
+      await Promise.all([
+        this.trySendMessage(chatId, text, {
+          ...options,
+          disable_web_page_preview: true,
+          reply_markup: replyMarkup ?? {
+            remove_keyboard: true,
+          },
+        }),
+        replyMarkup &&
+          'keyboard' in replyMarkup &&
+          this.db.updateChat(chatId, { title: undefined, replyKeyboardShown: true }),
+      ]);
+      return true;
+    } catch (error) {
+      logger.error('Error in telegram bot service sendMessage', error);
+      return false;
+    }
   }
 
   async trySendMessage(

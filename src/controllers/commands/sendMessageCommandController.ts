@@ -15,9 +15,18 @@ const sendMessageCommandController: ChatController = ({ chat$, chatId, services 
 
         await tryTelegramMessage(chatId, services.telegramBot, message);
 
+        let successSent = 0;
         for (const user of usersArray) {
-          await services.telegramBot.sendMessage(user, message, { parse_mode: 'MarkdownV2' });
+          const success = await services.telegramBot.sendMessage(user, message, {
+            parse_mode: 'MarkdownV2',
+          });
+          if (success) successSent++;
         }
+
+        await services.telegramBot.sendMessage(
+          chatId,
+          `✅ ${successSent} из ${usersArray.length} сообщений отправлено`
+        );
       }
     } catch (error) {
       logger.error('Error in sendMessageCommandController', error);

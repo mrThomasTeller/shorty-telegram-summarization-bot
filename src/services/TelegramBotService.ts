@@ -40,7 +40,7 @@ type TelegramBotService = {
     chatId: number,
     text: string,
     options?: TelegramBotSendMessageOptions
-  ) => Promise<void>;
+  ) => Promise<boolean>;
 
   setMyCommands: (
     commands: TelegramBot.BotCommand[],
