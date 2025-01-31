@@ -13,7 +13,7 @@ import { getEnv } from '../config/envVars';
 
 const algorithm = 'aes-256-cbc';
 
-export function encrypt(text: string): Buffer {
+export function encrypt(text: string): Uint8Array {
   const iv = crypto.randomBytes(16); // Генерируем случайный IV
   const cipher = crypto.createCipheriv(...getCipherParams(iv));
   const encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]);
@@ -21,11 +21,11 @@ export function encrypt(text: string): Buffer {
   return Buffer.concat([iv, encrypted]);
 }
 
-export function encryptIfExists(text: string): Buffer;
+export function encryptIfExists(text: string): Uint8Array;
 export function encryptIfExists<TNone extends undefined | null>(
   text: string | TNone
-): Buffer | TNone;
-export function encryptIfExists(text: string | undefined | null): Buffer | undefined | null {
+): Uint8Array | TNone;
+export function encryptIfExists(text: string | undefined | null): Uint8Array | undefined | null {
   if (text === undefined || text === null) {
     return text;
   }
@@ -33,7 +33,7 @@ export function encryptIfExists(text: string | undefined | null): Buffer | undef
   return encrypt(text);
 }
 
-export function decrypt(encrypted: Buffer): string {
+export function decrypt(encrypted: Buffer | Uint8Array): string {
   const iv = encrypted.subarray(0, 16); // Извлекаем IV из зашифрованных данных
   const encryptedText = encrypted.subarray(16); // Отделяем IV от зашифрованного текста
   const decipher = crypto.createDecipheriv(...getCipherParams(iv));
@@ -41,11 +41,13 @@ export function decrypt(encrypted: Buffer): string {
   return decrypted.toString('utf8');
 }
 
-export function decryptIfExists(encrypted: Buffer): string;
+export function decryptIfExists(encrypted: Buffer | Uint8Array): string;
 export function decryptIfExists<TNone extends undefined | null>(
-  encrypted: Buffer | TNone
+  encrypted: Buffer | Uint8Array | TNone
 ): string | TNone;
-export function decryptIfExists(encrypted: Buffer | undefined | null): string | undefined | null {
+export function decryptIfExists(
+  encrypted: Buffer | Uint8Array | undefined | null
+): string | undefined | null {
   if (encrypted === undefined || encrypted === null) {
     return encrypted;
   }
@@ -53,8 +55,8 @@ export function decryptIfExists(encrypted: Buffer | undefined | null): string | 
   return decrypt(encrypted);
 }
 
-const getCipherParams = (iv: Buffer): [algorithm: string, key: Buffer, iv: Buffer] => [
+const getCipherParams = (iv: Buffer | Uint8Array): [algorithm: string, key: Buffer, iv: Buffer] => [
   algorithm,
   Buffer.from(getEnv().CRYPTO_KEY, 'hex'),
-  iv,
+  Buffer.from(iv),
 ];

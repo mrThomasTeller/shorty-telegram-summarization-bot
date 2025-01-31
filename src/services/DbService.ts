@@ -89,14 +89,14 @@ type DbService = {
 
   updateChat: (
     chatId: number,
-    data: Partial<TOmit<Chat, 'id' | 'title'>> & { title: Buffer | undefined }
+    data: Partial<TOmit<Chat, 'id' | 'title'>> & { title: Uint8Array | undefined }
   ) => Promise<void>;
 
   updateSubscription: (id: bigint, data: Partial<Subscription>) => Promise<void>;
 
   upsertChat: (
     chatId: number,
-    title: Buffer | undefined
+    title: Uint8Array | undefined
   ) => Promise<{ chat: Chat; created: boolean }>;
 };
 

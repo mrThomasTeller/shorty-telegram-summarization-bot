@@ -18,6 +18,7 @@ import {
   type SubscriptionWithTariffAndChat,
   type UserCreateInput,
 } from './DbService';
+import { compareUint8Arrays } from '../lib/common/collections';
 
 export default class DbServiceImpl implements DbService {
   readonly prisma: PrismaClient;
@@ -247,7 +248,7 @@ export default class DbServiceImpl implements DbService {
       settings,
       title,
       ...data
-    }: Partial<TOmit<Chat, 'id' | 'title'>> & { title: Buffer | undefined }
+    }: Partial<TOmit<Chat, 'id' | 'title'>> & { title: Uint8Array | undefined }
   ): Promise<void> {
     await this.upsertChat(chatId, title);
     await this.prisma.chat.update({
@@ -269,11 +270,11 @@ export default class DbServiceImpl implements DbService {
   // todo объединить с updateChat
   async upsertChat(
     chatId: number,
-    title: Buffer | undefined
+    title: Uint8Array | undefined
   ): Promise<{ chat: Chat; created: boolean }> {
     let chat = await this.prisma.chat.findUnique({ where: { id: chatId } });
 
-    if (chat && title != null && chat.title?.compare(title) !== 0) {
+    if (chat && title != null && chat.title != null && compareUint8Arrays(chat.title, title)) {
       chat = await this.prisma.chat.update({
         where: { id: chat.id },
         data: { title },
