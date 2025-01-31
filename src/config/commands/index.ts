@@ -9,6 +9,7 @@ import tryMessageCommand from './tryMessage';
 import tariffCommand from './tariff';
 import settingsCommand from './settings';
 import subscriptionCommand from './subscription';
+import sendMessageCommand from './sendMessage';
 
 export const getVisibleCommands = (): Command[] =>
   Object.values(commands).filter(
@@ -27,6 +28,7 @@ const commands = {
   [tryMessageCommand.command]: tryMessageCommand,
   [settingsCommand.command]: settingsCommand,
   [pingCommand.command]: pingCommand,
+  [sendMessageCommand.command]: sendMessageCommand,
 };
 
 export default commands;
