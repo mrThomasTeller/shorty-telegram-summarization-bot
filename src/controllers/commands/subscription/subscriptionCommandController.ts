@@ -3,7 +3,7 @@ import { addMonths } from 'date-fns';
 import type TelegramBot from 'node-telegram-bot-api';
 import { match } from 'ts-pattern';
 import logger from '../../../config/logger';
-import { getSubscriptionObjectText, isSubscriptionActive } from '../../../data/subscriptionUtils';
+import { getSubscriptionObjectText } from '../../../data/subscriptionUtils';
 import { getTariffRestText, getTariffText } from '../../../data/tariffUtils';
 import { required } from '../../../lib/common/lang';
 import { blockedMessagesService } from '../../../services/BlockedMessagesService';
@@ -62,16 +62,7 @@ async function handleMessage(
     const user = required(msg.from, 'User is required');
     const subscriptions = await db.getAllUserSubscriptions(user.id);
 
-    const hasActiveBoostySubscription = subscriptions.some(
-      (s) => s.paymentProvider === 'Boosty' && isSubscriptionActive(s)
-    );
-    if (hasActiveBoostySubscription) {
-      return await forBoostySubscription(telegramBot, msg.chat.id);
-    }
-
-    const unexpiredSubscriptions = subscriptions.filter(
-      (s) => s.paymentProvider !== 'Boosty' && s.expires > new Date()
-    );
+    const unexpiredSubscriptions = subscriptions.filter((s) => s.expires > new Date());
     const userSubscription = unexpiredSubscriptions.find((s) => s.userId != null);
     const groupsSubscriptions = unexpiredSubscriptions.filter((s) => s.chatId != null);
 
@@ -116,18 +107,6 @@ async function subscribeFromGroupChat(
       ],
     },
   });
-}
-
-async function forBoostySubscription(
-  telegramBot: TelegramBotService,
-  chatId: number
-): Promise<void> {
-  await telegramBot.sendMessage(
-    chatId,
-    `❗ У вас есть активные подписки на Boosty. В будущем мы перестанем принимать оплату через Boosty.\n\n⭐️ Чтобы переоформить подписку и иметь возможность управлять ей через Telegram обратитесь в поддержку @${
-      getEnv().SUPPORT_BOT_NAME
-    }. В этом случае вы получите бонусный бесплатный месяц!`
-  );
 }
 
 // todo 2sub удалять лишние сообщения "/start"

@@ -90,7 +90,7 @@ model Subscription {
   email                    String?
   subscriberUserId         BigInt
   subscriberUserName       String?
-  paymentProvider          PaymentProvider @default(Boosty)
+  paymentProvider          PaymentProvider @default(YooKassa)
   paymentMethodId          String?
   renewPeriodMonths        Int             @default(1)
   createdAt                DateTime        @default(now())
@@ -108,5 +108,4 @@ model Subscription {
 
 enum PaymentProvider {
   YooKassa
-  Boosty
 }

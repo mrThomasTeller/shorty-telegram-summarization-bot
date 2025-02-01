@@ -12,12 +12,12 @@ const timeFormat = (): string => {
 };
 
 const fileLogFormat = printf(({ level, message, timestamp }) => {
-  return `${timestamp} ${level}: ${message}`;
+  return `${String(timestamp)} ${level}: ${String(message)}`;
 });
 
 const consoleLogFormat = printf(
   ({ level, message, [tb.LEVEL]: levelStr, [tb.MESSAGE]: messageObj }) => {
-    return `${level}: ${levelStr === 'error' ? String(messageObj) : message}`;
+    return `${level}: ${String(levelStr === 'error' ? messageObj : message)}`;
   }
 );
 

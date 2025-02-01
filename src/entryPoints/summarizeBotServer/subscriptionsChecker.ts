@@ -1,4 +1,4 @@
-import { PaymentProvider, type Tariff } from '@prisma/client';
+import { type Tariff } from '@prisma/client';
 import { addDays } from 'date-fns';
 import { type InlineKeyboardButton } from 'node-telegram-bot-api';
 import { setTimeout } from 'node:timers/promises';
@@ -72,11 +72,7 @@ async function checkSubscriptions({
 }
 
 function shouldProcessSubscription(subscription: SubscriptionWithTariffAndChat): boolean {
-  return (
-    subscription.paymentProvider === PaymentProvider.YooKassa &&
-    subscription.expires < new Date() &&
-    !subscription.disableSubscriptionCheck
-  );
+  return subscription.expires < new Date() && !subscription.disableSubscriptionCheck;
 }
 
 async function handleAutoRenewSubscription({

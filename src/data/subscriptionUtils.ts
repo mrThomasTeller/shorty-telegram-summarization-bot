@@ -12,8 +12,7 @@ import { getTariffText, type TariffTextFormat } from './tariffUtils';
 import { escapeTelegramMarkdown } from './telegramBotMessageUtils';
 
 export const isSubscriptionActive = (subscription: SubscriptionWithTariff): boolean =>
-  subscription.paymentProvider === 'Boosty' ||
-  (subscription.expires > new Date() && !subscription.deactivated);
+  subscription.expires > new Date() && !subscription.deactivated;
 
 export const getSortedActiveSubscriptions = (
   subscriptions: SubscriptionWithTariff[]
@@ -88,6 +87,6 @@ export function getSubscriptionObjectText({
   return `${subscriptionTermText}${object}${additionalText}`;
 }
 
-// fixme: timezone
+// todo 2sub timezone
 export const getSubscriptionExpireFormattedDate = (subscription: Subscription): string =>
   `${format(new Date(subscription.expires), 'dd.MM.yyyy HH:mm', { locale: ru })} по МСК`;

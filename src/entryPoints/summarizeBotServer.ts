@@ -9,7 +9,6 @@ import mainController from '../controllers/mainController';
 import type Services from '../services/Services';
 import type TelegramBotService from '../services/TelegramBotService';
 import type EntryPoint from './EntryPoint';
-import subscriptionsExpirationNotifier from './summarizeBotServer/subscriptionsExpirationNotifier';
 import { ukassaService } from '../services/UKassaService/UKassaService';
 import { subscriptionsChecker } from './summarizeBotServer/subscriptionsChecker';
 import { encryptIfExists } from '../data/encryption';
@@ -36,7 +35,6 @@ const summarizeBotServer: EntryPoint = async (services) => {
 
   logger.info('Summarize telegram bot started');
 
-  void subscriptionsExpirationNotifier(services);
   void subscriptionsChecker(services);
 
   if (getEnv().DEV_SHOW_ALL_TG_MESSAGES) {
