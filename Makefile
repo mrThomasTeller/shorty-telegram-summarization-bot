@@ -42,3 +42,12 @@ upgrade-ubuntu:
 	sudo apt update
 	sudo apt upgrade
 	sudo reboot
+
+prepare-dev:
+	curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash &&\
+	source ~/.bashrc &&\
+	nvm install 20 &&\
+	nvm use 20 &&\
+	curl -fsSL https://bun.sh/install | bash -s "bun-v1.2.1" &&\
+	source ~/.bashrc &&\
+	bun i
