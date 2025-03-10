@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import type TelegramBot from 'node-telegram-bot-api';
 import { concatMap, exhaustMap, last, mergeMap, of, type Observable } from 'rxjs';
 import { getLimitsData } from '../../../data/subscriptionLimits';
 import { catchError } from '../../../lib/common/async';
@@ -12,6 +11,7 @@ import { sendStartMessage } from '../startCommandController';
 import { getChatMessagesForSummary } from './stages/getChatMessagesForSummary';
 import handleSummarizeResultCase from './stages/handleSummarizeResultCase';
 import queryGptOrReturnError$ from './stages/queryGptOrReturnError$';
+import type { TgMessageType } from './types/TgMessageType';
 
 const summarizeCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$.pipe(exhaustMap(handleSingleSummarizeRequest$(chatId, services))).subscribe(_.noop);
@@ -19,8 +19,8 @@ const summarizeCommandController: ChatController = ({ chat$, chatId, services })
 
 export default summarizeCommandController;
 
-const handleSingleSummarizeRequest$ = _.curry(
-  (chatId: number, services: Services, msg: TelegramBot.Message): Observable<void> => {
+export const handleSingleSummarizeRequest$ = _.curry(
+  (chatId: number, services: Services, msg: TgMessageType): Observable<void> => {
     if (msg.chat.type === 'private') {
       catchError(sendStartMessage(services.telegramBot, chatId));
       return of(undefined);

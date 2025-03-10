@@ -14,6 +14,11 @@ RUN apt-get install -y unzip
 RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.2.1"
 ENV PATH="/root/.bun/bin:${PATH}"
 
+# устанавливаем временную зону
+ENV TZ=Europe/Moscow
+RUN apt-get install -yy tzdata
+RUN cp /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 WORKDIR /root/app
 
 COPY .husky .

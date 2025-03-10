@@ -2,18 +2,18 @@ import { max as maxTime } from 'date-fns';
 import { either } from 'fp-ts';
 import { type Either } from 'fp-ts/lib/Either';
 import _ from 'lodash';
-import type TelegramBot from 'node-telegram-bot-api';
 import type DbChatMessage from '../../../../data/types/DbChatMessage';
+import { type LimitsData } from '../../../../data/types/LimitsData';
 import { yesterday } from '../../../../lib/common/date';
 import type Services from '../../../../services/Services';
 import { type ChatMessagesForSummaryData } from '../types/ChatMessagesForSummaryData';
-import { type LimitsData } from '../../../../data/types/LimitsData';
 import { type SummarizeResultCase } from '../types/SummarizeResultCase';
+import type { TgMessageType } from '../types/TgMessageType';
 
 export const getChatMessagesForSummary = _.curry(
   async (
     services: Services,
-    msg: TelegramBot.Message,
+    msg: TgMessageType,
     limits: LimitsData
   ): Promise<Either<SummarizeResultCase, ChatMessagesForSummaryData>> => {
     const summariesRest =

@@ -51,3 +51,6 @@ prepare-dev:
 	curl -fsSL https://bun.sh/install | bash -s "bun-v1.2.1" &&\
 	source ~/.bashrc &&\
 	bun i
+
+set-timezone:
+	sudo timedatectl set-timezone Europe/Moscow

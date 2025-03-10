@@ -1,4 +1,3 @@
-import type TelegramBot from 'node-telegram-bot-api';
 import { type InlineKeyboardMarkup } from 'node-telegram-bot-api';
 import { setTimeout } from 'node:timers/promises';
 import { getEnv } from '../../../../config/envVars';
@@ -11,9 +10,10 @@ import { required } from '../../../../lib/common/lang';
 import type Services from '../../../../services/Services';
 import { makeGroupUrl } from '../../subscription/routing';
 import { type SummarizeResultCase } from '../types/SummarizeResultCase';
+import type { TgMessageType } from '../types/TgMessageType';
 
 const handleSummarizeResultCase =
-  (services: Services, msg: TelegramBot.Message) => async (resultCase: SummarizeResultCase) => {
+  (services: Services, msg: TgMessageType) => async (resultCase: SummarizeResultCase) => {
     const logArgs = getLogMessageForSummarizeResultCase(resultCase, msg.chat.id, msg.from?.id);
     if (logArgs !== undefined) logger.log(...logArgs);
 
@@ -74,7 +74,7 @@ function getLogMessageForSummarizeResultCase(
 
 function getBotMessageForSummarizeResultCase(
   resultCase: SummarizeResultCase,
-  msg: TelegramBot.Message,
+  msg: TgMessageType,
   botName: string
 ): string | [string, InlineKeyboardMarkup] {
   switch (resultCase.type) {

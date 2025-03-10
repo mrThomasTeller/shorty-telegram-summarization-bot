@@ -1,19 +1,35 @@
-import { match } from 'ts-pattern';
+import { CronJob } from 'cron';
 import logger from '../../config/logger';
-import { getCommandParams } from '../../data/telegramBotMessageUtils';
-import { chatSettingsSchema } from '../../data/types/ChatSettings';
-import type ChatController from '../ChatController';
 import { encryptIfExists } from '../../data/encryption';
+import { isSubscriptionActive } from '../../data/subscriptionUtils';
+import { getCommandParams } from '../../data/telegramBotMessageUtils';
+import { chatSettingsSchema, type ChatSettings } from '../../data/types/ChatSettings';
+import type Services from '../../services/Services';
+import type ChatController from '../ChatController';
+import { handleSingleSummarizeRequest$ } from './summarize/summarizeCommandController';
 
 const settingsCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$.subscribe(async (msg) => {
-    try {
-      const [name = '', rawValue] = getCommandParams(msg);
+    if (msg.chat.type === 'private') {
+      await services.telegramBot.sendMessage(chatId, '❌ Настройки можно изменять только в группе');
+      return;
+    }
 
-      const value = match({ name, rawValue })
-        .with({ name: 'notifyItsTimeToSummarize', rawValue: 'true' }, () => true)
-        .with({ name: 'notifyItsTimeToSummarize', rawValue: 'false' }, () => false)
-        .otherwise(({ rawValue }) => rawValue);
+    const [isInChat, admins] = await Promise.all([
+      services.telegramBot.isInChat(Number(chatId)),
+      services.telegramBot.getChatAdministrators(Number(chatId)),
+    ]);
+
+    if (!isInChat || !admins.some((admin) => admin.user.id === msg.from?.id)) {
+      await services.telegramBot.sendMessage(
+        chatId,
+        '❌ Только администраторы чата могут изменять настройки'
+      );
+      return;
+    }
+
+    try {
+      const [name = '', value] = getCommandParams(msg);
 
       const parseResult = chatSettingsSchema.safeParse({ [name]: value ?? '' });
 
@@ -21,11 +37,19 @@ const settingsCommandController: ChatController = ({ chat$, chatId, services }) 
         const { chat } = await services.db.upsertChat(chatId, encryptIfExists(msg.chat.title));
         await services.db.updateChat(chatId, {
           settings: {
-            ...chatSettingsSchema.parse(chat.settings),
+            ...(chat.settings as ChatSettings),
             ...parseResult.data,
           },
           title: encryptIfExists(msg.chat.title),
         });
+
+        const { autoSummarize } = parseResult.data;
+
+        if (autoSummarize) {
+          updateCronJob(chatId, autoSummarize, services);
+        } else if (autoSummarize === null) {
+          removeCronJob(chatId);
+        }
 
         await services.telegramBot.sendMessage(chatId, '✅ Настройки изменены');
       } else {
@@ -37,4 +61,70 @@ const settingsCommandController: ChatController = ({ chat$, chatId, services }) 
   });
 };
 
+settingsCommandController.onStart = async (services) => {
+  const chats = await services.db.getAllChats();
+  for (const chat of chats) {
+    const settings = chat.settings as ChatSettings;
+    if (settings.autoSummarize) {
+      createCronJob(Number(chat.id), settings.autoSummarize, services);
+    }
+  }
+};
+
 export default settingsCommandController;
+
+const cronJobs = new Map<number, CronJob>();
+
+function createCronJob(
+  chatId: number,
+  time: NonNullable<ChatSettings['autoSummarize']>,
+  services: Services
+): void {
+  const cronJob = new CronJob(
+    getCronString(time),
+    async () => {
+      const subscriptions = await services.db.getSubscriptions(chatId);
+      const subscription = subscriptions.find((s) => isSubscriptionActive(s));
+
+      await services.telegramBot.sendMessage(chatId, '🔄 Автоматическая выжимка');
+
+      const observable = handleSingleSummarizeRequest$(chatId, services, {
+        chat: {
+          id: chatId,
+          type: 'group',
+        },
+        from:
+          subscription?.subscriberUserId == null
+            ? undefined
+            : { id: Number(subscription.subscriberUserId) },
+      });
+
+      observable.subscribe();
+    },
+    null,
+    true,
+    'Europe/Moscow'
+  );
+
+  cronJobs.set(chatId, cronJob);
+}
+
+function removeCronJob(chatId: number): void {
+  const cronJob = cronJobs.get(chatId);
+  if (cronJob) {
+    cronJob.stop();
+    cronJobs.delete(chatId);
+  }
+}
+
+function updateCronJob(
+  chatId: number,
+  time: NonNullable<ChatSettings['autoSummarize']>,
+  services: Services
+): void {
+  removeCronJob(chatId);
+  createCronJob(chatId, time, services);
+}
+
+const getCronString = (time: NonNullable<ChatSettings['autoSummarize']>): string =>
+  `${time.minutes} ${time.hours} * * *`;
