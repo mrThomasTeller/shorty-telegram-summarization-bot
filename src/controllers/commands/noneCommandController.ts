@@ -6,14 +6,14 @@ import {
   convertTgUserToDbUserInput,
 } from '../../data/convertors';
 import { getFormattedMessage } from '../../data/dbChatMessageUtils';
+import { encryptIfExists } from '../../data/encryption';
+import { isSubscriptionActive } from '../../data/subscriptionUtils';
 import { getMaxTextToSummarizeApproximateLength } from '../../data/tariffUtils';
-import { chatSettingsSchema } from '../../data/types/ChatSettings';
+import { type ChatSettings } from '../../data/types/ChatSettings';
 import type DbChatMessage from '../../data/types/DbChatMessage';
 import { rejectAsync } from '../../lib/common/rxOperators';
 import type DbService from '../../services/DbService';
 import type ChatController from '../ChatController';
-import { isSubscriptionActive } from '../../data/subscriptionUtils';
-import { encryptIfExists } from '../../data/encryption';
 
 const noneCommandController: ChatController = ({ chat$, chatId, services }) => {
   chat$
@@ -22,7 +22,8 @@ const noneCommandController: ChatController = ({ chat$, chatId, services }) => {
       try {
         const { chat } = await addMessageToDb(msg, services.db);
 
-        const settings = chatSettingsSchema.parse(chat.settings);
+        const settings = chat.settings as ChatSettings;
+
         if (settings.notifyItsTimeToSummarize === true && !chat.notifiedItsTimeToSummarize) {
           const subscriptions = await services.db.getSubscriptions(chatId);
           const subscription = subscriptions.find((s) => isSubscriptionActive(s));

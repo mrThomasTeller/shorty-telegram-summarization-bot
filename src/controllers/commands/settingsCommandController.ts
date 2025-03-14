@@ -1,9 +1,8 @@
 import { CronJob } from 'cron';
 import logger from '../../config/logger';
 import { encryptIfExists } from '../../data/encryption';
-import { isSubscriptionActive } from '../../data/subscriptionUtils';
 import { getCommandParams } from '../../data/telegramBotMessageUtils';
-import { chatSettingsSchema, type ChatSettings } from '../../data/types/ChatSettings';
+import { getChatSettingsSchema, type ChatSettings } from '../../data/types/ChatSettings';
 import type Services from '../../services/Services';
 import type ChatController from '../ChatController';
 import { handleSingleSummarizeRequest$ } from './summarize/summarizeCommandController';
@@ -31,7 +30,7 @@ const settingsCommandController: ChatController = ({ chat$, chatId, services }) 
     try {
       const [name = '', value] = getCommandParams(msg);
 
-      const parseResult = chatSettingsSchema.safeParse({ [name]: value ?? '' });
+      const parseResult = getChatSettingsSchema(msg.from?.id).safeParse({ [name]: value ?? '' });
 
       if (parseResult.success) {
         const { chat } = await services.db.upsertChat(chatId, encryptIfExists(msg.chat.title));
@@ -75,17 +74,15 @@ export default settingsCommandController;
 
 const cronJobs = new Map<number, CronJob>();
 
+// todo вынести в отдельный сервис
 function createCronJob(
   chatId: number,
-  time: NonNullable<ChatSettings['autoSummarize']>,
+  settings: NonNullable<ChatSettings['autoSummarize']>,
   services: Services
 ): void {
   const cronJob = new CronJob(
-    getCronString(time),
+    getCronString(settings),
     async () => {
-      const subscriptions = await services.db.getSubscriptions(chatId);
-      const subscription = subscriptions.find((s) => isSubscriptionActive(s));
-
       await services.telegramBot.sendMessage(chatId, '🔄 Автоматическая выжимка');
 
       const observable = handleSingleSummarizeRequest$(chatId, services, {
@@ -93,10 +90,7 @@ function createCronJob(
           id: chatId,
           type: 'group',
         },
-        from:
-          subscription?.subscriberUserId == null
-            ? undefined
-            : { id: Number(subscription.subscriberUserId) },
+        from: settings.userId == null ? undefined : { id: settings.userId },
       });
 
       observable.subscribe();
@@ -126,5 +120,5 @@ function updateCronJob(
   createCronJob(chatId, time, services);
 }
 
-const getCronString = (time: NonNullable<ChatSettings['autoSummarize']>): string =>
+const getCronString = (time: { minutes: number; hours: number }): string =>
   `${time.minutes} ${time.hours} * * *`;
