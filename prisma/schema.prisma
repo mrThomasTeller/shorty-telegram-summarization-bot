@@ -74,7 +74,8 @@ model Tariff {
   id                 String @id
   name               String @default("")
   description        String @default("")
-  price              Int    @default(0) // rubles + cents (10000 = 100 rubles)
+  price              Int    @default(0) // rubles + cents (10000 = 100 rubles), единоразовый платеж
+  discountedPrice    Int    @default(0) // по подписке
   summaries          Int    @default(0)
   messagesMultiplier Int    @default(1)
 

@@ -35,9 +35,17 @@ export const handleSingleSummarizeRequest$ = _.curry(
       concatMap(handleSummarizeResultCase(services, msg)),
 
       last(),
-      mergeMap(() => printNews(services.db, services.telegramBot, msg.chat)),
+      mergeMap(() =>
+        printNews(services.db, services.telegramBot, msg.chat)
+          .then((done) => done || askToSetUpAutoSummarize(services, msg.chat.id))
+          .then(_.noop)
+      ),
       // todo ошибки нужно ловить на глобальном уровне для каждого сообщения
       catchAndLogError('Error in summarizeCommandController')
     );
   }
 );
+
+function askToSetUpAutoSummarize(services: Services, chatId: number): Promise<boolean> {
+  return services.telegramBot.sendMessage(chatId, 'Please, set up auto summarize');
+}
