@@ -9,6 +9,11 @@ export const getChatSettingsSchema = (userId: number | undefined) =>
         .transform((val) => val === 'true')
         .optional(),
 
+      summarizeAdminsOnly: z
+        .enum(['true', 'false'])
+        .transform((val) => val === 'true')
+        .optional(),
+
       autoSummarize: z
         .string()
         .transform((val) => {

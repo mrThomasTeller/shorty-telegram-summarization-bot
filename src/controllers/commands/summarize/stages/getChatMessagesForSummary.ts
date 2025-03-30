@@ -9,6 +9,8 @@ import type Services from '../../../../services/Services';
 import { type ChatMessagesForSummaryData } from '../types/ChatMessagesForSummaryData';
 import { type SummarizeResultCase } from '../types/SummarizeResultCase';
 import type { TgMessageType } from '../types/TgMessageType';
+import { required } from '../../../../lib/common/lang';
+import { type ChatSettings } from '../../../../data/types/ChatSettings';
 
 export const getChatMessagesForSummary = _.curry(
   async (
@@ -16,6 +18,16 @@ export const getChatMessagesForSummary = _.curry(
     msg: TgMessageType,
     limits: LimitsData
   ): Promise<Either<SummarizeResultCase, ChatMessagesForSummaryData>> => {
+    const chat = await services.db.getChat(msg.chat.id);
+    const settings = required(chat?.settings) as ChatSettings;
+
+    if (settings.summarizeAdminsOnly) {
+      const admins = await services.telegramBot.getChatAdministrators(msg.chat.id);
+      if (!admins.some((admin) => admin.user.id === msg.from?.id)) {
+        return either.left({ type: 'adminsOnly' });
+      }
+    }
+
     const summariesRest =
       limits.premiumSummariesRest > 0 ? limits.premiumSummariesRest : limits.freeSummariesRest;
 

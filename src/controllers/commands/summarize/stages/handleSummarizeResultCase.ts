@@ -137,6 +137,9 @@ function getBotMessageForSummarizeResultCase(
         },
       ];
     }
+    case 'adminsOnly': {
+      return '🔒 Только администраторы могут делать выжимки в этом чате';
+    }
     case 'ads': {
       return t('summarize.message.dontShowAds');
     }

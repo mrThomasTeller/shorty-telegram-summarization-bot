@@ -10,7 +10,8 @@ export type SummarizeResultCase =
   | StartSummarySummarizeResultCase
   | SummaryHeaderSummarizeResultCase
   | EndSummarySummarizeResultCase
-  | AdsSummarizeResultCase;
+  | AdsSummarizeResultCase
+  | AdminsOnlySummarizeResultCase;
 
 export type NoMessagesSummarizeResultCase = { type: 'noMessages' };
 
@@ -36,3 +37,5 @@ export type EndSummarySummarizeResultCase = {
 };
 
 export type AdsSummarizeResultCase = { type: 'ads' };
+
+export type AdminsOnlySummarizeResultCase = { type: 'adminsOnly' };
