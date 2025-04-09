@@ -14,10 +14,16 @@ const settingsCommandController: ChatController = ({ chat$, chatId, services }) 
       return;
     }
 
+    console.log('chatId', chatId);
+
     const [isInChat, admins] = await Promise.all([
       services.telegramBot.isInChat(Number(chatId)),
       services.telegramBot.getChatAdministrators(Number(chatId)),
     ]);
+
+    console.log('isInChat', isInChat);
+    console.log('admins', JSON.stringify(admins, null, 2));
+    console.log('msg.from?.id', msg.from?.id);
 
     if (!isInChat || !admins.some((admin) => admin.user.id === msg.from?.id)) {
       await services.telegramBot.sendMessage(
