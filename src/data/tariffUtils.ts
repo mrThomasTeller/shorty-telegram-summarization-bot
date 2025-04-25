@@ -44,7 +44,7 @@ export async function getTariffRestText({
   return limitsData.subscription
     ? t('tariff.premium', {
         name: limitsData.subscription.tariff.name,
-        price: price ? ` (${getTariffText({ tariff: limitsData.subscription.tariff })})` : '',
+        price: price ? ` (${getTariffText({ subscription: limitsData.subscription })})` : '',
         rest: restText,
         expires: formatExpires(getSubscriptionExpiresText(limitsData.subscription)),
         thanks: thanks ? t('tariff.thanks') : '',
@@ -55,22 +55,31 @@ export async function getTariffRestText({
 
 export type TariffTextFormat = 'name' | 'price' | 'nameAndPrice';
 
-export const getTariffText = ({
-  tariff,
-  format = 'price',
-  separator = ', ',
-}: {
-  tariff: Tariff;
-  format?: TariffTextFormat;
-  separator?: string;
-}): string =>
-  [
+export const getTariffText = (
+  params: {
+    format?: TariffTextFormat;
+    separator?: string;
+  } & (
+    | { tariff: Tariff }
+    | { subscription: Pick<SubscriptionWithTariff, 'tariff' | 'paymentMethodId'> }
+  )
+): string => {
+  const { format = 'price', separator = ', ' } = params;
+  const tariff = 'tariff' in params ? params.tariff : params.subscription.tariff;
+  const subscription = 'subscription' in params ? params.subscription : undefined;
+
+  const price =
+    subscription && subscription.paymentMethodId == null ? tariff.price : tariff.discountedPrice;
+  const fromPrice = subscription ? '' : 'от ';
+
+  return [
     format === 'name' || format === 'nameAndPrice' ? tariff.name : undefined,
     format === 'price' || format === 'nameAndPrice'
-      ? `${formatPrice(tariff.price)} / мес`
+      ? `${fromPrice}${formatPrice(price)} / мес`
       : undefined,
   ]
     .filter(Boolean)
     .join(separator);
+};
 
 const formatPrice = (price: number): string => `${Math.floor(price / 100)}₽`;

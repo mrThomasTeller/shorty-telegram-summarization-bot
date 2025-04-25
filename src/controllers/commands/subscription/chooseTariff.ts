@@ -111,7 +111,7 @@ export async function tariffChosen({
   const botName = await telegramBot.getUsername();
   const createPayment = (savePaymentMethod: boolean): Promise<string | undefined> =>
     ukassaService.createPayment<UkassaWebhookMetadata>({
-      price: tariff.price,
+      price: savePaymentMethod ? tariff.discountedPrice : tariff.price,
       description: `Shorty: подписка на тариф "${tariff.name}". Период оплаты: 1 месяц.`,
       returnUrl: `https://t.me/${botName}`,
       savePaymentMethod,
@@ -146,13 +146,13 @@ _Оплата происходит через сервис [ЮKassa](https://yoo
         inline_keyboard: [
           [
             {
-              text: '⭐️ Ежемесячная подписка',
+              text: `⭐️ Ежемесячная подписка (${getTariffText({ tariff })})`,
               url: required(subscriptionPaymentUrl, 'Subscription payment url is required'),
             },
           ],
           [
             {
-              text: '1️⃣ Один месяц',
+              text: `1️⃣ Один месяц (${getTariffText({ tariff })})`,
               url: required(oneTimePaymentUrl, 'One time payment url is required'),
             },
           ],

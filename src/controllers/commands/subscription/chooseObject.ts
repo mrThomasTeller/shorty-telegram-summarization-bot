@@ -83,7 +83,7 @@ export async function chooseObject({
           object: ObjectType.subscription,
           id: userSubscription.id,
         })}) \\(${escapeTelegramMarkdown(
-          getTariffText({ tariff: userSubscription.tariff, format: 'nameAndPrice' })
+          getTariffText({ subscription: userSubscription, format: 'nameAndPrice' })
         )}\\)`
       : `👤 ✚ [Оформить индивидуальную подписку](${makeObjectUrl({
           botName,

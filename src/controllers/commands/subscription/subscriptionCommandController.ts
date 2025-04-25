@@ -212,7 +212,7 @@ async function paymentSucceeded(
         `
 🎉 У нас новый подписчик!
 User: ${username ?? userId}
-Tariff: ${getTariffText({ tariff: subscription.tariff, format: 'nameAndPrice' })}
+Tariff: ${getTariffText({ subscription, format: 'nameAndPrice' })}
 AutoRenew: ${paymentMethod.saved ? '✅' : '❌'}
 `.trim()
       );

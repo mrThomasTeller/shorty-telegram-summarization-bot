@@ -45,6 +45,7 @@ Release 1.1 (open beta of the second app):
   - write news to all chat rooms where summarize bot is a member
 
 Release 1.2:
+  - приостанавливать подписку если в течение месяца не было сделано ни одной выжимки
   - писать о возможности включить автоматические выжимки в настройках
   - У ЧЕЛОВЕКА СНЯЛИ 3 ПЛАТЕЖА ЗА РАЗ, НАДО РАЗОРАТЬСЯ!
   - ОЧЕНЬ НУЖЕН healthcheck!

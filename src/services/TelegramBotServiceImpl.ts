@@ -21,7 +21,20 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
   }
 
   async getChatAdministrators(chatId: number): Promise<TelegramBot.ChatMember[]> {
-    return await this.__bot.getChatAdministrators(chatId);
+    const members = await this.__bot.getChatAdministrators(chatId);
+    return [
+      ...members,
+      {
+        user: {
+          // eslint-disable-next-line unicorn/numeric-separators-style
+          id: 1087968824,
+          is_bot: true,
+          first_name: 'Group',
+          username: 'GroupAnonymousBot',
+        },
+        status: 'administrator',
+      },
+    ];
   }
 
   async getUsername(): Promise<string> {

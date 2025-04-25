@@ -118,7 +118,7 @@ async function renewSubscription(
       id: Number(subscription.id),
       autoRenew: true,
     },
-    price: tariff.price,
+    price: tariff.discountedPrice,
     paymentMethodId: subscription.paymentMethodId ?? undefined,
   });
 }

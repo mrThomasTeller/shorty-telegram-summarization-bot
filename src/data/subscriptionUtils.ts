@@ -1,4 +1,4 @@
-import type { Subscription, Tariff } from '@prisma/client';
+import type { Subscription } from '@prisma/client';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { t } from '../config/translations/index';
@@ -43,13 +43,13 @@ export function getSubscriptionObjectText({
   subscription,
   grammarCase = 'nom',
   objectGrammarCase = 'acc',
-  tariffText = 'name',
+  tariffText: tariffTextFormat = 'name',
   markdown = false,
   subscriptionTerm = true,
 }: {
-  subscription: Pick<SubscriptionWithTariffAndChat, 'userId' | 'chatId' | 'chat'> & {
-    tariff?: Tariff;
-  };
+  subscription:
+    | Pick<SubscriptionWithTariffAndChat, 'userId' | 'chatId' | 'chat'>
+    | SubscriptionWithTariffAndChat;
   grammarCase?: 'nom' | 'acc';
   objectGrammarCase?: 'nom' | 'acc';
   tariffText?: TariffTextFormat | 'none';
@@ -74,12 +74,13 @@ export function getSubscriptionObjectText({
         });
 
   const additionalText_ =
-    tariffText !== 'none' && subscription.tariff
+    tariffTextFormat !== 'none' && 'tariff' in subscription
       ? ` (${getTariffText({
-          tariff: subscription.tariff,
-          format: tariffText,
+          subscription,
+          format: tariffTextFormat,
         })})`
       : '';
+
   const additionalText = markdown
     ? `_${escapeTelegramMarkdown(additionalText_)}_`
     : additionalText_;
