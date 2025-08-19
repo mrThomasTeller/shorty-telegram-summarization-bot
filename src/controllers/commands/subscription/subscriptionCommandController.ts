@@ -56,6 +56,9 @@ async function handleMessage(
       return await subscribeFromGroupChat(db, telegramBot, msg);
     }
 
+    await temporaryFreeMessage(telegramBot, msg.chat.id);
+    return;
+
     const routed = await route(msg, db, telegramBot);
     if (routed) return;
 
@@ -74,6 +77,18 @@ async function handleMessage(
       logger.error('Error in subscriptionCommandController', error);
     }
   }
+}
+
+async function temporaryFreeMessage(
+  telegramBot: TelegramBotService,
+  chatId: number
+): Promise<void> {
+  await telegramBot.sendMessage(
+    chatId,
+    `🍾 Shorty стал бесплатным до конца года! В каждой группе теперь доступны 8 бесплатных выжимок в неделю! Если у вас был оплаченный тариф, он продолжит действовать бесплатно до конца года. Если вам нужны увеличенные лимиты, напишите, пожалуйста, в поддержку: @${
+      getEnv().SUPPORT_BOT_NAME
+    }`
+  );
 }
 
 async function subscribeFromGroupChat(

@@ -35,7 +35,7 @@ const summarizeBotServer: EntryPoint = async (services) => {
 
   logger.info('Summarize telegram bot started');
 
-  void subscriptionsChecker(services);
+  // void subscriptionsChecker(services);
 
   if (getEnv().DEV_SHOW_ALL_TG_MESSAGES) {
     services.telegramBot.onAnyMessage((msg) => {
