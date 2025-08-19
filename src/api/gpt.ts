@@ -1,6 +1,6 @@
 import type GptService from '../services/GptService';
+import { type ChatMessage } from '../services/GptService';
 import { getEnv } from '../config/envVars';
-import { ChatGPTError, type ChatMessage } from 'chatgpt';
 import { type Observable, map, mergeMap, of } from 'rxjs';
 import { either, function as fp } from 'fp-ts';
 import { convertPromiseToEither } from '../lib/common/fp';
@@ -35,7 +35,7 @@ export const sendMessageToGptWithRetries$ = ({
   );
 
 const convertErrorToGptResultCase = _.curry((lastTry: boolean, error: Error): GptResultCase => {
-  if (error instanceof ChatGPTError && error.statusCode === 429) {
+  if (error.message.includes('429') || error.message.includes('rate limit')) {
     if (lastTry) {
       return { type: 'maxTriesExceeded', error };
     }
@@ -49,7 +49,7 @@ const sendMessageToGpt = (gpt: GptService) =>
   fp.flow(
     (text: string) =>
       gpt.sendMessage(text, {
-        completionParams: { max_tokens: 2048 },
+        // completionParams: { max_tokens: 2048 },
       }),
     convertPromiseToEither<Error>()
   );

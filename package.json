@@ -1,6 +1,6 @@
 {
   "name": "shorty-chat-bot",
-  "version": "1.1.1-21",
+  "version": "1.1.1-22",
   "description": "",
   "main": "src/start.ts",
   "type": "module",
@@ -67,7 +67,7 @@
     "@types/node": "^20.7.0",
     "@types/node-telegram-bot-api": "^0.64.7",
     "axios": "^1.7.7",
-    "chatgpt": "^5.2.5",
+    "openai": "^4.78.0",
     "cors": "^2.8.5",
     "cron": "^4.1.0",
     "date-fns": "^2.30.0",

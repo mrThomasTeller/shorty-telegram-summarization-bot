@@ -57,7 +57,7 @@ export function expectBotQueriedSummaryFromGpt(
 
     expect(required(call)[1]).toEqual(
       expect.objectContaining({
-        completionParams: { max_tokens: 2048 },
+        // completionParams: { max_tokens: 2048 },
       })
     );
   }

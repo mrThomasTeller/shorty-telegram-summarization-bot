@@ -1,4 +1,17 @@
-import { type ChatMessage, type SendMessageOptions } from 'chatgpt';
+export type ChatMessage = {
+  id: string;
+  role: 'assistant' | 'user';
+  text: string;
+};
+
+export type SendMessageOptions = {
+  completionParams?: {
+    model?: string;
+    max_tokens?: number;
+    temperature?: number;
+    [key: string]: unknown;
+  };
+};
 
 type GptService = {
   sendMessage: (
