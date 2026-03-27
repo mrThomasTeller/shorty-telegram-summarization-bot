@@ -5,7 +5,7 @@ import { getEnv } from '../config/envVars';
 import _ from 'lodash';
 import type { ChatMessage, SendMessageOptions } from './GptService';
 
-const gptModel = 'gpt-5.4-mini';
+const gptModel = 'gpt-5-mini';
 
 export default class GptServiceImpl implements GptService {
   private api?: OpenAI;
