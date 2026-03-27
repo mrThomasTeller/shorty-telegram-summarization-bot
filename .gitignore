@@ -1,6 +1,7 @@
 /chats
 /build
 /.tgSessionData
+.DS_Store
 
 # Logs
 logs
@@ -132,3 +133,6 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Generated reports
+shorty-stats-report.html

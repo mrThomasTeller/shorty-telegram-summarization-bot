@@ -29,9 +29,11 @@ const summarizeBotServer: EntryPoint = async (services) => {
 
   mainController.onStart?.(services);
 
-  createTgMessagesObservable(services.telegramBot)
-    .pipe(groupNonEmptyMessagesByChatId)
-    .subscribe(observeChatWithMainController(services));
+  if (!getEnv().DEV_SKIP_TG_MESSAGES) {
+    createTgMessagesObservable(services.telegramBot)
+      .pipe(groupNonEmptyMessagesByChatId)
+      .subscribe(observeChatWithMainController(services));
+  }
 
   logger.info('Summarize telegram bot started');
 

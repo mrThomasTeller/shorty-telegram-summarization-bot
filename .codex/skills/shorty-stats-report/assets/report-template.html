@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shorty: годовая статистика</title>
+    <style>
+      :root {
+        --bg: #f6efe5;
+        --bg-accent: #fdf8f1;
+        --panel: rgba(255, 252, 247, 0.82);
+        --panel-strong: rgba(255, 252, 247, 0.96);
+        --text: #17313b;
+        --muted: #5f7178;
+        --line: rgba(23, 49, 59, 0.1);
+        --shadow: 0 24px 60px rgba(36, 46, 52, 0.12);
+        --green: #1d8f6f;
+        --red: #d6604d;
+        --blue: #244c74;
+        --teal: #2c7e8d;
+        --gold: #c9891d;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Avenir Next", "Helvetica Neue", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(255, 187, 119, 0.24), transparent 26%),
+          radial-gradient(circle at top right, rgba(36, 76, 116, 0.2), transparent 30%),
+          linear-gradient(180deg, #fffaf2 0%, var(--bg) 48%, #f0e8de 100%);
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(23, 49, 59, 0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(23, 49, 59, 0.025) 1px, transparent 1px);
+        background-size: 28px 28px;
+        pointer-events: none;
+        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), transparent 95%);
+      }
+
+      .page {
+        width: min(1280px, calc(100% - 32px));
+        margin: 32px auto 48px;
+      }
+
+      .hero,
+      .card,
+      .chart-card,
+      .table-card {
+        border: 1px solid rgba(255, 255, 255, 0.72);
+        border-radius: 28px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(20px);
+        animation: rise 700ms ease both;
+      }
+
+      .hero {
+        position: relative;
+        overflow: hidden;
+        padding: 32px;
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 247, 235, 0.82)),
+          radial-gradient(circle at top right, rgba(29, 143, 111, 0.16), transparent 30%);
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        right: -90px;
+        top: -90px;
+        width: 260px;
+        height: 260px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(36, 76, 116, 0.2), transparent 72%);
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        color: var(--blue);
+        background: rgba(36, 76, 116, 0.08);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+
+      h1 {
+        margin-top: 18px;
+        font-size: clamp(34px, 5vw, 64px);
+        line-height: 0.98;
+        max-width: 760px;
+      }
+
+      .subtitle {
+        max-width: 760px;
+        margin-top: 16px;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.5;
+      }
+
+      .hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 24px;
+      }
+
+      .chip {
+        padding: 10px 14px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(23, 49, 59, 0.08);
+        color: var(--text);
+        font-size: 14px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 18px;
+        margin-top: 20px;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+      }
+
+      .card {
+        padding: 20px;
+        animation-delay: 70ms;
+      }
+
+      .label {
+        color: var(--muted);
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 700;
+      }
+
+      .value {
+        margin-top: 10px;
+        font-size: clamp(28px, 3vw, 42px);
+        font-weight: 800;
+        line-height: 1;
+      }
+
+      .delta {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .delta strong {
+        color: var(--text);
+      }
+
+      .chart-card,
+      .table-card {
+        padding: 22px;
+        margin-top: 20px;
+      }
+
+      .chart-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        margin-bottom: 18px;
+      }
+
+      .chart-copy {
+        max-width: 760px;
+      }
+
+      .chart-copy p,
+      .table-card p {
+        margin: 10px 0 0;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .legend {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid rgba(23, 49, 59, 0.08);
+        font-size: 14px;
+      }
+
+      .legend-swatch {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .chart-frame {
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+        border-radius: 22px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(248, 241, 233, 0.95)),
+          linear-gradient(90deg, rgba(36, 76, 116, 0.04), transparent);
+        border: 1px solid rgba(23, 49, 59, 0.08);
+        padding: 10px;
+      }
+
+      svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .tooltip {
+        position: absolute;
+        min-width: 190px;
+        pointer-events: none;
+        opacity: 0;
+        transform: translate(-50%, calc(-100% - 14px));
+        transition: opacity 160ms ease;
+        padding: 12px 14px;
+        border-radius: 16px;
+        background: rgba(19, 35, 43, 0.94);
+        color: #fff;
+        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.22);
+      }
+
+      .tooltip.visible {
+        opacity: 1;
+      }
+
+      .tooltip strong {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+
+      .tooltip-line {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .table-card {
+        animation-delay: 120ms;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        margin-top: 16px;
+        border-radius: 18px;
+        border: 1px solid rgba(23, 49, 59, 0.08);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--panel-strong);
+      }
+
+      th,
+      td {
+        padding: 14px 16px;
+        text-align: right;
+        border-bottom: 1px solid rgba(23, 49, 59, 0.08);
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
+
+      th:first-child,
+      td:first-child {
+        text-align: left;
+      }
+
+      thead th {
+        position: sticky;
+        top: 0;
+        background: rgba(250, 246, 240, 0.98);
+        color: var(--muted);
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      tbody tr:hover {
+        background: rgba(36, 76, 116, 0.04);
+      }
+
+      tfoot td {
+        background: rgba(36, 76, 116, 0.06);
+        font-weight: 800;
+      }
+
+      .footnote {
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 1120px) {
+        .summary-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 760px) {
+        .page {
+          width: min(100% - 20px, 1000px);
+          margin-top: 18px;
+        }
+
+        .hero,
+        .card,
+        .chart-card,
+        .table-card {
+          border-radius: 22px;
+        }
+
+        .hero {
+          padding: 22px;
+        }
+
+        .summary-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .chart-card,
+        .table-card {
+          padding: 16px;
+        }
+
+        th,
+        td {
+          padding: 12px 10px;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .summary-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div class="eyebrow">Shorty • Yearly Report</div>
+        <h1>Годовая статистика по боту и выжимкам</h1>
+        <p class="subtitle">__SUBTITLE__</p>
+        <div class="hero-meta">
+          <div class="chip">Источник: prod Postgres (`Statistic`, `Summary`)</div>
+          <div class="chip">Срез: __PERIOD_RANGE__</div>
+          <div class="chip">Гранулярность: по месяцам</div>
+        </div>
+      </section>
+
+      <section class="grid summary-grid" id="summary-cards"></section>
+
+      <section class="chart-card">
+        <div class="chart-header">
+          <div class="chart-copy">
+            <h2>1. Добавления и удаления бота</h2>
+            <p>
+              График показывает, в какие месяцы бот чаще добавляли в чаты и когда чаще
+              удаляли. Это хороший быстрый индикатор роста и оттока.
+            </p>
+          </div>
+          <div class="legend" id="legend-bot"></div>
+        </div>
+        <div class="chart-frame">
+          <svg id="bot-chart" viewBox="0 0 1100 420" aria-label="Добавления и удаления бота"></svg>
+          <div class="tooltip" id="tooltip-bot"></div>
+        </div>
+      </section>
+
+      <section class="chart-card">
+        <div class="chart-header">
+          <div class="chart-copy">
+            <h2>2. Выжимки: всего, бесплатные и премиум</h2>
+            <p>
+              Здесь видно общий объём выжимок, а также соотношение бесплатного и премиум
+              использования по месяцам.
+            </p>
+          </div>
+          <div class="legend" id="legend-summary"></div>
+        </div>
+        <div class="chart-frame">
+          <svg
+            id="summary-chart"
+            viewBox="0 0 1100 420"
+            aria-label="Всего, бесплатные и премиум-выжимки"
+          ></svg>
+          <div class="tooltip" id="tooltip-summary"></div>
+        </div>
+      </section>
+
+      <section class="table-card">
+        <h2>Помесячные цифры</h2>
+        <p>
+          Таблица ниже нужна для точных значений. Она повторяет те же данные, что использованы
+          для графиков.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Месяц</th>
+                <th>Добавления</th>
+                <th>Удаления</th>
+                <th>Всего выжимок</th>
+                <th>Бесплатные</th>
+                <th>Премиум</th>
+              </tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+            <tfoot>
+              <tr id="table-total"></tr>
+            </tfoot>
+          </table>
+        </div>
+        <div class="footnote">
+          Премиум-выжимки считаются по флагу <code>usedPremium = true</code>. Бесплатные:
+          <code>usedPremium = false</code>.
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const report = __REPORT_JSON__;
+
+      const COLORS = {
+        added: "#1d8f6f",
+        removed: "#d6604d",
+        total: "#244c74",
+        free: "#2c7e8d",
+        premium: "#c9891d",
+        grid: "rgba(23, 49, 59, 0.1)",
+        axis: "rgba(23, 49, 59, 0.55)",
+        label: "#5f7178",
+        marker: "#17313b",
+        hover: "rgba(36, 76, 116, 0.08)",
+      };
+
+      const fmt = new Intl.NumberFormat("ru-RU");
+      const monthFmt = new Intl.DateTimeFormat("ru-RU", {
+        month: "short",
+        year: "2-digit",
+      });
+
+      const svgNs = "http://www.w3.org/2000/svg";
+
+      function formatNumber(value) {
+        return fmt.format(value);
+      }
+
+      function monthLabel(month) {
+        const [year, mon] = month.split("-").map(Number);
+        return monthFmt
+          .format(new Date(Date.UTC(year, mon - 1, 1)))
+          .replace(".", "")
+          .replace(" г", "");
+      }
+
+      function sumBy(key) {
+        return report.data.reduce((acc, item) => acc + item[key], 0);
+      }
+
+      function createSvg(tag, attrs = {}) {
+        const node = document.createElementNS(svgNs, tag);
+        Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, String(value)));
+        return node;
+      }
+
+      function niceMax(value) {
+        if (value <= 0) return 10;
+        const exponent = 10 ** Math.floor(Math.log10(value));
+        const fraction = value / exponent;
+        let niceFraction = 1;
+        if (fraction <= 1) niceFraction = 1;
+        else if (fraction <= 2) niceFraction = 2;
+        else if (fraction <= 5) niceFraction = 5;
+        else niceFraction = 10;
+        return niceFraction * exponent;
+      }
+
+      function linePath(points) {
+        return points
+          .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x.toFixed(2)} ${point.y.toFixed(2)}`)
+          .join(" ");
+      }
+
+      function setLegend(containerId, items) {
+        const container = document.getElementById(containerId);
+        items.forEach((item) => {
+          const node = document.createElement("div");
+          node.className = "legend-item";
+          node.innerHTML = `<span class="legend-swatch" style="background:${item.color}"></span>${item.label}`;
+          container.appendChild(node);
+        });
+      }
+
+      function renderSummaryCards() {
+        const totals = {
+          added: sumBy("added"),
+          removed: sumBy("removed"),
+          total: sumBy("total"),
+          free: sumBy("free"),
+          premium: sumBy("premium"),
+        };
+
+        const cards = [
+          {
+            label: "Добавления",
+            value: totals.added,
+            delta: `Чистый прирост за период: <strong>+${formatNumber(totals.added - totals.removed)}</strong>`,
+          },
+          {
+            label: "Удаления",
+            value: totals.removed,
+            delta: `Отношение удалений к добавлениям: <strong>${Math.round((totals.removed / totals.added) * 100)}%</strong>`,
+          },
+          {
+            label: "Все выжимки",
+            value: totals.total,
+            delta: `В среднем в месяц: <strong>${formatNumber(Math.round(totals.total / report.data.length))}</strong>`,
+          },
+          {
+            label: "Бесплатные",
+            value: totals.free,
+            delta: `Доля от общего объёма: <strong>${Math.round((totals.free / totals.total) * 100)}%</strong>`,
+          },
+          {
+            label: "Премиум",
+            value: totals.premium,
+            delta: `Доля от общего объёма: <strong>${Math.round((totals.premium / totals.total) * 100)}%</strong>`,
+          },
+          {
+            label: "Период",
+            value: "12",
+            delta: `Календарных месяцев: <strong>${report.periodLabel}</strong>`,
+          },
+        ];
+
+        const root = document.getElementById("summary-cards");
+        cards.forEach((card, index) => {
+          const node = document.createElement("article");
+          node.className = "card";
+          node.style.animationDelay = `${index * 60}ms`;
+          node.innerHTML = `
+            <div class="label">${card.label}</div>
+            <div class="value">${typeof card.value === "number" ? formatNumber(card.value) : card.value}</div>
+            <div class="delta">${card.delta}</div>
+          `;
+          root.appendChild(node);
+        });
+      }
+
+      function renderTable() {
+        const tbody = document.getElementById("table-body");
+        const totalRow = document.getElementById("table-total");
+
+        report.data.forEach((item) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${monthLabel(item.month)}</td>
+            <td>${formatNumber(item.added)}</td>
+            <td>${formatNumber(item.removed)}</td>
+            <td>${formatNumber(item.total)}</td>
+            <td>${formatNumber(item.free)}</td>
+            <td>${formatNumber(item.premium)}</td>
+          `;
+          tbody.appendChild(row);
+        });
+
+        totalRow.innerHTML = `
+          <td>Итого</td>
+          <td>${formatNumber(sumBy("added"))}</td>
+          <td>${formatNumber(sumBy("removed"))}</td>
+          <td>${formatNumber(sumBy("total"))}</td>
+          <td>${formatNumber(sumBy("free"))}</td>
+          <td>${formatNumber(sumBy("premium"))}</td>
+        `;
+      }
+
+      function renderGroupedBarChart({
+        svgId,
+        tooltipId,
+        bars,
+        line = null,
+      }) {
+        const svg = document.getElementById(svgId);
+        const tooltip = document.getElementById(tooltipId);
+        const width = 1100;
+        const height = 420;
+        const padding = { top: 26, right: 24, bottom: 72, left: 78 };
+        const plotWidth = width - padding.left - padding.right;
+        const plotHeight = height - padding.top - padding.bottom;
+        const allKeys = [...bars.map((item) => item.key), ...(line ? [line.key] : [])];
+        const maxValue = niceMax(
+          Math.max(...report.data.flatMap((row) => allKeys.map((key) => row[key])))
+        );
+        const stepX = plotWidth / report.data.length;
+        const groupWidth = stepX * 0.6;
+        const barWidth = groupWidth / bars.length;
+
+        svg.innerHTML = "";
+
+        for (let tick = 0; tick <= 5; tick += 1) {
+          const value = (maxValue / 5) * tick;
+          const y = padding.top + plotHeight - (value / maxValue) * plotHeight;
+          svg.appendChild(
+            createSvg("line", {
+              x1: padding.left,
+              x2: width - padding.right,
+              y1: y,
+              y2: y,
+              stroke: COLORS.grid,
+              "stroke-width": 1,
+            })
+          );
+          const label = createSvg("text", {
+            x: padding.left - 14,
+            y: y + 5,
+            "text-anchor": "end",
+            fill: COLORS.label,
+            "font-size": 12,
+            "font-family": "Avenir Next, Helvetica Neue, sans-serif",
+          });
+          label.textContent = formatNumber(Math.round(value));
+          svg.appendChild(label);
+        }
+
+        report.data.forEach((item, index) => {
+          const centerX = padding.left + stepX * index + stepX / 2;
+          const label = createSvg("text", {
+            x: centerX,
+            y: height - 24,
+            "text-anchor": "middle",
+            fill: COLORS.label,
+            "font-size": 12,
+            "font-family": "Avenir Next, Helvetica Neue, sans-serif",
+          });
+          label.textContent = monthLabel(item.month);
+          svg.appendChild(label);
+
+          bars.forEach((series, barIndex) => {
+            const barHeight = (item[series.key] / maxValue) * plotHeight;
+            const x = centerX - groupWidth / 2 + barWidth * barIndex + barWidth * 0.12;
+            const y = padding.top + plotHeight - barHeight;
+            svg.appendChild(
+              createSvg("rect", {
+                x,
+                y,
+                width: barWidth * 0.76,
+                height: Math.max(barHeight, 1),
+                rx: 8,
+                fill: series.color,
+                opacity: 0.88,
+              })
+            );
+          });
+        });
+
+        if (line) {
+          const points = report.data.map((item, index) => ({
+            x: padding.left + stepX * index + stepX / 2,
+            y: padding.top + plotHeight - (item[line.key] / maxValue) * plotHeight,
+            value: item[line.key],
+          }));
+
+          svg.appendChild(
+            createSvg("path", {
+              d: linePath(points),
+              fill: "none",
+              stroke: line.color,
+              "stroke-width": 3.5,
+              "stroke-linecap": "round",
+              "stroke-linejoin": "round",
+            })
+          );
+
+          points.forEach((point) => {
+            svg.appendChild(
+              createSvg("circle", {
+                cx: point.x,
+                cy: point.y,
+                r: 4.5,
+                fill: "#fff",
+                stroke: line.color,
+                "stroke-width": 3,
+              })
+            );
+          });
+        }
+
+        report.data.forEach((item, index) => {
+          const x = padding.left + stepX * index;
+          const band = createSvg("rect", {
+            x,
+            y: padding.top,
+            width: stepX,
+            height: plotHeight,
+            fill: "transparent",
+            cursor: "pointer",
+          });
+
+          band.addEventListener("mouseenter", (event) => {
+            const lines = [
+              ...bars.map((series) => ({
+                label: series.label,
+                value: item[series.key],
+                color: series.color,
+              })),
+              ...(line
+                ? [{ label: line.label, value: item[line.key], color: line.color }]
+                : []),
+            ];
+
+            tooltip.innerHTML = `
+              <strong>${monthLabel(item.month)}</strong>
+              ${lines
+                .map(
+                  (entry) => `
+                    <div class="tooltip-line">
+                      <span style="color:${entry.color}">${entry.label}</span>
+                      <span>${formatNumber(entry.value)}</span>
+                    </div>
+                  `
+                )
+                .join("")}
+            `;
+
+            const frameRect = svg.parentElement.getBoundingClientRect();
+            tooltip.style.left = `${event.clientX - frameRect.left}px`;
+            tooltip.style.top = `${padding.top + 6}px`;
+            tooltip.classList.add("visible");
+          });
+
+          band.addEventListener("mousemove", (event) => {
+            const frameRect = svg.parentElement.getBoundingClientRect();
+            tooltip.style.left = `${event.clientX - frameRect.left}px`;
+          });
+
+          band.addEventListener("mouseleave", () => tooltip.classList.remove("visible"));
+          svg.appendChild(band);
+        });
+      }
+
+      renderSummaryCards();
+      setLegend("legend-bot", [
+        { label: "Добавления", color: COLORS.added },
+        { label: "Удаления", color: COLORS.removed },
+      ]);
+      setLegend("legend-summary", [
+        { label: "Бесплатные", color: COLORS.free },
+        { label: "Премиум", color: COLORS.premium },
+        { label: "Всего", color: COLORS.total },
+      ]);
+      renderGroupedBarChart({
+        svgId: "bot-chart",
+        tooltipId: "tooltip-bot",
+        bars: [
+          { key: "added", label: "Добавления", color: COLORS.added },
+          { key: "removed", label: "Удаления", color: COLORS.removed },
+        ],
+      });
+      renderGroupedBarChart({
+        svgId: "summary-chart",
+        tooltipId: "tooltip-summary",
+        bars: [
+          { key: "free", label: "Бесплатные", color: COLORS.free },
+          { key: "premium", label: "Премиум", color: COLORS.premium },
+        ],
+        line: { key: "total", label: "Всего", color: COLORS.total },
+      });
+      renderTable();
+    </script>
+  </body>
+</html>
