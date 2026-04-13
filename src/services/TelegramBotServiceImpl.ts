@@ -1,20 +1,30 @@
-import TelegramBot from "node-telegram-bot-api";
-import { getEnv } from "../config/envVars";
-import { required } from "../lib/common/lang";
-import type DbService from "./DbService";
-import type TelegramBotService from "./TelegramBotService";
-import { type TelegramBotSendMessageOptions } from "./TelegramBotService";
-import { isPrivateChat } from "../data/telegramChatUtils";
-import { setTimeout } from "node:timers/promises";
-import logger from "../config/logger";
+import TelegramBot from 'node-telegram-bot-api';
+import { getEnv } from '../config/envVars';
+import { required } from '../lib/common/lang';
+import type DbService from './DbService';
+import type TelegramBotService from './TelegramBotService';
+import { type TelegramBotSendMessageOptions } from './TelegramBotService';
+import { isPrivateChat } from '../data/telegramChatUtils';
+import { setTimeout } from 'node:timers/promises';
+import logger from '../config/logger';
+
+const maxPendingUpdatesBeforeDrop = 5000;
 
 export default class TelegramBotServiceImpl implements TelegramBotService {
   readonly __bot: TelegramBot;
   private me?: TelegramBot.User;
+  private pollingStarted = false;
 
   constructor(private readonly db: DbService) {
     this.__bot = new TelegramBot(getEnv().TELEGRAM_BOT_TOKEN, {
-      polling: true,
+      polling: { autoStart: false },
+    });
+
+    this.__bot.on('polling_error', (error) => {
+      logger.error('Telegram polling error', error);
+    });
+    this.__bot.on('webhook_error', (error) => {
+      logger.error('Telegram webhook error', error);
     });
   }
 
@@ -22,9 +32,7 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
     return (this.me ??= await this.__bot.getMe());
   }
 
-  async getChatAdministrators(
-    chatId: number
-  ): Promise<TelegramBot.ChatMember[]> {
+  async getChatAdministrators(chatId: number): Promise<TelegramBot.ChatMember[]> {
     const members = await this.__bot.getChatAdministrators(chatId);
     return [
       ...members,
@@ -33,84 +41,74 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
           // eslint-disable-next-line unicorn/numeric-separators-style
           id: 1087968824,
           is_bot: true,
-          first_name: "Group",
-          username: "GroupAnonymousBot",
+          first_name: 'Group',
+          username: 'GroupAnonymousBot',
         },
-        status: "administrator",
+        status: 'administrator',
       },
     ];
   }
 
   async getUsername(): Promise<string> {
     const me = await this.getMe();
-    return required(me.username, "bot username is required");
+    return required(me.username, 'bot username is required');
   }
 
   async isInChat(chatId: number): Promise<boolean> {
     try {
       const me = await this.getMe();
       const chat = await this.__bot.getChatMember(chatId, me.id);
-      return (
-        chat.status !== "left" &&
-        chat.status !== "kicked" &&
-        chat.status !== "restricted"
-      );
+      return chat.status !== 'left' && chat.status !== 'kicked' && chat.status !== 'restricted';
     } catch {
       return false;
     }
   }
 
-  onAddedToGroupChat(
-    callback: (msg: TelegramBot.ChatMemberUpdated) => void
-  ): VoidFunction {
-    const listener = async (
-      msg: TelegramBot.ChatMemberUpdated
-    ): Promise<void> => {
+  onAddedToGroupChat(callback: (msg: TelegramBot.ChatMemberUpdated) => void): VoidFunction {
+    const listener = async (msg: TelegramBot.ChatMemberUpdated): Promise<void> => {
       const me = await this.__bot.getMe();
       if (
-        msg.new_chat_member.status === "member" &&
+        msg.new_chat_member.status === 'member' &&
         msg.new_chat_member.user.id === me.id &&
-        msg.chat.type !== "private"
+        msg.chat.type !== 'private'
       ) {
         callback(msg);
       }
     };
 
-    this.__bot.on("my_chat_member", listener);
-    return () => this.__bot.off("my_chat_member", listener);
+    this.__bot.on('my_chat_member', listener);
+    this.ensurePollingStarted();
+    return () => this.__bot.off('my_chat_member', listener);
   }
 
   onAnyMessage(callback: (msg: TelegramBot.Message) => void): VoidFunction {
-    this.__bot.on("message", callback);
-    return () => this.__bot.removeListener("message", callback);
+    this.__bot.on('message', callback);
+    this.ensurePollingStarted();
+    return () => this.__bot.removeListener('message', callback);
   }
 
-  onCallbackQuery(
-    callback: (query: TelegramBot.CallbackQuery) => void
-  ): VoidFunction {
-    this.__bot.on("callback_query", callback);
-    return () => this.__bot.off("callback_query", callback);
+  onCallbackQuery(callback: (query: TelegramBot.CallbackQuery) => void): VoidFunction {
+    this.__bot.on('callback_query', callback);
+    this.ensurePollingStarted();
+    return () => this.__bot.off('callback_query', callback);
   }
 
-  onRemovedFromGroupChat(
-    callback: (msg: TelegramBot.ChatMemberUpdated) => void
-  ): VoidFunction {
-    const listener = async (
-      msg: TelegramBot.ChatMemberUpdated
-    ): Promise<void> => {
+  onRemovedFromGroupChat(callback: (msg: TelegramBot.ChatMemberUpdated) => void): VoidFunction {
+    const listener = async (msg: TelegramBot.ChatMemberUpdated): Promise<void> => {
       const me = await this.__bot.getMe();
       const { status, user } = msg.new_chat_member;
       if (
-        (status === "left" || status === "kicked") &&
+        (status === 'left' || status === 'kicked') &&
         user.id === me.id &&
-        msg.chat.type !== "private"
+        msg.chat.type !== 'private'
       ) {
         callback(msg);
       }
     };
 
-    this.__bot.on("my_chat_member", listener);
-    return () => this.__bot.off("my_chat_member", listener);
+    this.__bot.on('my_chat_member', listener);
+    this.ensurePollingStarted();
+    return () => this.__bot.off('my_chat_member', listener);
   }
 
   // todo ставить сообщения в очередь (не более 5 для одного чата в секунду)
@@ -128,14 +126,14 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
         if (
           chat?.replyKeyboardShown &&
           replyMarkup &&
-          ("inline_keyboard" in replyMarkup || "force_reply" in replyMarkup)
+          ('inline_keyboard' in replyMarkup || 'force_reply' in replyMarkup)
         ) {
           const [, msg] = await Promise.all([
             this.db.updateChat(chatId, {
               title: undefined,
               replyKeyboardShown: false,
             }),
-            this.__bot.sendMessage(chatId, ".", {
+            this.__bot.sendMessage(chatId, '.', {
               reply_markup: {
                 remove_keyboard: true,
               },
@@ -154,7 +152,7 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
           },
         }),
         replyMarkup &&
-          "keyboard" in replyMarkup &&
+          'keyboard' in replyMarkup &&
           this.db.updateChat(chatId, {
             title: undefined,
             replyKeyboardShown: true,
@@ -162,7 +160,7 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
       ]);
       return true;
     } catch (error) {
-      logger.error("Error in telegram bot service sendMessage", error);
+      logger.error('Error in telegram bot service sendMessage', error);
       return false;
     }
   }
@@ -193,5 +191,47 @@ export default class TelegramBotServiceImpl implements TelegramBotService {
     options?: { scope?: TelegramBot.BotCommandScope }
   ): Promise<void> {
     await this.__bot.setMyCommands(commands, options);
+  }
+
+  private ensurePollingStarted(): void {
+    if (this.pollingStarted) return;
+
+    this.pollingStarted = true;
+    void this.startPolling();
+  }
+
+  private async startPolling(): Promise<void> {
+    try {
+      const webHookInfo = await this.__bot.getWebHookInfo();
+      const shouldDropPendingUpdates =
+        webHookInfo.pending_update_count > maxPendingUpdatesBeforeDrop;
+
+      if (webHookInfo.url !== '') {
+        logger.warn(
+          `Telegram webhook is set for polling bot. Removing webhook: ${webHookInfo.url}`
+        );
+      }
+      if (shouldDropPendingUpdates) {
+        logger.warn(
+          `Dropping ${String(
+            webHookInfo.pending_update_count
+          )} pending Telegram updates before polling start`
+        );
+      }
+
+      // @ts-expect-error наверное, надо обновить node-telegram-bot-api
+      await this.__bot.deleteWebHook({
+        drop_pending_updates: shouldDropPendingUpdates,
+      });
+    } catch (error) {
+      logger.error('Error preparing telegram polling', error);
+    }
+
+    try {
+      await this.__bot.startPolling();
+    } catch (error) {
+      this.pollingStarted = false;
+      logger.error('Error starting telegram polling', error);
+    }
   }
 }

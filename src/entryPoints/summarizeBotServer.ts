@@ -10,7 +10,6 @@ import type Services from '../services/Services';
 import type TelegramBotService from '../services/TelegramBotService';
 import type EntryPoint from './EntryPoint';
 import { ukassaService } from '../services/UKassaService/UKassaService';
-import { subscriptionsChecker } from './summarizeBotServer/subscriptionsChecker';
 import { encryptIfExists } from '../data/encryption';
 import { convertTgUserToDbUserInput } from '../data/convertors';
 

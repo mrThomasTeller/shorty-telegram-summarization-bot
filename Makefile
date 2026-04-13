@@ -15,7 +15,7 @@ start-detached: check-env
 stop:
 	docker compose stop
 
-restart: stop start
+restart: stop start-detached
 
 bash:
 	docker exec -it summarize-tg-bot-app bash

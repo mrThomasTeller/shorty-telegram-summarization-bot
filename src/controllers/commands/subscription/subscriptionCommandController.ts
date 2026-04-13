@@ -13,8 +13,7 @@ import { type UKassaPaymentWebhook } from '../../../services/UKassaService/UKass
 import { ukassaService } from '../../../services/UKassaService/UKassaService';
 import type ChatController from '../../ChatController';
 import { ucFirst } from './../../../lib/common/string';
-import { chooseObject } from './chooseObject';
-import { makeEditSubscriptionUrl, makeGroupUrl, route } from './routing';
+import { makeEditSubscriptionUrl, makeGroupUrl } from './routing';
 import { EditSubscriptionAction } from './types/EditSubscriptionAction';
 import { ObjectType } from './types/ObjectType';
 import { type UkassaWebhookMetadata } from './types/UkassaWebhookMetadata';
@@ -57,19 +56,18 @@ async function handleMessage(
     }
 
     await temporaryFreeMessage(telegramBot, msg.chat.id);
-    return;
 
-    const routed = await route(msg, db, telegramBot);
-    if (routed) return;
+    // const routed = await route(msg, db, telegramBot);
+    // if (routed) return;
 
-    const user = required(msg.from, 'User is required');
-    const subscriptions = await db.getAllUserSubscriptions(user.id);
+    // const user = required(msg.from, 'User is required');
+    // const subscriptions = await db.getAllUserSubscriptions(user.id);
 
-    const unexpiredSubscriptions = subscriptions.filter((s) => s.expires > new Date());
-    const userSubscription = unexpiredSubscriptions.find((s) => s.userId != null);
-    const groupsSubscriptions = unexpiredSubscriptions.filter((s) => s.chatId != null);
+    // const unexpiredSubscriptions = subscriptions.filter((s) => s.expires > new Date());
+    // const userSubscription = unexpiredSubscriptions.find((s) => s.userId != null);
+    // const groupsSubscriptions = unexpiredSubscriptions.filter((s) => s.chatId != null);
 
-    return await chooseObject({ userSubscription, groupsSubscriptions, telegramBot, user });
+    // return await chooseObject({ userSubscription, groupsSubscriptions, telegramBot, user });
   } catch (error) {
     if (isBlockedError(error)) {
       blockedMessagesService.push(msg.chat.id, msg);
