@@ -2,6 +2,7 @@
 /build
 /.tgSessionData
 .DS_Store
+/output
 
 # Logs
 logs

@@ -31,36 +31,36 @@ function main() {
   }
 
   const asOfDate = args.asOf ? parseDateArg(args.asOf) : new Date();
-  const currentMonthStart = startOfMonth(asOfDate);
-  const startMonth = args.start
-    ? parseMonthArg(args.start)
-    : addMonths(currentMonthStart, -(args.months - 1));
-  const endExclusive = addMonths(currentMonthStart, 1);
+  const currentWeekStart = startOfWeek(asOfDate);
+  const startWeek = args.start
+    ? startOfWeek(parseDateArg(args.start))
+    : addWeeks(currentWeekStart, -(args.weeks - 1));
+  const endExclusive = addWeeks(currentWeekStart, 1);
 
   const rows = fetchMetrics({
     sshServer: env.PROD_SSH_SERVER,
     dbName: env.PROD_DATABASE_NAME,
     dbUser: env.PROD_POSTGRES_USER,
     dbPassword: env.PROD_POSTGRES_PASSWORD,
-    startMonth,
+    startWeek,
     endExclusive,
-    currentMonthStart,
+    currentWeekStart,
   });
 
   const report = {
     generatedAt: formatIsoDate(asOfDate),
-    periodLabel: `${formatMonthYear(startMonth, true)} - ${formatMonthYear(currentMonthStart, true)}`,
+    periodLabel: `${formatWeekLabel(startWeek)} - ${formatWeekLabel(currentWeekStart)}`,
     data: rows,
   };
 
   const subtitle = buildSubtitle({
-    startMonth,
-    currentMonthStart,
+    startWeek,
+    currentWeekStart,
     asOfDate,
-    months: rows.length,
+    weeks: rows.length,
   });
 
-  const periodRange = `${formatDotDate(startMonth)} - ${formatDotDate(asOfDate)}`;
+  const periodRange = `${formatDotDate(startWeek)} - ${formatDotDate(asOfDate)}`;
   const template = fs.readFileSync(templatePath, "utf8");
   const html = template
     .replace("__SUBTITLE__", escapeHtml(subtitle))
@@ -87,7 +87,7 @@ function main() {
 
   console.log(`Saved report to ${outputPath}`);
   console.log(
-    `Period: ${formatMonthYear(startMonth, true)} - ${formatMonthYear(currentMonthStart, true)}`
+    `Period: ${formatWeekLabel(startWeek)} - ${formatWeekLabel(currentWeekStart)}`
   );
   console.log(
     `Totals: added=${totals.added}, removed=${totals.removed}, total=${totals.total}, free=${totals.free}, premium=${totals.premium}`
@@ -96,7 +96,7 @@ function main() {
 
 function parseArgs(argv) {
   const options = {
-    months: 12,
+    weeks: 52,
     out: "shorty-stats-report.html",
     asOf: null,
     start: null,
@@ -105,8 +105,8 @@ function parseArgs(argv) {
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
 
-    if (arg === "--months") {
-      options.months = Number(argv[++i]);
+    if (arg === "--weeks") {
+      options.weeks = Number(argv[++i]);
     } else if (arg === "--out") {
       options.out = argv[++i];
     } else if (arg === "--as-of") {
@@ -118,8 +118,8 @@ function parseArgs(argv) {
     }
   }
 
-  if (!Number.isInteger(options.months) || options.months <= 0) {
-    throw new Error("--months must be a positive integer");
+  if (!Number.isInteger(options.weeks) || options.weeks <= 0) {
+    throw new Error("--weeks must be a positive integer");
   }
 
   return options;
@@ -164,36 +164,31 @@ function parseDotenv(filePath) {
 
 function parseDateArg(value) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    throw new Error(`Invalid --as-of date: ${value}`);
+    throw new Error(`Invalid date: ${value}`);
   }
   const date = new Date(`${value}T12:00:00`);
   if (Number.isNaN(date.valueOf())) {
-    throw new Error(`Invalid --as-of date: ${value}`);
+    throw new Error(`Invalid date: ${value}`);
   }
   return date;
 }
 
-function parseMonthArg(value) {
-  if (!/^\d{4}-\d{2}$/.test(value)) {
-    throw new Error(`Invalid --start month: ${value}`);
-  }
-  const date = new Date(`${value}-01T12:00:00`);
-  if (Number.isNaN(date.valueOf())) {
-    throw new Error(`Invalid --start month: ${value}`);
-  }
-  return startOfMonth(date);
+function startOfWeek(date) {
+  const day = date.getDay();
+  const daysSinceMonday = day === 0 ? 6 : day - 1;
+  return addDays(date, -daysSinceMonday);
 }
 
-function startOfMonth(date) {
-  return new Date(date.getFullYear(), date.getMonth(), 1, 12, 0, 0, 0);
+function addDays(date, delta) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + delta, 12, 0, 0, 0);
 }
 
-function addMonths(date, delta) {
-  return new Date(date.getFullYear(), date.getMonth() + delta, 1, 12, 0, 0, 0);
+function addWeeks(date, delta) {
+  return addDays(date, delta * 7);
 }
 
-function endOfMonth(date) {
-  return new Date(date.getFullYear(), date.getMonth() + 1, 0, 12, 0, 0, 0);
+function endOfWeek(weekStart) {
+  return addDays(weekStart, 6);
 }
 
 function formatIsoDate(date) {
@@ -212,17 +207,6 @@ function formatDotDate(date) {
   ].join(".");
 }
 
-function formatMonthYear(date, capitalize) {
-  const text = new Intl.DateTimeFormat("ru-RU", {
-    month: "long",
-    year: "numeric",
-  })
-    .format(date)
-    .replace(" г.", "");
-
-  return capitalize ? text.charAt(0).toUpperCase() + text.slice(1) : text;
-}
-
 function formatHumanDate(date) {
   return new Intl.DateTimeFormat("ru-RU", {
     day: "numeric",
@@ -233,14 +217,17 @@ function formatHumanDate(date) {
     .replace(" г.", "");
 }
 
-function buildSubtitle({ startMonth, currentMonthStart, asOfDate, months }) {
-  const periodText = `Помесячный отчёт за ${months} календарных месяцев: с ${formatMonthYear(
-    startMonth,
-    false
-  )} по ${formatMonthYear(currentMonthStart, false)}.`;
+function formatWeekLabel(weekStart) {
+  return `${formatDotDate(weekStart)} - ${formatDotDate(endOfWeek(weekStart))}`;
+}
 
-  if (formatIsoDate(asOfDate) !== formatIsoDate(endOfMonth(currentMonthStart))) {
-    return `${periodText} ${formatMonthYear(currentMonthStart, true)} неполный: данные актуальны по состоянию на ${formatHumanDate(asOfDate)}.`;
+function buildSubtitle({ startWeek, currentWeekStart, asOfDate, weeks }) {
+  const periodText = `Понедельный отчёт за ${weeks} календарных недель: с ${formatWeekLabel(
+    startWeek
+  )} по ${formatWeekLabel(currentWeekStart)}.`;
+
+  if (formatIsoDate(asOfDate) !== formatIsoDate(endOfWeek(currentWeekStart))) {
+    return `${periodText} Текущая неделя неполная: данные актуальны по состоянию на ${formatHumanDate(asOfDate)}.`;
   }
 
   return `${periodText} Данные актуальны по состоянию на ${formatHumanDate(asOfDate)}.`;
@@ -250,46 +237,46 @@ function shellQuote(value) {
   return `'${String(value).replace(/'/g, `'\"'\"'`)}'`;
 }
 
-function fetchMetrics({ sshServer, dbName, dbUser, dbPassword, startMonth, endExclusive, currentMonthStart }) {
+function fetchMetrics({ sshServer, dbName, dbUser, dbPassword, startWeek, endExclusive, currentWeekStart }) {
   const sql = `
-WITH months AS (
-  SELECT generate_series(date '${formatIsoDate(startMonth)}', date '${formatIsoDate(
-    currentMonthStart
-  )}', interval '1 month')::date AS month_start
+WITH weeks AS (
+  SELECT generate_series(date '${formatIsoDate(startWeek)}', date '${formatIsoDate(
+    currentWeekStart
+  )}', interval '1 week')::date AS week_start
 ),
 stats AS (
   SELECT
-    date_trunc('month', date)::date AS month_start,
+    date_trunc('week', date)::date AS week_start,
     sum("addedToChats")::int AS added,
     sum("removedFromChats")::int AS removed
   FROM "Statistic"
-  WHERE date >= date '${formatIsoDate(startMonth)}' AND date < date '${formatIsoDate(endExclusive)}'
+  WHERE date >= date '${formatIsoDate(startWeek)}' AND date < date '${formatIsoDate(endExclusive)}'
   GROUP BY 1
 ),
 summaries AS (
   SELECT
-    date_trunc('month', date)::date AS month_start,
+    date_trunc('week', date)::date AS week_start,
     count(*)::int AS total,
     count(*) FILTER (WHERE NOT "usedPremium")::int AS free,
     count(*) FILTER (WHERE "usedPremium")::int AS premium
   FROM "Summary"
-  WHERE date >= date '${formatIsoDate(startMonth)}' AND date < date '${formatIsoDate(endExclusive)}'
+  WHERE date >= date '${formatIsoDate(startWeek)}' AND date < date '${formatIsoDate(endExclusive)}'
   GROUP BY 1
 )
-SELECT json_agg(row_to_json(t) ORDER BY t.month_start)
+SELECT json_agg(row_to_json(t) ORDER BY t.week_start)
 FROM (
   SELECT
-    m.month_start,
-    to_char(m.month_start, 'YYYY-MM') AS month,
+    w.week_start,
+    to_char(w.week_start, 'YYYY-MM-DD') AS week,
     coalesce(stats.added, 0) AS added,
     coalesce(stats.removed, 0) AS removed,
     coalesce(summaries.total, 0) AS total,
     coalesce(summaries.free, 0) AS free,
     coalesce(summaries.premium, 0) AS premium
-  FROM months m
-  LEFT JOIN stats USING (month_start)
-  LEFT JOIN summaries USING (month_start)
-  ORDER BY m.month_start
+  FROM weeks w
+  LEFT JOIN stats USING (week_start)
+  LEFT JOIN summaries USING (week_start)
+  ORDER BY w.week_start
 ) t;
 `.trim();
 

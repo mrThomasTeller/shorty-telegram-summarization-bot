@@ -1,4 +1,4 @@
 interface:
   display_name: "Shorty Stats Report"
-  short_description: "Generate the Shorty monthly HTML stats dashboard"
+  short_description: "Generate the Shorty weekly HTML stats dashboard"
   default_prompt: "Generate or refresh the Shorty HTML stats report from the production database."

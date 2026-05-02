@@ -1,13 +1,13 @@
 ---
 name: shorty-stats-report
-description: Generate or refresh the Shorty Telegram summarization bot HTML stats dashboard from the production Postgres database. Use when Codex needs to build monthly charts for bot additions/removals and summary counts (total, free, premium), especially into a root-level `shorty-stats-report.html` file for the last 12 calendar months or another month-based period.
+description: Generate or refresh the Shorty Telegram summarization bot HTML stats dashboard from the production Postgres database. Use when Codex needs to build weekly charts for bot additions/removals and summary counts (total, free, premium), especially into a root-level `shorty-stats-report.html` file for the last 52 calendar weeks or another week-based period.
 ---
 
 # Shorty Stats Report
 
 ## Overview
 
-Generate a static HTML dashboard with monthly metrics from production data. Prefer the bundled script so the report stays reproducible and does not require hand-editing SQL or HTML.
+Generate a static HTML dashboard with weekly metrics from production data. Prefer the bundled script so the report stays reproducible and does not require hand-editing SQL or HTML.
 
 ## Workflow
 
@@ -18,15 +18,15 @@ Generate a static HTML dashboard with monthly metrics from production data. Pref
 Default command:
 
 ```bash
-node .codex/skills/shorty-stats-report/scripts/generate_report.mjs
+bun .codex/skills/shorty-stats-report/scripts/generate_report.mjs
 ```
 
 Useful options:
 
 ```bash
-node .codex/skills/shorty-stats-report/scripts/generate_report.mjs --months 12
-node .codex/skills/shorty-stats-report/scripts/generate_report.mjs --as-of 2026-03-19
-node .codex/skills/shorty-stats-report/scripts/generate_report.mjs --out docs/shorty-stats.html
+bun .codex/skills/shorty-stats-report/scripts/generate_report.mjs --weeks 52
+bun .codex/skills/shorty-stats-report/scripts/generate_report.mjs --as-of 2026-03-19
+bun .codex/skills/shorty-stats-report/scripts/generate_report.mjs --out docs/shorty-stats.html
 ```
 
 ## Inputs
@@ -39,7 +39,7 @@ node .codex/skills/shorty-stats-report/scripts/generate_report.mjs --out docs/sh
 
 - Bot additions/removals come from daily aggregates in `Statistic`.
 - Summary counts come from `Summary`, where `usedPremium = true` means premium and `false` means free.
-- The default period is the last 12 calendar months including the current month. The current month may be partial.
+- The default period is the last 52 calendar weeks including the current week. The current week may be partial.
 - For exact semantics and SQL shape, read `references/metrics.md`.
 
 ## Verification
