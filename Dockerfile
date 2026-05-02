@@ -31,4 +31,4 @@ COPY . .
 
 RUN bun db:gen-types
 
-CMD bun db:migrate && bun start
+CMD bun db:migrate && bun --smol src/start.ts summarizeBotServer

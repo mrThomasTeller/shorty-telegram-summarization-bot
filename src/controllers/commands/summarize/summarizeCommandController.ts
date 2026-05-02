@@ -1,5 +1,6 @@
 import _ from 'lodash';
-import { concatMap, exhaustMap, last, mergeMap, of, type Observable } from 'rxjs';
+import { concatMap, exhaustMap, finalize, last, mergeMap, of, type Observable } from 'rxjs';
+import logger from '../../../config/logger';
 import { getLimitsData } from '../../../data/subscriptionLimits';
 import { catchError } from '../../../lib/common/async';
 import { matchEither } from '../../../lib/common/fp';
@@ -26,6 +27,12 @@ export const handleSingleSummarizeRequest$ = _.curry(
       return of(undefined);
     }
 
+    logSummarizeMemory('start', {
+      chatId,
+      messageId: msg.message_id,
+      userId: msg.from?.id,
+    });
+
     return of(msg).pipe(
       mergeMap((msg) =>
         getLimitsData({ db: services.db, userId: msg.from?.id, chatId: msg.chat.id })
@@ -33,11 +40,34 @@ export const handleSingleSummarizeRequest$ = _.curry(
       mergeMap(getChatMessagesForSummary(services, msg)),
       mergeMap((data) => matchEither(of, queryGptOrReturnError$(services, chatId), data)),
       concatMap(handleSummarizeResultCase(services, msg)),
-
       last(),
       mergeMap(() => printNews(services.db, services.telegramBot, msg.chat)),
-      // todo ошибки нужно ловить на глобальном уровне для каждого сообщения
-      catchAndLogError('Error in summarizeCommandController')
+      catchAndLogError('Error in summarizeCommandController'),
+      finalize(() => {
+        logSummarizeMemory('before_gc', { chatId, messageId: msg.message_id, userId: msg.from?.id });
+        runFullGc();
+        logSummarizeMemory('after_gc', { chatId, messageId: msg.message_id, userId: msg.from?.id });
+      })
     );
   }
 );
+
+function runFullGc(): void {
+  const bunRuntime = globalThis as typeof globalThis & {
+    Bun?: {
+      gc?: (force?: boolean) => void;
+    };
+  };
+
+  bunRuntime.Bun?.gc?.(true);
+}
+
+function logSummarizeMemory(
+  stage: string,
+  details: { chatId: number; messageId: number; userId: number | undefined }
+): void {
+  const memory = process.memoryUsage();
+  logger.info(
+    `[summarize-memory] stage=${stage} chatId=${details.chatId} messageId=${details.messageId} userId=${details.userId ?? 'unknown'} rss=${memory.rss} heapUsed=${memory.heapUsed} heapTotal=${memory.heapTotal} external=${memory.external} arrayBuffers=${memory.arrayBuffers}`
+  );
+}

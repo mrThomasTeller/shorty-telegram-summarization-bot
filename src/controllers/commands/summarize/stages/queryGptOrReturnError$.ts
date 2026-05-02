@@ -7,15 +7,17 @@ import {
   of,
   pipe,
   startWith,
+  tap,
   type Observable,
   type UnaryFunction,
 } from 'rxjs';
 import { sendMessageToGptWithRetries$ } from '../../../../api/gpt';
 import { getEnv } from '../../../../config/envVars';
+import logger from '../../../../config/logger';
 import { t } from '../../../../config/translations/index';
-import type DbChatMessage from '../../../../data/types/DbChatMessage';
 import { getFormattedMessage } from '../../../../data/dbChatMessageUtils';
 import { getPartsAndPointsCountForText } from '../../../../data/summaryUtils';
+import type DbChatMessage from '../../../../data/types/DbChatMessage';
 import { endWithAfter, insertBefore } from '../../../../lib/common/rxOperators';
 import { reEnumerateText } from '../../../../lib/common/text';
 import type Services from '../../../../services/Services';
@@ -33,14 +35,27 @@ const queryGptOrReturnError$ = _.curry(
     }
 
     const minMessagesCount = getEnv().MIN_MESSAGES_COUNT_TO_SUMMARIZE;
-    if (data.messages.length < minMessagesCount) {
+    if (data.allMessagesCount < minMessagesCount) {
       return of({ type: 'fewMessages' });
     }
 
     return of(data.messages).pipe(
       map(formatChatMessages),
+      tap((formattedText) => {
+        logQueryStage('formatted_messages', chatId, {
+          formattedLength: formattedText.length,
+          messagesCount: data.messages.length,
+          allMessagesCount: data.allMessagesCount,
+        });
+      }),
       map(getPartsAndPointsCountForText),
-      concatMap(rejectOverflowedSummaryPartsAndMakeSummary$(services, data.maxSummaryParts)),
+      tap((parts) => {
+        logQueryStage('parts_created', chatId, {
+          partsCount: parts.length,
+          totalPartLength: parts.reduce((sum, part) => sum + part.text.length, 0),
+        });
+      }),
+      concatMap(rejectOverflowedSummaryPartsAndMakeSummary$(services, chatId, data.maxSummaryParts)),
       insertSummaryLayout(chatId, data)
     );
   }
@@ -52,23 +67,49 @@ const formatChatMessages = (messages: DbChatMessage[]): string =>
   messages.map((msg) => getFormattedMessage(msg)).join('\n');
 
 const rejectOverflowedSummaryPartsAndMakeSummary$ = _.curry(
-  (services: Services, maxSummaryParts: number, parts: { text: string; pointsCount: number }[]) => {
+  (
+    services: Services,
+    chatId: number,
+    maxSummaryParts: number,
+    parts: { text: string; pointsCount: number }[]
+  ) => {
     const allowedParts = _.takeRight(parts, maxSummaryParts);
     const gptQueryParts = mapSummaryPartsToGptQuery(allowedParts);
+
+    logQueryStage('gpt_parts_selected', chatId, {
+      originalPartsCount: parts.length,
+      allowedPartsCount: allowedParts.length,
+      totalPromptLength: gptQueryParts.reduce((sum, part) => sum + part.text.length, 0),
+    });
 
     return concat<SummarizeResultCase[]>(
       parts.length > maxSummaryParts
         ? of({ type: 'tooManySummaryParts', count: parts.length })
         : [],
-
-      from(gptQueryParts).pipe(concatMap(querySummaryPartFromGptAndReEnumerateResponse$(services)))
+      from(gptQueryParts).pipe(
+        concatMap(querySummaryPartFromGptAndReEnumerateResponse$(services, chatId))
+      )
     );
   }
 );
 
 const querySummaryPartFromGptAndReEnumerateResponse$ = _.curry(
-  (services: Services, { text, pointsCount, index }: GptQueryPart) =>
-    sendMessageToGptWithRetries$({ gpt: services.gpt, text }).pipe(
+  (services: Services, chatId: number, { text, pointsCount, index }: GptQueryPart) => {
+    logQueryStage('gpt_request', chatId, {
+      index,
+      pointsCount,
+      promptLength: text.length,
+    });
+
+    return sendMessageToGptWithRetries$({ gpt: services.gpt, text }).pipe(
+      tap((gptResultCase) => {
+        logQueryStage('gpt_response', chatId, {
+          index,
+          pointsCount,
+          resultType: gptResultCase.type,
+          responseLength: gptResultCase.type === 'responseFromGPT' ? gptResultCase.text.length : 0,
+        });
+      }),
       map(
         (gptResultCase): SummarizeResultCase =>
           gptResultCase.type === 'responseFromGPT'
@@ -78,7 +119,8 @@ const querySummaryPartFromGptAndReEnumerateResponse$ = _.curry(
               }
             : gptResultCase
       )
-    )
+    );
+  }
 );
 
 type GptQueryPart = {
@@ -99,7 +141,17 @@ const mapSummaryPartsToGptQuery = (
     }),
   }));
 
-// todo make this function more expressive
+function logQueryStage(chatId: number, stage: string, details: Record<string, string | number>): void {
+  const memory = process.memoryUsage();
+  const detailsText = Object.entries(details)
+    .map(([key, value]) => `${key}=${value}`)
+    .join(' ');
+
+  logger.info(
+    `[summarize-memory] stage=${stage} chatId=${chatId} ${detailsText} rss=${memory.rss} heapUsed=${memory.heapUsed} heapTotal=${memory.heapTotal} external=${memory.external} arrayBuffers=${memory.arrayBuffers}`
+  );
+}
+
 const insertSummaryLayout = (
   chatId: number,
   { freeSummariesRest, premiumSummariesRest, subscription, usedPremium }: ChatMessagesForSummaryData
