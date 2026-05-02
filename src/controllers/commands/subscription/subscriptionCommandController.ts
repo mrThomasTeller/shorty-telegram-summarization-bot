@@ -55,7 +55,7 @@ async function handleMessage(
       return await subscribeFromGroupChat(db, telegramBot, msg);
     }
 
-    await temporaryFreeMessage(telegramBot, msg.chat.id);
+    await shutdownNoticeMessage(telegramBot, msg.chat.id);
 
     // const routed = await route(msg, db, telegramBot);
     // if (routed) return;
@@ -77,15 +77,27 @@ async function handleMessage(
   }
 }
 
-async function temporaryFreeMessage(
+async function shutdownNoticeMessage(
   telegramBot: TelegramBotService,
   chatId: number
 ): Promise<void> {
   await telegramBot.sendMessage(
     chatId,
-    `🍾 Shorty стал бесплатным до конца года! В каждой группе теперь доступны 8 бесплатных выжимок в неделю! Если у вас был оплаченный тариф, он продолжит действовать бесплатно до конца года. Если вам нужны увеличенные лимиты, напишите, пожалуйста, в поддержку: @${
+    `😔 К сожалению, за последний год количество активных пользователей сильно снизилось, и поддерживать бота стало невыгодно.
+
+🙏 Спасибо, что были с нами всё это время!
+
+🗓 Поддержка бота закончится <b>1 июня 2026 года</b>. До этой даты вы можете обратиться в поддержку — @${
       getEnv().SUPPORT_BOT_NAME
-    }`
+    } — если хотите бесплатно увеличить лимиты.
+
+🤖 Вы также можете воспользоваться одним из аналогов нашего бота:
+• @chatnorrisbot
+• @tgtldr_bot
+• @wk_summary_bot
+
+💻 Также я открыл исходный код этого проекта, чтобы вы могли установить его на свой сервер при необходимости: <a href="https://github.com/mrThomasTeller/shorty-telegram-summarization-bot">https://github.com/mrThomasTeller/shorty-telegram-summarization-bot</a>`,
+    { parse_mode: 'HTML' }
   );
 }
 

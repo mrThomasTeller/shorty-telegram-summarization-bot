@@ -92,7 +92,9 @@ function getBotMessageForSummarizeResultCase(
         resultCase,
         msg.chat.id,
         botName
-      )}`;
+      )}\n\n${t('summarize.message.shutdownNotice', {
+        shutdownUrl: `https://t.me/${botName}?start=subscription`,
+      })}`;
     }
     case 'maxTriesExceeded': {
       return t('summarize.errors.maxQueriesToGptExceeded');

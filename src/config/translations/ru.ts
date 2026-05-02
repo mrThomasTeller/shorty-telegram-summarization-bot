@@ -31,6 +31,8 @@ export default {
       tooManyMessages:
         'Сообщений накопилось очень много 🤯 Я смогу сделать выжимку только из самых последних',
       end: '😌 Это всё',
+      shutdownNotice:
+        '⚠️ Бот перестанет работать с 1 июня! (<a href="{{shutdownUrl}}">подробнее</a>)',
       dontShowAds:
         '🚫 <a href="https://boosty.to/artyom.bakharev/posts/7ace6829-b612-448f-8b0e-583c8aad964e">⚡️ Не хочу видеть рекламу!</a>',
     },

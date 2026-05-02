@@ -17,6 +17,7 @@ const helpMessageTpl = _.template(
 export const renderHelpMessage = (botName: string, chatId: number): string =>
   helpMessageTpl({
     botName: escapeTelegramMarkdown(botName),
+    shutdownUrl: `https://t.me/${botName}?start=subscription`,
     chatId,
     maxFreeSummariesPerWeek: t('shared.freeSummariesCount', {
       count: getEnv().MAX_SUMMARIES_PER_WEEK,
